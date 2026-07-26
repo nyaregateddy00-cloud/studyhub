@@ -39,7 +39,7 @@ export const Route = createFileRoute("/_app/analytics")({
       { property: "og:description", content: "Trends, quiz accuracy and exportable study history." },
     ],
   }),
-  component: Analytics;
+  component: Analytics,
 });
 
 const ranges = { 7: "Last 7 days", 30: "Last 30 days", 90: "Last 90 days" } as const;
