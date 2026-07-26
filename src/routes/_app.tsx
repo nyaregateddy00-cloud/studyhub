@@ -44,7 +44,6 @@ const nav = [
   { to: "/admin", label: "Admin", icon: Shield },
 ] as const;
 
-const mobileNav = nav.slice(0, 5);
 
 function AppLayout() {
   const { session, loading } = useAuth();
