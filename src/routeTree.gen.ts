@@ -22,6 +22,7 @@ import { Route as AppFlashcardsRouteImport } from './routes/_app.flashcards'
 import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
 import { Route as AppCommunityRouteImport } from './routes/_app.community'
 import { Route as AppAssistantRouteImport } from './routes/_app.assistant'
+import { Route as AppAnalyticsRouteImport } from './routes/_app.analytics'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -87,12 +88,18 @@ const AppAssistantRoute = AppAssistantRouteImport.update({
   path: '/assistant',
   getParentRoute: () => AppRoute,
 } as any)
+const AppAnalyticsRoute = AppAnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/analytics': typeof AppAnalyticsRoute
   '/assistant': typeof AppAssistantRoute
   '/community': typeof AppCommunityRoute
   '/dashboard': typeof AppDashboardRoute
@@ -107,6 +114,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/analytics': typeof AppAnalyticsRoute
   '/assistant': typeof AppAssistantRoute
   '/community': typeof AppCommunityRoute
   '/dashboard': typeof AppDashboardRoute
@@ -123,6 +131,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/_app/analytics': typeof AppAnalyticsRoute
   '/_app/assistant': typeof AppAssistantRoute
   '/_app/community': typeof AppCommunityRoute
   '/_app/dashboard': typeof AppDashboardRoute
@@ -139,6 +148,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/sitemap.xml'
+    | '/analytics'
     | '/assistant'
     | '/community'
     | '/dashboard'
@@ -153,6 +163,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/sitemap.xml'
+    | '/analytics'
     | '/assistant'
     | '/community'
     | '/dashboard'
@@ -168,6 +179,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/sitemap.xml'
+    | '/_app/analytics'
     | '/_app/assistant'
     | '/_app/community'
     | '/_app/dashboard'
@@ -280,10 +292,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAssistantRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/analytics': {
+      id: '/_app/analytics'
+      path: '/analytics'
+      fullPath: '/analytics'
+      preLoaderRoute: typeof AppAnalyticsRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
 interface AppRouteChildren {
+  AppAnalyticsRoute: typeof AppAnalyticsRoute
   AppAssistantRoute: typeof AppAssistantRoute
   AppCommunityRoute: typeof AppCommunityRoute
   AppDashboardRoute: typeof AppDashboardRoute
@@ -294,6 +314,7 @@ interface AppRouteChildren {
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppAnalyticsRoute: AppAnalyticsRoute,
   AppAssistantRoute: AppAssistantRoute,
   AppCommunityRoute: AppCommunityRoute,
   AppDashboardRoute: AppDashboardRoute,
