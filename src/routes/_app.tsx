@@ -9,6 +9,7 @@ import {
   ListChecks,
   LogOut,
   Moon,
+  MoreHorizontal,
   Settings as SettingsIcon,
   Shield,
   Sun,
