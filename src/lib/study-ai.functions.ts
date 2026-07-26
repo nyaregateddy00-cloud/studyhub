@@ -29,6 +29,28 @@ const FlashcardSchema = z.object({
   cards: z.array(z.object({ front: z.string(), back: z.string() })),
 });
 
+const PlanInput = z.object({
+  subjects: z.string().trim().min(3).max(2000),
+  examDate: z.string().trim().max(40).optional(),
+  hoursPerWeek: z.number().int().min(1).max(60).default(8),
+  weaknesses: z.string().trim().max(2000).optional(),
+});
+
+const PlanSchema = z.object({
+  title: z.string(),
+  summary: z.string(),
+  tasks: z.array(
+    z.object({
+      title: z.string(),
+      subject: z.string(),
+      day_offset: z.number(),
+      duration_minutes: z.number(),
+      priority: z.enum(["low", "medium", "high"]),
+      notes: z.string(),
+    }),
+  ),
+});
+
 function gateway() {
   const key = process.env.LOVABLE_API_KEY;
   if (!key) throw new Error("AI is not configured");
