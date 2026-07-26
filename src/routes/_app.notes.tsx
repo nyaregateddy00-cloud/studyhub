@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { Bookmark, Download, FileText, Heart, Plus, Search } from "lucide-react";
+import { Bookmark, Download, FileText, Flag, Heart, Plus, Search } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -336,6 +336,15 @@ function NotesPage() {
                     <Download className="size-4" />
                   </Button>
                 )}
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  className={note.file_url ? "" : "ml-auto"}
+                  onClick={() => reportNote(note.id)}
+                  aria-label="Report note"
+                >
+                  <Flag className="size-4" />
+                </Button>
               </div>
             </article>
           ))}
