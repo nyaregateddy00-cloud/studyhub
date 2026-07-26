@@ -74,13 +74,13 @@ function AppLayout() {
           <Link to="/dashboard">
             <BrandLock />
           </Link>
-          <nav className="hidden items-center gap-1 md:flex">
+          <nav className="hidden max-w-[52vw] items-center gap-0.5 overflow-x-auto md:flex">
             {nav.map((item) => (
               <Link
                 key={item.to}
                 to={item.to}
                 className={cn(
-                  "rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground",
+                  "shrink-0 rounded-lg px-2.5 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground",
                   pathname === item.to && "bg-primary/10 text-primary",
                 )}
               >
@@ -89,6 +89,7 @@ function AppLayout() {
             ))}
           </nav>
           <div className="flex items-center gap-1">
+            <NotificationBell />
             <Button variant="ghost" size="icon" onClick={toggle} aria-label="Toggle dark mode">
               {theme === "dark" ? <Sun className="size-4" /> : <Moon className="size-4" />}
             </Button>
@@ -104,7 +105,7 @@ function AppLayout() {
       </main>
 
       <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-border bg-surface md:hidden">
-        {nav.map((item) => (
+        {mobileNav.map((item) => (
           <Link
             key={item.to}
             to={item.to}
