@@ -104,13 +104,13 @@ function AppLayout() {
         <Outlet />
       </main>
 
-      <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-border bg-surface md:hidden">
-        {mobileNav.map((item) => (
+      <nav className="fixed inset-x-0 bottom-0 z-30 flex overflow-x-auto border-t border-border bg-surface md:hidden">
+        {nav.map((item) => (
           <Link
             key={item.to}
             to={item.to}
             className={cn(
-              "flex flex-col items-center gap-1 py-2.5 text-[11px] text-muted-foreground",
+              "flex min-w-[20%] shrink-0 flex-col items-center gap-1 py-2.5 text-[11px] text-muted-foreground",
               pathname === item.to && "text-primary",
             )}
           >
