@@ -16,6 +16,7 @@ import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AppQuizzesRouteImport } from './routes/_app.quizzes'
+import { Route as AppProfileRouteImport } from './routes/_app.profile'
 import { Route as AppPlannerRouteImport } from './routes/_app.planner'
 import { Route as AppNotesRouteImport } from './routes/_app.notes'
 import { Route as AppFlashcardsRouteImport } from './routes/_app.flashcards'
@@ -56,6 +57,11 @@ const ApiChatRoute = ApiChatRouteImport.update({
 const AppQuizzesRoute = AppQuizzesRouteImport.update({
   id: '/quizzes',
   path: '/quizzes',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppProfileRoute = AppProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
   getParentRoute: () => AppRoute,
 } as any)
 const AppPlannerRoute = AppPlannerRouteImport.update({
@@ -106,6 +112,7 @@ export interface FileRoutesByFullPath {
   '/flashcards': typeof AppFlashcardsRoute
   '/notes': typeof AppNotesRoute
   '/planner': typeof AppPlannerRoute
+  '/profile': typeof AppProfileRoute
   '/quizzes': typeof AppQuizzesRoute
   '/api/chat': typeof ApiChatRoute
 }
@@ -121,6 +128,7 @@ export interface FileRoutesByTo {
   '/flashcards': typeof AppFlashcardsRoute
   '/notes': typeof AppNotesRoute
   '/planner': typeof AppPlannerRoute
+  '/profile': typeof AppProfileRoute
   '/quizzes': typeof AppQuizzesRoute
   '/api/chat': typeof ApiChatRoute
 }
@@ -138,6 +146,7 @@ export interface FileRoutesById {
   '/_app/flashcards': typeof AppFlashcardsRoute
   '/_app/notes': typeof AppNotesRoute
   '/_app/planner': typeof AppPlannerRoute
+  '/_app/profile': typeof AppProfileRoute
   '/_app/quizzes': typeof AppQuizzesRoute
   '/api/chat': typeof ApiChatRoute
 }
@@ -155,6 +164,7 @@ export interface FileRouteTypes {
     | '/flashcards'
     | '/notes'
     | '/planner'
+    | '/profile'
     | '/quizzes'
     | '/api/chat'
   fileRoutesByTo: FileRoutesByTo
@@ -170,6 +180,7 @@ export interface FileRouteTypes {
     | '/flashcards'
     | '/notes'
     | '/planner'
+    | '/profile'
     | '/quizzes'
     | '/api/chat'
   id:
@@ -186,6 +197,7 @@ export interface FileRouteTypes {
     | '/_app/flashcards'
     | '/_app/notes'
     | '/_app/planner'
+    | '/_app/profile'
     | '/_app/quizzes'
     | '/api/chat'
   fileRoutesById: FileRoutesById
@@ -250,6 +262,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppQuizzesRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/profile': {
+      id: '/_app/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof AppProfileRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/planner': {
       id: '/_app/planner'
       path: '/planner'
@@ -310,6 +329,7 @@ interface AppRouteChildren {
   AppFlashcardsRoute: typeof AppFlashcardsRoute
   AppNotesRoute: typeof AppNotesRoute
   AppPlannerRoute: typeof AppPlannerRoute
+  AppProfileRoute: typeof AppProfileRoute
   AppQuizzesRoute: typeof AppQuizzesRoute
 }
 
@@ -321,6 +341,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppFlashcardsRoute: AppFlashcardsRoute,
   AppNotesRoute: AppNotesRoute,
   AppPlannerRoute: AppPlannerRoute,
+  AppProfileRoute: AppProfileRoute,
   AppQuizzesRoute: AppQuizzesRoute,
 }
 
