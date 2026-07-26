@@ -158,8 +158,6 @@ function NotesPage() {
   });
 
   async function download(path: string, name: string) {
-    const _unused = path;
-    void _unused;
     const { data, error } = await supabase.storage.from("notes").createSignedUrl(path, 60);
     if (error || !data) {
       toast.error("Could not prepare the download.");
@@ -169,6 +167,16 @@ function NotesPage() {
     link.href = data.signedUrl;
     link.download = name;
     link.click();
+  }
+
+  async function reportNote(noteId: string) {
+    const reason = window.prompt("Why are you reporting this note?")?.trim();
+    if (!reason) return;
+    const { error } = await supabase
+      .from("note_reports")
+      .insert({ note_id: noteId, user_id: user!.id, reason: reason.slice(0, 500) });
+    if (error) toast.error(error.message);
+    else toast.success("Thanks — our moderators will review it.");
   }
 
   const term = query.trim().toLowerCase();
