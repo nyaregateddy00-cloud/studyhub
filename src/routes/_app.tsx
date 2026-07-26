@@ -2,16 +2,23 @@ import { Link, Outlet, createFileRoute, useNavigate, useRouterState } from "@tan
 import {
   BookOpen,
   Bot,
+  BarChart3,
+  CalendarDays,
   LayoutDashboard,
   Layers,
   ListChecks,
   LogOut,
   Moon,
+  Settings as SettingsIcon,
+  Shield,
   Sun,
+  User,
+  Users,
 } from "lucide-react";
 import { useEffect } from "react";
 
 import { BrandLock } from "@/components/brand";
+import { NotificationBell } from "@/components/notification-bell";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth, useSignOut } from "@/lib/auth";
@@ -29,7 +36,15 @@ const nav = [
   { to: "/assistant", label: "AI tutor", icon: Bot },
   { to: "/quizzes", label: "Quizzes", icon: ListChecks },
   { to: "/flashcards", label: "Flashcards", icon: Layers },
+  { to: "/planner", label: "Planner", icon: CalendarDays },
+  { to: "/community", label: "Community", icon: Users },
+  { to: "/analytics", label: "Analytics", icon: BarChart3 },
+  { to: "/profile", label: "Profile", icon: User },
+  { to: "/settings", label: "Settings", icon: SettingsIcon },
+  { to: "/admin", label: "Admin", icon: Shield },
 ] as const;
+
+const mobileNav = nav.slice(0, 5);
 
 function AppLayout() {
   const { session, loading } = useAuth();
