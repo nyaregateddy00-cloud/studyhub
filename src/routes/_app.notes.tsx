@@ -158,6 +158,8 @@ function NotesPage() {
   });
 
   async function download(path: string, name: string) {
+    const _unused = path;
+    void _unused;
     const { data, error } = await supabase.storage.from("notes").createSignedUrl(path, 60);
     if (error || !data) {
       toast.error("Could not prepare the download.");
