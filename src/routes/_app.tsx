@@ -1,0 +1,108 @@
+import { Link, Outlet, createFileRoute, useNavigate, useRouterState } from "@tanstack/react-router";
+import {
+  BookOpen,
+  Bot,
+  LayoutDashboard,
+  Layers,
+  ListChecks,
+  LogOut,
+  Moon,
+  Sun,
+} from "lucide-react";
+import { useEffect } from "react";
+
+import { BrandLock } from "@/components/brand";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth, useSignOut } from "@/lib/auth";
+import { useTheme } from "@/lib/theme";
+import { cn } from "@/lib/utils";
+
+export const Route = createFileRoute("/_app")({
+  ssr: false,
+  component: AppLayout,
+});
+
+const nav = [
+  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/notes", label: "Notes", icon: BookOpen },
+  { to: "/assistant", label: "AI tutor", icon: Bot },
+  { to: "/quizzes", label: "Quizzes", icon: ListChecks },
+  { to: "/flashcards", label: "Flashcards", icon: Layers },
+] as const;
+
+function AppLayout() {
+  const { session, loading } = useAuth();
+  const navigate = useNavigate();
+  const signOut = useSignOut();
+  const { theme, toggle } = useTheme();
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
+
+  useEffect(() => {
+    if (!loading && !session) navigate({ to: "/auth", replace: true });
+  }, [loading, session, navigate]);
+
+  if (loading || !session) {
+    return (
+      <div className="min-h-screen space-y-4 p-8">
+        <Skeleton className="h-10 w-56" />
+        <Skeleton className="h-40 w-full" />
+        <Skeleton className="h-40 w-full" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      <header className="sticky top-0 z-30 border-b border-border bg-surface/85 backdrop-blur">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4">
+          <Link to="/dashboard">
+            <BrandLock />
+          </Link>
+          <nav className="hidden items-center gap-1 md:flex">
+            {nav.map((item) => (
+              <Link
+                key={item.to}
+                to={item.to}
+                className={cn(
+                  "rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground",
+                  pathname === item.to && "bg-primary/10 text-primary",
+                )}
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+          <div className="flex items-center gap-1">
+            <Button variant="ghost" size="icon" onClick={toggle} aria-label="Toggle dark mode">
+              {theme === "dark" ? <Sun className="size-4" /> : <Moon className="size-4" />}
+            </Button>
+            <Button variant="ghost" size="icon" onClick={signOut} aria-label="Sign out">
+              <LogOut className="size-4" />
+            </Button>
+          </div>
+        </div>
+      </header>
+
+      <main className="mx-auto max-w-6xl px-4 py-8 pb-24 md:pb-8">
+        <Outlet />
+      </main>
+
+      <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-border bg-surface md:hidden">
+        {nav.map((item) => (
+          <Link
+            key={item.to}
+            to={item.to}
+            className={cn(
+              "flex flex-col items-center gap-1 py-2.5 text-[11px] text-muted-foreground",
+              pathname === item.to && "text-primary",
+            )}
+          >
+            <item.icon className="size-4" />
+            {item.label}
+          </Link>
+        ))}
+      </nav>
+    </div>
+  );
+}
