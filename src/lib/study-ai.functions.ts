@@ -29,6 +29,28 @@ const FlashcardSchema = z.object({
   cards: z.array(z.object({ front: z.string(), back: z.string() })),
 });
 
+const PlanInput = z.object({
+  subjects: z.string().trim().min(3).max(2000),
+  examDate: z.string().trim().max(40).optional(),
+  hoursPerWeek: z.number().int().min(1).max(60).default(8),
+  weaknesses: z.string().trim().max(2000).optional(),
+});
+
+const PlanSchema = z.object({
+  title: z.string(),
+  summary: z.string(),
+  tasks: z.array(
+    z.object({
+      title: z.string(),
+      subject: z.string(),
+      day_offset: z.number(),
+      duration_minutes: z.number(),
+      priority: z.enum(["low", "medium", "high"]),
+      notes: z.string(),
+    }),
+  ),
+});
+
 function gateway() {
   const key = process.env.LOVABLE_API_KEY;
   if (!key) throw new Error("AI is not configured");
@@ -61,6 +83,23 @@ export const generateFlashcards = createServerFn({ method: "POST" })
       prompt: `Create ${data.count} flashcards${
         data.topic ? ` about "${data.topic}"` : ""
       } from this study material:\n\n${data.source}`,
+    });
+    return output;
+  });
+
+export const generateRevisionPlan = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) => PlanInput.parse(input))
+  .handler(async ({ data }) => {
+    const { output } = await generateText({
+      model: gateway()(CHAT_MODEL),
+      output: Output.object({ schema: PlanSchema }),
+      system:
+        "You are a study coach. Build realistic, spaced revision schedules. day_offset is days from today (0 = today). Keep sessions between 25 and 90 minutes and spread topics using spaced repetition. Return 8-20 tasks.",
+      prompt: `Subjects/topics: ${data.subjects}\nExam or deadline: ${
+        data.examDate ?? "not specified"
+      }\nAvailable hours per week: ${data.hoursPerWeek}\nWeak areas: ${
+        data.weaknesses ?? "not specified"
+      }`,
     });
     return output;
   });

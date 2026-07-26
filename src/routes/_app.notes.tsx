@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { Bookmark, Download, FileText, Heart, Plus, Search } from "lucide-react";
+import { Bookmark, Download, FileText, Flag, Heart, Plus, Search } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -167,6 +167,16 @@ function NotesPage() {
     link.href = data.signedUrl;
     link.download = name;
     link.click();
+  }
+
+  async function reportNote(noteId: string) {
+    const reason = window.prompt("Why are you reporting this note?")?.trim();
+    if (!reason) return;
+    const { error } = await supabase
+      .from("note_reports")
+      .insert({ note_id: noteId, user_id: user!.id, reason: reason.slice(0, 500) });
+    if (error) toast.error(error.message);
+    else toast.success("Thanks — our moderators will review it.");
   }
 
   const term = query.trim().toLowerCase();
@@ -336,6 +346,15 @@ function NotesPage() {
                     <Download className="size-4" />
                   </Button>
                 )}
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  className={note.file_url ? "" : "ml-auto"}
+                  onClick={() => reportNote(note.id)}
+                  aria-label="Report note"
+                >
+                  <Flag className="size-4" />
+                </Button>
               </div>
             </article>
           ))}

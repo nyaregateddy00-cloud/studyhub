@@ -14,6 +14,47 @@ export type Database = {
   }
   public: {
     Tables: {
+      answers: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          is_accepted: boolean
+          question_id: string
+          updated_at: string
+          user_id: string
+          vote_count: number
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          is_accepted?: boolean
+          question_id: string
+          updated_at?: string
+          user_id: string
+          vote_count?: number
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          is_accepted?: boolean
+          question_id?: string
+          updated_at?: string
+          user_id?: string
+          vote_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "answers_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       flashcard_decks: {
         Row: {
           created_at: string
@@ -134,6 +175,41 @@ export type Database = {
           },
         ]
       }
+      note_reports: {
+        Row: {
+          created_at: string
+          id: string
+          note_id: string
+          reason: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          note_id: string
+          reason: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          note_id?: string
+          reason?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "note_reports_note_id_fkey"
+            columns: ["note_id"]
+            isOneToOne: false
+            referencedRelation: "notes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notes: {
         Row: {
           content: string | null
@@ -191,6 +267,63 @@ export type Database = {
         }
         Relationships: []
       }
+      notifications: {
+        Row: {
+          body: string | null
+          created_at: string
+          id: string
+          is_read: boolean
+          link: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          link?: string | null
+          title: string
+          type?: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          link?: string | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      post_votes: {
+        Row: {
+          created_at: string
+          post_id: string
+          post_type: string
+          user_id: string
+          value: number
+        }
+        Insert: {
+          created_at?: string
+          post_id: string
+          post_type: string
+          user_id: string
+          value?: number
+        }
+        Update: {
+          created_at?: string
+          post_id?: string
+          post_type?: string
+          user_id?: string
+          value?: number
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -236,6 +369,51 @@ export type Database = {
           updated_at?: string
           xp?: number
           year_of_study?: number | null
+        }
+        Relationships: []
+      }
+      questions: {
+        Row: {
+          answer_count: number
+          body: string
+          created_at: string
+          id: string
+          is_resolved: boolean
+          subject: string | null
+          tags: string[]
+          title: string
+          updated_at: string
+          user_id: string
+          view_count: number
+          vote_count: number
+        }
+        Insert: {
+          answer_count?: number
+          body: string
+          created_at?: string
+          id?: string
+          is_resolved?: boolean
+          subject?: string | null
+          tags?: string[]
+          title: string
+          updated_at?: string
+          user_id: string
+          view_count?: number
+          vote_count?: number
+        }
+        Update: {
+          answer_count?: number
+          body?: string
+          created_at?: string
+          id?: string
+          is_resolved?: boolean
+          subject?: string | null
+          tags?: string[]
+          title?: string
+          updated_at?: string
+          user_id?: string
+          view_count?: number
+          vote_count?: number
         }
         Relationships: []
       }
@@ -310,6 +488,42 @@ export type Database = {
         }
         Relationships: []
       }
+      study_goals: {
+        Row: {
+          created_at: string
+          id: string
+          progress_minutes: number
+          subject: string | null
+          target_date: string | null
+          target_minutes: number
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          progress_minutes?: number
+          subject?: string | null
+          target_date?: string | null
+          target_minutes?: number
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          progress_minutes?: number
+          subject?: string | null
+          target_date?: string | null
+          target_minutes?: number
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       study_sessions: {
         Row: {
           created_at: string
@@ -337,6 +551,72 @@ export type Database = {
         }
         Relationships: []
       }
+      study_tasks: {
+        Row: {
+          completed: boolean
+          completed_at: string | null
+          created_at: string
+          due_date: string | null
+          duration_minutes: number
+          id: string
+          notes: string | null
+          priority: string
+          subject: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          due_date?: string | null
+          duration_minutes?: number
+          id?: string
+          notes?: string | null
+          priority?: string
+          subject?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          due_date?: string | null
+          duration_minutes?: number
+          id?: string
+          notes?: string | null
+          priority?: string
+          subject?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_badges: {
+        Row: {
+          badge_key: string
+          earned_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          badge_key: string
+          earned_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          badge_key?: string
+          earned_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
@@ -357,7 +637,33 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      leaderboard: {
+        Row: {
+          avatar_url: string | null
+          display_name: string | null
+          id: string | null
+          level: number | null
+          streak_days: number | null
+          xp: number | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          display_name?: string | null
+          id?: string | null
+          level?: number | null
+          streak_days?: number | null
+          xp?: number | null
+        }
+        Update: {
+          avatar_url?: string | null
+          display_name?: string | null
+          id?: string | null
+          level?: number | null
+          streak_days?: number | null
+          xp?: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       has_role: {

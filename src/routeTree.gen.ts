@@ -15,11 +15,17 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
+import { Route as AppSettingsRouteImport } from './routes/_app.settings'
 import { Route as AppQuizzesRouteImport } from './routes/_app.quizzes'
+import { Route as AppProfileRouteImport } from './routes/_app.profile'
+import { Route as AppPlannerRouteImport } from './routes/_app.planner'
 import { Route as AppNotesRouteImport } from './routes/_app.notes'
 import { Route as AppFlashcardsRouteImport } from './routes/_app.flashcards'
 import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
+import { Route as AppCommunityRouteImport } from './routes/_app.community'
 import { Route as AppAssistantRouteImport } from './routes/_app.assistant'
+import { Route as AppAnalyticsRouteImport } from './routes/_app.analytics'
+import { Route as AppAdminRouteImport } from './routes/_app.admin'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -50,9 +56,24 @@ const ApiChatRoute = ApiChatRouteImport.update({
   path: '/api/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppSettingsRoute = AppSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppQuizzesRoute = AppQuizzesRouteImport.update({
   id: '/quizzes',
   path: '/quizzes',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppProfileRoute = AppProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPlannerRoute = AppPlannerRouteImport.update({
+  id: '/planner',
+  path: '/planner',
   getParentRoute: () => AppRoute,
 } as any)
 const AppNotesRoute = AppNotesRouteImport.update({
@@ -70,9 +91,24 @@ const AppDashboardRoute = AppDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AppRoute,
 } as any)
+const AppCommunityRoute = AppCommunityRouteImport.update({
+  id: '/community',
+  path: '/community',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppAssistantRoute = AppAssistantRouteImport.update({
   id: '/assistant',
   path: '/assistant',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAnalyticsRoute = AppAnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAdminRoute = AppAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => AppRoute,
 } as any)
 
@@ -81,11 +117,17 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/admin': typeof AppAdminRoute
+  '/analytics': typeof AppAnalyticsRoute
   '/assistant': typeof AppAssistantRoute
+  '/community': typeof AppCommunityRoute
   '/dashboard': typeof AppDashboardRoute
   '/flashcards': typeof AppFlashcardsRoute
   '/notes': typeof AppNotesRoute
+  '/planner': typeof AppPlannerRoute
+  '/profile': typeof AppProfileRoute
   '/quizzes': typeof AppQuizzesRoute
+  '/settings': typeof AppSettingsRoute
   '/api/chat': typeof ApiChatRoute
 }
 export interface FileRoutesByTo {
@@ -93,11 +135,17 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/admin': typeof AppAdminRoute
+  '/analytics': typeof AppAnalyticsRoute
   '/assistant': typeof AppAssistantRoute
+  '/community': typeof AppCommunityRoute
   '/dashboard': typeof AppDashboardRoute
   '/flashcards': typeof AppFlashcardsRoute
   '/notes': typeof AppNotesRoute
+  '/planner': typeof AppPlannerRoute
+  '/profile': typeof AppProfileRoute
   '/quizzes': typeof AppQuizzesRoute
+  '/settings': typeof AppSettingsRoute
   '/api/chat': typeof ApiChatRoute
 }
 export interface FileRoutesById {
@@ -107,11 +155,17 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/_app/admin': typeof AppAdminRoute
+  '/_app/analytics': typeof AppAnalyticsRoute
   '/_app/assistant': typeof AppAssistantRoute
+  '/_app/community': typeof AppCommunityRoute
   '/_app/dashboard': typeof AppDashboardRoute
   '/_app/flashcards': typeof AppFlashcardsRoute
   '/_app/notes': typeof AppNotesRoute
+  '/_app/planner': typeof AppPlannerRoute
+  '/_app/profile': typeof AppProfileRoute
   '/_app/quizzes': typeof AppQuizzesRoute
+  '/_app/settings': typeof AppSettingsRoute
   '/api/chat': typeof ApiChatRoute
 }
 export interface FileRouteTypes {
@@ -121,11 +175,17 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/sitemap.xml'
+    | '/admin'
+    | '/analytics'
     | '/assistant'
+    | '/community'
     | '/dashboard'
     | '/flashcards'
     | '/notes'
+    | '/planner'
+    | '/profile'
     | '/quizzes'
+    | '/settings'
     | '/api/chat'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -133,11 +193,17 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/sitemap.xml'
+    | '/admin'
+    | '/analytics'
     | '/assistant'
+    | '/community'
     | '/dashboard'
     | '/flashcards'
     | '/notes'
+    | '/planner'
+    | '/profile'
     | '/quizzes'
+    | '/settings'
     | '/api/chat'
   id:
     | '__root__'
@@ -146,11 +212,17 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/sitemap.xml'
+    | '/_app/admin'
+    | '/_app/analytics'
     | '/_app/assistant'
+    | '/_app/community'
     | '/_app/dashboard'
     | '/_app/flashcards'
     | '/_app/notes'
+    | '/_app/planner'
+    | '/_app/profile'
     | '/_app/quizzes'
+    | '/_app/settings'
     | '/api/chat'
   fileRoutesById: FileRoutesById
 }
@@ -207,11 +279,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiChatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/settings': {
+      id: '/_app/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AppSettingsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/quizzes': {
       id: '/_app/quizzes'
       path: '/quizzes'
       fullPath: '/quizzes'
       preLoaderRoute: typeof AppQuizzesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/profile': {
+      id: '/_app/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof AppProfileRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/planner': {
+      id: '/_app/planner'
+      path: '/planner'
+      fullPath: '/planner'
+      preLoaderRoute: typeof AppPlannerRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/notes': {
@@ -235,6 +328,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDashboardRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/community': {
+      id: '/_app/community'
+      path: '/community'
+      fullPath: '/community'
+      preLoaderRoute: typeof AppCommunityRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/assistant': {
       id: '/_app/assistant'
       path: '/assistant'
@@ -242,23 +342,49 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAssistantRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/analytics': {
+      id: '/_app/analytics'
+      path: '/analytics'
+      fullPath: '/analytics'
+      preLoaderRoute: typeof AppAnalyticsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/admin': {
+      id: '/_app/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AppAdminRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
 interface AppRouteChildren {
+  AppAdminRoute: typeof AppAdminRoute
+  AppAnalyticsRoute: typeof AppAnalyticsRoute
   AppAssistantRoute: typeof AppAssistantRoute
+  AppCommunityRoute: typeof AppCommunityRoute
   AppDashboardRoute: typeof AppDashboardRoute
   AppFlashcardsRoute: typeof AppFlashcardsRoute
   AppNotesRoute: typeof AppNotesRoute
+  AppPlannerRoute: typeof AppPlannerRoute
+  AppProfileRoute: typeof AppProfileRoute
   AppQuizzesRoute: typeof AppQuizzesRoute
+  AppSettingsRoute: typeof AppSettingsRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppAdminRoute: AppAdminRoute,
+  AppAnalyticsRoute: AppAnalyticsRoute,
   AppAssistantRoute: AppAssistantRoute,
+  AppCommunityRoute: AppCommunityRoute,
   AppDashboardRoute: AppDashboardRoute,
   AppFlashcardsRoute: AppFlashcardsRoute,
   AppNotesRoute: AppNotesRoute,
+  AppPlannerRoute: AppPlannerRoute,
+  AppProfileRoute: AppProfileRoute,
   AppQuizzesRoute: AppQuizzesRoute,
+  AppSettingsRoute: AppSettingsRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
