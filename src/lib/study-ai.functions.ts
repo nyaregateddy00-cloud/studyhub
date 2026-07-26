@@ -86,3 +86,20 @@ export const generateFlashcards = createServerFn({ method: "POST" })
     });
     return output;
   });
+
+export const generateRevisionPlan = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) => PlanInput.parse(input))
+  .handler(async ({ data }) => {
+    const { output } = await generateText({
+      model: gateway()(CHAT_MODEL),
+      output: Output.object({ schema: PlanSchema }),
+      system:
+        "You are a study coach. Build realistic, spaced revision schedules. day_offset is days from today (0 = today). Keep sessions between 25 and 90 minutes and spread topics using spaced repetition. Return 8-20 tasks.",
+      prompt: `Subjects/topics: ${data.subjects}\nExam or deadline: ${
+        data.examDate ?? "not specified"
+      }\nAvailable hours per week: ${data.hoursPerWeek}\nWeak areas: ${
+        data.weaknesses ?? "not specified"
+      }`,
+    });
+    return output;
+  });
