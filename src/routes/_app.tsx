@@ -21,6 +21,12 @@ import { useEffect } from "react";
 import { BrandLock } from "@/components/brand";
 import { NotificationBell } from "@/components/notification-bell";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth, useSignOut } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
@@ -74,8 +80,8 @@ function AppLayout() {
           <Link to="/dashboard">
             <BrandLock />
           </Link>
-          <nav className="hidden max-w-[52vw] items-center gap-0.5 overflow-x-auto md:flex">
-            {nav.map((item) => (
+          <nav className="hidden items-center gap-0.5 md:flex">
+            {nav.slice(0, 6).map((item) => (
               <Link
                 key={item.to}
                 to={item.to}
@@ -87,6 +93,23 @@ function AppLayout() {
                 {item.label}
               </Link>
             ))}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" aria-label="More sections">
+                  <MoreHorizontal className="size-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {nav.slice(6).map((item) => (
+                  <DropdownMenuItem key={item.to} asChild>
+                    <Link to={item.to}>
+                      <item.icon className="mr-2 size-4" />
+                      {item.label}
+                    </Link>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </nav>
           <div className="flex items-center gap-1">
             <NotificationBell />
