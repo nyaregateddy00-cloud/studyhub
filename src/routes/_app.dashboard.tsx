@@ -559,7 +559,9 @@ function Dashboard() {
           </div>
         </div>
 
-        <DashboardRightRail deadlines={data.tasks} />
+        <div className="hidden xl:block">
+          <DashboardRightRail deadlines={data.tasks} />
+        </div>
       </div>
     </div>
   );
