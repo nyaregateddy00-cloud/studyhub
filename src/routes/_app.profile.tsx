@@ -15,6 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import { getLeaderboard } from "@/lib/leaderboard.functions";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_app/profile")({
@@ -56,7 +57,7 @@ function ProfilePage() {
       const [profile, badges, leaderboard, notes, attempts, tasks, answers] = await Promise.all([
         supabase.from("profiles").select("*").eq("id", user!.id).maybeSingle(),
         supabase.from("user_badges").select("*").eq("user_id", user!.id),
-        supabase.from("leaderboard").select("*").order("xp", { ascending: false }).limit(20),
+        getLeaderboard(),
         supabase.from("notes").select("id", { count: "exact", head: true }).eq("user_id", user!.id),
         supabase.from("quiz_attempts").select("id", { count: "exact", head: true }),
         supabase.from("study_tasks").select("id", { count: "exact", head: true }).eq("completed", true),
@@ -65,7 +66,7 @@ function ProfilePage() {
       return {
         profile: profile.data,
         badges: badges.data ?? [],
-        leaderboard: leaderboard.data ?? [],
+        leaderboard,
         noteCount: notes.count ?? 0,
         attemptCount: attempts.count ?? 0,
         completedTasks: tasks.count ?? 0,
