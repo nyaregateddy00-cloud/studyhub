@@ -15,6 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import { getLeaderboard } from "@/lib/leaderboard.functions";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_app/profile")({
