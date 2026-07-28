@@ -15,6 +15,7 @@ import {
   Sun,
   User,
   Users,
+  UsersRound,
 } from "lucide-react";
 import { useEffect } from "react";
 
@@ -45,6 +46,7 @@ const nav = [
   { to: "/flashcards", label: "Flashcards", icon: Layers },
   { to: "/planner", label: "Planner", icon: CalendarDays },
   { to: "/community", label: "Community", icon: Users },
+  { to: "/groups", label: "Groups", icon: UsersRound },
   { to: "/analytics", label: "Analytics", icon: BarChart3 },
   { to: "/profile", label: "Profile", icon: User },
   { to: "/settings", label: "Settings", icon: SettingsIcon },

@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Bot, CalendarDays, Layers, ListChecks, Upload, Users } from "lucide-react";
+import { Bot, CalendarDays, Layers, ListChecks, Upload, Users, UsersRound } from "lucide-react";
 
 const actions = [
   { to: "/notes", label: "Upload Notes", icon: Upload },
@@ -8,6 +8,7 @@ const actions = [
   { to: "/planner", label: "Study Planner", icon: CalendarDays },
   { to: "/flashcards", label: "Flashcards", icon: Layers },
   { to: "/community", label: "Community", icon: Users },
+  { to: "/groups", label: "Study Groups", icon: UsersRound },
 ] as const;
 
 export function QuickActions() {
