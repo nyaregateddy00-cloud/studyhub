@@ -8,13 +8,14 @@ import {
   Layers,
   LineChart,
   ListChecks,
+  PanelRightOpen,
   Quote,
   Sparkles,
   Target,
   Trophy,
   Zap,
 } from "lucide-react";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 import { QuizPerformanceChart, WeeklyHoursChart } from "@/components/dashboard/charts";
 import { DashboardSkeleton } from "@/components/dashboard/dashboard-skeleton";
@@ -31,6 +32,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 
@@ -58,6 +61,8 @@ function relativeDate(value: string) {
 
 function Dashboard() {
   const { user } = useAuth();
+  const [hoursRange, setHoursRange] = useState<"7" | "14">("7");
+  const [quizRange, setQuizRange] = useState<"5" | "8">("5");
 
   const { data, isLoading } = useQuery({
     queryKey: ["dashboard", user?.id],
@@ -133,21 +138,30 @@ function Dashboard() {
   const derived = useMemo(() => {
     if (!data) return null;
 
-    const weekly = Array.from({ length: 7 }, (_, index) => {
-      const date = new Date(Date.now() - (6 - index) * 86_400_000);
+    const days = Number(hoursRange);
+    const weekly = Array.from({ length: days }, (_, index) => {
+      const date = new Date(Date.now() - (days - 1 - index) * 86_400_000);
       const key = date.toISOString().slice(0, 10);
       const minutes = data.sessions
         .filter((session) => session.studied_on === key)
         .reduce((sum, session) => sum + (session.minutes ?? 0), 0);
-      return { day: dayLabels[date.getDay()], hours: Math.round((minutes / 60) * 10) / 10 };
+      return {
+        day: dayLabels[date.getDay()],
+        hours: Math.round((minutes / 60) * 10) / 10,
+        caption: date.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" }),
+      };
     });
 
     const quizSeries = [...data.attempts]
       .reverse()
-      .slice(-7)
+      .slice(-Number(quizRange))
       .map((attempt, index) => ({
         label: `#${index + 1}`,
         score: Math.round((attempt.score / Math.max(attempt.total, 1)) * 100),
+        caption: `Attempt ${index + 1} · ${new Date(attempt.created_at).toLocaleDateString(undefined, {
+          month: "short",
+          day: "numeric",
+        })}`,
       }));
 
     const subjectTotals = new Map<string, number>();
@@ -177,7 +191,7 @@ function Dashboard() {
     ).length;
 
     return { weekly, quizSeries, subjects, weekMinutes, avgScore, dueCards };
-  }, [data]);
+  }, [data, hoursRange, quizRange]);
 
   if (isLoading || !data || !derived) return <DashboardSkeleton />;
 
@@ -216,15 +230,33 @@ function Dashboard() {
               </p>
             </div>
           </div>
-          <Badge variant="secondary" className="shrink-0 gap-1">
-            <Zap className="size-3 text-warning" /> Level {level}
-          </Badge>
+          <div className="flex shrink-0 items-center gap-2">
+            <Badge variant="secondary" className="gap-1">
+              <Zap className="size-3 text-warning" /> Level {level}
+            </Badge>
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="outline" size="icon-sm" className="xl:hidden" aria-label="Open highlights">
+                  <PanelRightOpen className="size-4" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-[92vw] max-w-sm overflow-y-auto p-4">
+                <SheetHeader className="p-0 pb-3">
+                  <SheetTitle>Highlights</SheetTitle>
+                </SheetHeader>
+                <DashboardRightRail deadlines={data.tasks} />
+              </SheetContent>
+            </Sheet>
+          </div>
         </div>
         <div className="mt-4 flex items-start gap-2 rounded-xl bg-secondary/60 p-3">
           <Quote className="mt-0.5 size-4 shrink-0 text-primary" />
-          <p className="text-sm italic text-muted-foreground">
-            “{quote.text}” — {quote.author}
-          </p>
+          <div className="min-w-0">
+            <p className="text-sm italic text-muted-foreground">
+              “{quote.text}” — {quote.author}
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground/80">Quote for {quote.dateLabel}</p>
+          </div>
         </div>
       </DashboardCard>
 
@@ -299,13 +331,43 @@ function Dashboard() {
 
           <div className="grid gap-4 lg:grid-cols-2">
             <DashboardCard>
-              <SectionHeader title="Weekly study hours" icon={LineChart} />
+              <SectionHeader
+                title="Study hours"
+                icon={LineChart}
+                action={
+                  <ToggleGroup
+                    type="single"
+                    size="sm"
+                    value={hoursRange}
+                    onValueChange={(value) => value && setHoursRange(value as "7" | "14")}
+                    variant="outline"
+                  >
+                    <ToggleGroupItem value="7" aria-label="Last 7 days">7d</ToggleGroupItem>
+                    <ToggleGroupItem value="14" aria-label="Last 14 days">14d</ToggleGroupItem>
+                  </ToggleGroup>
+                }
+              />
               <div className="mt-4">
                 <WeeklyHoursChart data={derived.weekly} />
               </div>
             </DashboardCard>
             <DashboardCard>
-              <SectionHeader title="Quiz performance" icon={BarChart3} />
+              <SectionHeader
+                title="Quiz performance"
+                icon={BarChart3}
+                action={
+                  <ToggleGroup
+                    type="single"
+                    size="sm"
+                    value={quizRange}
+                    onValueChange={(value) => value && setQuizRange(value as "5" | "8")}
+                    variant="outline"
+                  >
+                    <ToggleGroupItem value="5" aria-label="Last 5 attempts">5</ToggleGroupItem>
+                    <ToggleGroupItem value="8" aria-label="Last 8 attempts">8</ToggleGroupItem>
+                  </ToggleGroup>
+                }
+              />
               <div className="mt-4">
                 {derived.quizSeries.length === 0 ? (
                   <EmptyState
@@ -497,7 +559,9 @@ function Dashboard() {
           </div>
         </div>
 
-        <DashboardRightRail deadlines={data.tasks} />
+        <div className="hidden xl:block">
+          <DashboardRightRail deadlines={data.tasks} />
+        </div>
       </div>
     </div>
   );

@@ -13,9 +13,20 @@ export const dailyQuotes = [
   { text: "Rest is part of the revision plan, not a break from it.", author: "StudyHub" },
 ];
 
-export function quoteOfTheDay() {
-  const dayIndex = Math.floor(Date.now() / 86_400_000);
-  return dailyQuotes[dayIndex % dailyQuotes.length];
+/** Deterministic per calendar date (local time), so it changes once a day. */
+export function quoteOfTheDay(date: Date = new Date()) {
+  const key = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+  let hash = 0;
+  for (const char of key) hash = (hash * 31 + char.charCodeAt(0)) % 100_000;
+  const quote = dailyQuotes[hash % dailyQuotes.length];
+  return {
+    ...quote,
+    dateLabel: date.toLocaleDateString(undefined, {
+      weekday: "long",
+      month: "short",
+      day: "numeric",
+    }),
+  };
 }
 
 export const announcements = [
