@@ -8,13 +8,14 @@ import {
   Layers,
   LineChart,
   ListChecks,
+  PanelRightOpen,
   Quote,
   Sparkles,
   Target,
   Trophy,
   Zap,
 } from "lucide-react";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 import { QuizPerformanceChart, WeeklyHoursChart } from "@/components/dashboard/charts";
 import { DashboardSkeleton } from "@/components/dashboard/dashboard-skeleton";
@@ -31,6 +32,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 
@@ -58,6 +61,8 @@ function relativeDate(value: string) {
 
 function Dashboard() {
   const { user } = useAuth();
+  const [hoursRange, setHoursRange] = useState<"7" | "14">("7");
+  const [quizRange, setQuizRange] = useState<"5" | "8">("5");
 
   const { data, isLoading } = useQuery({
     queryKey: ["dashboard", user?.id],
@@ -133,21 +138,30 @@ function Dashboard() {
   const derived = useMemo(() => {
     if (!data) return null;
 
-    const weekly = Array.from({ length: 7 }, (_, index) => {
-      const date = new Date(Date.now() - (6 - index) * 86_400_000);
+    const days = Number(hoursRange);
+    const weekly = Array.from({ length: days }, (_, index) => {
+      const date = new Date(Date.now() - (days - 1 - index) * 86_400_000);
       const key = date.toISOString().slice(0, 10);
       const minutes = data.sessions
         .filter((session) => session.studied_on === key)
         .reduce((sum, session) => sum + (session.minutes ?? 0), 0);
-      return { day: dayLabels[date.getDay()], hours: Math.round((minutes / 60) * 10) / 10 };
+      return {
+        day: dayLabels[date.getDay()],
+        hours: Math.round((minutes / 60) * 10) / 10,
+        caption: date.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" }),
+      };
     });
 
     const quizSeries = [...data.attempts]
       .reverse()
-      .slice(-7)
+      .slice(-Number(quizRange))
       .map((attempt, index) => ({
         label: `#${index + 1}`,
         score: Math.round((attempt.score / Math.max(attempt.total, 1)) * 100),
+        caption: `Attempt ${index + 1} · ${new Date(attempt.created_at).toLocaleDateString(undefined, {
+          month: "short",
+          day: "numeric",
+        })}`,
       }));
 
     const subjectTotals = new Map<string, number>();
@@ -177,7 +191,7 @@ function Dashboard() {
     ).length;
 
     return { weekly, quizSeries, subjects, weekMinutes, avgScore, dueCards };
-  }, [data]);
+  }, [data, hoursRange, quizRange]);
 
   if (isLoading || !data || !derived) return <DashboardSkeleton />;
 
