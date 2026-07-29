@@ -272,23 +272,9 @@ function Analytics() {
       <div className="surface-card p-6">
         <h2 className="text-lg font-semibold">Study minutes — this period vs previous</h2>
         <div className="mt-4 h-72">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={view.series}>
-              <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-              <XAxis dataKey="date" fontSize={11} />
-              <YAxis fontSize={11} />
-              <Tooltip />
-              <Line type="monotone" dataKey="current" stroke="var(--color-primary)" strokeWidth={2} dot={false} />
-              <Line
-                type="monotone"
-                dataKey="previous"
-                stroke="var(--color-muted-foreground)"
-                strokeDasharray="4 4"
-                strokeWidth={2}
-                dot={false}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+          <Suspense fallback={<Skeleton className="h-full w-full" />}>
+            <MinutesTrendChart data={view.series} />
+          </Suspense>
         </div>
       </div>
 
@@ -296,29 +282,17 @@ function Analytics() {
         <div className="surface-card p-6">
           <h2 className="text-lg font-semibold">Minutes by subject</h2>
           <div className="mt-4 h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={view.bySubject}>
-                <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-                <XAxis dataKey="subject" fontSize={11} />
-                <YAxis fontSize={11} />
-                <Tooltip />
-                <Bar dataKey="minutes" fill="var(--color-accent)" radius={6} />
-              </BarChart>
-            </ResponsiveContainer>
+            <Suspense fallback={<Skeleton className="h-full w-full" />}>
+              <SubjectMinutesChart data={view.bySubject} />
+            </Suspense>
           </div>
         </div>
         <div className="surface-card p-6">
           <h2 className="text-lg font-semibold">Quiz accuracy over time</h2>
           <div className="mt-4 h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={view.scored}>
-                <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-                <XAxis dataKey="date" fontSize={11} />
-                <YAxis domain={[0, 100]} fontSize={11} />
-                <Tooltip />
-                <Line type="monotone" dataKey="score" stroke="var(--color-primary)" strokeWidth={2} />
-              </LineChart>
-            </ResponsiveContainer>
+            <Suspense fallback={<Skeleton className="h-full w-full" />}>
+              <QuizAccuracyChart data={view.scored} />
+            </Suspense>
           </div>
         </div>
       </div>
