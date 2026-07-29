@@ -347,16 +347,22 @@ function NotesPage() {
                   variant="ghost"
                   size="sm"
                   onClick={() => toggleLike.mutate(note.id)}
-                  aria-label="Like note"
+                  aria-label={likesQuery.data?.has(note.id) ? "Unlike note" : "Like note"}
+                  aria-pressed={likesQuery.data?.has(note.id) ?? false}
                 >
-                  <Heart className="size-4" />
+                  <Heart
+                    className={
+                      likesQuery.data?.has(note.id) ? "size-4 fill-primary text-primary" : "size-4"
+                    }
+                  />
                   {note.like_count}
                 </Button>
                 <Button
                   variant="ghost"
                   size="icon-sm"
                   onClick={() => toggleBookmark.mutate(note.id)}
-                  aria-label="Bookmark note"
+                  aria-label={bookmarksQuery.data?.has(note.id) ? "Remove bookmark" : "Bookmark note"}
+                  aria-pressed={bookmarksQuery.data?.has(note.id) ?? false}
                 >
                   <Bookmark
                     className={
@@ -379,7 +385,10 @@ function NotesPage() {
                   variant="ghost"
                   size="icon-sm"
                   className={note.file_url ? "" : "ml-auto"}
-                  onClick={() => reportNote(note.id)}
+                  onClick={() => {
+                    setReportReason("");
+                    setReportNoteId(note.id);
+                  }}
                   aria-label="Report note"
                 >
                   <Flag className="size-4" />
@@ -389,6 +398,42 @@ function NotesPage() {
           ))}
         </div>
       )}
+
+      <Dialog
+        open={reportNoteId !== null}
+        onOpenChange={(next) => {
+          if (!next) setReportNoteId(null);
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Report this note</DialogTitle>
+          </DialogHeader>
+          <form
+            className="space-y-4"
+            onSubmit={(event) => {
+              event.preventDefault();
+              submitReport.mutate();
+            }}
+          >
+            <div className="space-y-1.5">
+              <Label htmlFor="report-reason">What&apos;s wrong with it?</Label>
+              <Textarea
+                id="report-reason"
+                rows={4}
+                required
+                maxLength={500}
+                value={reportReason}
+                placeholder="Copyright issue, wrong subject, offensive content…"
+                onChange={(event) => setReportReason(event.target.value)}
+              />
+            </div>
+            <Button type="submit" className="w-full" disabled={submitReport.isPending}>
+              {submitReport.isPending ? "Sending…" : "Send report"}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
