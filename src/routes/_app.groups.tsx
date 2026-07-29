@@ -419,17 +419,16 @@ function GroupRoom({
   const { data, isLoading } = useQuery({
     queryKey: ["study-group-room", group.id],
     enabled: isMember,
-    refetchInterval: 15000,
     queryFn: async () => {
       const [members, messages] = await Promise.all([
         supabase
           .from("study_group_members")
-          .select("*")
+          .select("id,group_id,user_id,role,display_name,joined_at")
           .eq("group_id", group.id)
           .order("joined_at", { ascending: true }),
         supabase
           .from("study_group_messages")
-          .select("*")
+          .select("id,group_id,user_id,display_name,body,created_at")
           .eq("group_id", group.id)
           .order("created_at", { ascending: true })
           .limit(200),
@@ -439,6 +438,37 @@ function GroupRoom({
       return { members: members.data ?? [], messages: messages.data ?? [] };
     },
   });
+
+  // Live chat: realtime replaces the previous 15s poll for every member.
+  useEffect(() => {
+    if (!isMember) return;
+    const channel = supabase
+      .channel(`group-room:${group.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "study_group_messages",
+          filter: `group_id=eq.${group.id}`,
+        },
+        () => queryClient.invalidateQueries({ queryKey: ["study-group-room", group.id] }),
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "study_group_members",
+          filter: `group_id=eq.${group.id}`,
+        },
+        () => queryClient.invalidateQueries({ queryKey: ["study-group-room", group.id] }),
+      )
+      .subscribe();
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [group.id, isMember, queryClient]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
