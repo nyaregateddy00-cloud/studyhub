@@ -134,21 +134,25 @@ function NotesPage() {
 
   const toggleLike = useMutation({
     mutationFn: async (noteId: string) => {
-      const { error } = await supabase
-        .from("note_likes")
-        .insert({ note_id: noteId, user_id: user!.id });
-      if (error && error.code === "23505") {
-        const { error: delError } = await supabase
+      if (likesQuery.data?.has(noteId)) {
+        const { error } = await supabase
           .from("note_likes")
           .delete()
           .eq("note_id", noteId)
           .eq("user_id", user!.id);
-        if (delError) throw delError;
+        if (error) throw error;
         return;
       }
-      if (error) throw error;
+      const { error } = await supabase
+        .from("note_likes")
+        .insert({ note_id: noteId, user_id: user!.id });
+      // A duplicate means another tab already liked it — treat as success.
+      if (error && error.code !== "23505") throw error;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["notes"] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["notes"] });
+      queryClient.invalidateQueries({ queryKey: ["note-likes"] });
+    },
     onError: () => toast.error("Could not update the like."),
   });
 
@@ -184,15 +188,23 @@ function NotesPage() {
     link.click();
   }
 
-  async function reportNote(noteId: string) {
-    const reason = window.prompt("Why are you reporting this note?")?.trim();
-    if (!reason) return;
-    const { error } = await supabase
-      .from("note_reports")
-      .insert({ note_id: noteId, user_id: user!.id, reason: reason.slice(0, 500) });
-    if (error) toast.error(error.message);
-    else toast.success("Thanks — our moderators will review it.");
-  }
+  const submitReport = useMutation({
+    mutationFn: async () => {
+      const reason = reportReason.trim();
+      if (!reportNoteId || !reason) throw new Error("Please describe the problem.");
+      const { error } = await supabase
+        .from("note_reports")
+        .insert({ note_id: reportNoteId, user_id: user!.id, reason: reason.slice(0, 500) });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Thanks — our moderators will review it.");
+      setReportNoteId(null);
+      setReportReason("");
+    },
+    onError: (error) =>
+      toast.error(error instanceof Error ? error.message : "Could not send the report."),
+  });
 
   const term = query.trim().toLowerCase();
   const notes = (notesQuery.data ?? []).filter((note) =>
