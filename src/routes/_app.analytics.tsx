@@ -1,18 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { Download, FileJson, TrendingDown, TrendingUp } from "lucide-react";
-import { useMemo, useState } from "react";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+import { Suspense, lazy, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -26,6 +15,18 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+
+const MinutesTrendChart = lazy(() =>
+  import("@/components/analytics/analytics-charts").then((m) => ({ default: m.MinutesTrendChart })),
+);
+const SubjectMinutesChart = lazy(() =>
+  import("@/components/analytics/analytics-charts").then((m) => ({
+    default: m.SubjectMinutesChart,
+  })),
+);
+const QuizAccuracyChart = lazy(() =>
+  import("@/components/analytics/analytics-charts").then((m) => ({ default: m.QuizAccuracyChart })),
+);
 
 export const Route = createFileRoute("/_app/analytics")({
   head: () => ({
@@ -57,11 +58,11 @@ function Analytics() {
     enabled: Boolean(user?.id),
     queryFn: async () => {
       const [sessions, attempts, notes, tasks, profile] = await Promise.all([
-        supabase.from("study_sessions").select("*").order("studied_on", { ascending: true }),
-        supabase.from("quiz_attempts").select("*").order("created_at", { ascending: true }),
+        supabase.from("study_sessions").select("id,subject,minutes,studied_on").order("studied_on", { ascending: true }),
+        supabase.from("quiz_attempts").select("id,quiz_id,score,total,seconds_taken,created_at").order("created_at", { ascending: true }),
         supabase.from("notes").select("id,title,course,created_at").eq("user_id", user!.id),
-        supabase.from("study_tasks").select("*"),
-        supabase.from("profiles").select("*").eq("id", user!.id).maybeSingle(),
+        supabase.from("study_tasks").select("id,title,subject,due_date,duration_minutes,priority,completed,created_at"),
+        supabase.from("profiles").select("display_name,xp,level,streak_days").eq("id", user!.id).maybeSingle(),
       ]);
       return {
         sessions: sessions.data ?? [],
@@ -271,23 +272,9 @@ function Analytics() {
       <div className="surface-card p-6">
         <h2 className="text-lg font-semibold">Study minutes — this period vs previous</h2>
         <div className="mt-4 h-72">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={view.series}>
-              <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-              <XAxis dataKey="date" fontSize={11} />
-              <YAxis fontSize={11} />
-              <Tooltip />
-              <Line type="monotone" dataKey="current" stroke="var(--color-primary)" strokeWidth={2} dot={false} />
-              <Line
-                type="monotone"
-                dataKey="previous"
-                stroke="var(--color-muted-foreground)"
-                strokeDasharray="4 4"
-                strokeWidth={2}
-                dot={false}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+          <Suspense fallback={<Skeleton className="h-full w-full" />}>
+            <MinutesTrendChart data={view.series} />
+          </Suspense>
         </div>
       </div>
 
@@ -295,29 +282,17 @@ function Analytics() {
         <div className="surface-card p-6">
           <h2 className="text-lg font-semibold">Minutes by subject</h2>
           <div className="mt-4 h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={view.bySubject}>
-                <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-                <XAxis dataKey="subject" fontSize={11} />
-                <YAxis fontSize={11} />
-                <Tooltip />
-                <Bar dataKey="minutes" fill="var(--color-accent)" radius={6} />
-              </BarChart>
-            </ResponsiveContainer>
+            <Suspense fallback={<Skeleton className="h-full w-full" />}>
+              <SubjectMinutesChart data={view.bySubject} />
+            </Suspense>
           </div>
         </div>
         <div className="surface-card p-6">
           <h2 className="text-lg font-semibold">Quiz accuracy over time</h2>
           <div className="mt-4 h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={view.scored}>
-                <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-                <XAxis dataKey="date" fontSize={11} />
-                <YAxis domain={[0, 100]} fontSize={11} />
-                <Tooltip />
-                <Line type="monotone" dataKey="score" stroke="var(--color-primary)" strokeWidth={2} />
-              </LineChart>
-            </ResponsiveContainer>
+            <Suspense fallback={<Skeleton className="h-full w-full" />}>
+              <QuizAccuracyChart data={view.scored} />
+            </Suspense>
           </div>
         </div>
       </div>

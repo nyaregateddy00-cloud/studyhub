@@ -18,15 +18,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let active = true;
+    let resolvedInitial = false;
+
+    // Subscribe first so no auth event is missed, but do not resolve the
+    // initial loading state until getSession() has answered — otherwise an
+    // early INITIAL_SESSION(null) can flash signed-out UI at a signed-in user.
     const { data } = supabase.auth.onAuthStateChange((_event, next) => {
+      if (!active) return;
       setSession(next);
-      setLoading(false);
+      if (resolvedInitial) setLoading(false);
     });
+
     supabase.auth.getSession().then(({ data: current }) => {
-      setSession(current.session);
+      if (!active) return;
+      resolvedInitial = true;
+      setSession((existing) => existing ?? current.session);
       setLoading(false);
     });
-    return () => data.subscription.unsubscribe();
+
+    return () => {
+      active = false;
+      data.subscription.unsubscribe();
+    };
   }, []);
 
   return (

@@ -81,10 +81,10 @@ function Planner() {
       const [tasks, goals] = await Promise.all([
         supabase
           .from("study_tasks")
-          .select("*")
+          .select("id,title,subject,notes,due_date,duration_minutes,priority,completed,completed_at,created_at")
           .order("due_date", { ascending: true })
           .order("created_at", { ascending: false }),
-        supabase.from("study_goals").select("*").order("created_at", { ascending: false }),
+        supabase.from("study_goals").select("id,title,subject,target_minutes,progress_minutes,target_date,created_at").order("created_at", { ascending: false }),
       ]);
       if (tasks.error) throw tasks.error;
       if (goals.error) throw goals.error;
