@@ -78,7 +78,9 @@ function Groups() {
     queryFn: async () => {
       let query = supabase
         .from("study_groups")
-        .select("*")
+        .select(
+          "id,owner_id,name,description,subject,institution,is_public,join_code,member_count,created_at",
+        )
         .order("member_count", { ascending: false })
         .limit(60);
       if (search.trim()) query = query.ilike("name", `%${search.trim()}%`);
