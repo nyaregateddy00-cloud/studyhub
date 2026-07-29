@@ -1,18 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { Download, FileJson, TrendingDown, TrendingUp } from "lucide-react";
-import { useMemo, useState } from "react";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+import { Suspense, lazy, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -26,6 +15,18 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+
+const MinutesTrendChart = lazy(() =>
+  import("@/components/analytics/analytics-charts").then((m) => ({ default: m.MinutesTrendChart })),
+);
+const SubjectMinutesChart = lazy(() =>
+  import("@/components/analytics/analytics-charts").then((m) => ({
+    default: m.SubjectMinutesChart,
+  })),
+);
+const QuizAccuracyChart = lazy(() =>
+  import("@/components/analytics/analytics-charts").then((m) => ({ default: m.QuizAccuracyChart })),
+);
 
 export const Route = createFileRoute("/_app/analytics")({
   head: () => ({
