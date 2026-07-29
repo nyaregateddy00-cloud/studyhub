@@ -58,11 +58,11 @@ function Analytics() {
     enabled: Boolean(user?.id),
     queryFn: async () => {
       const [sessions, attempts, notes, tasks, profile] = await Promise.all([
-        supabase.from("study_sessions").select("*").order("studied_on", { ascending: true }),
-        supabase.from("quiz_attempts").select("*").order("created_at", { ascending: true }),
+        supabase.from("study_sessions").select("id,subject,minutes,studied_on").order("studied_on", { ascending: true }),
+        supabase.from("quiz_attempts").select("id,quiz_id,score,total,seconds_taken,created_at").order("created_at", { ascending: true }),
         supabase.from("notes").select("id,title,course,created_at").eq("user_id", user!.id),
-        supabase.from("study_tasks").select("*"),
-        supabase.from("profiles").select("*").eq("id", user!.id).maybeSingle(),
+        supabase.from("study_tasks").select("id,title,subject,due_date,duration_minutes,priority,completed,created_at"),
+        supabase.from("profiles").select("display_name,xp,level,streak_days").eq("id", user!.id).maybeSingle(),
       ]);
       return {
         sessions: sessions.data ?? [],

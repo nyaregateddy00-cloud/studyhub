@@ -55,8 +55,8 @@ function ProfilePage() {
     enabled: Boolean(user?.id),
     queryFn: async () => {
       const [profile, badges, leaderboard, notes, attempts, tasks, answers] = await Promise.all([
-        supabase.from("profiles").select("*").eq("id", user!.id).maybeSingle(),
-        supabase.from("user_badges").select("*").eq("user_id", user!.id),
+        supabase.from("profiles").select("id,display_name,avatar_url,bio,institution,course,year_of_study,xp,level,streak_days").eq("id", user!.id).maybeSingle(),
+        supabase.from("user_badges").select("id,badge_key,earned_at").eq("user_id", user!.id),
         getLeaderboard(),
         supabase.from("notes").select("id", { count: "exact", head: true }).eq("user_id", user!.id),
         supabase.from("quiz_attempts").select("id", { count: "exact", head: true }),

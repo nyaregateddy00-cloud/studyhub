@@ -44,7 +44,7 @@ function Admin() {
     enabled: isStaff,
     queryFn: async () => {
       const [reports, questions] = await Promise.all([
-        supabase.from("note_reports").select("*").order("created_at", { ascending: false }),
+        supabase.from("note_reports").select("id,note_id,user_id,reason,status,created_at").order("created_at", { ascending: false }),
         supabase
           .from("questions")
           .select("id,title,created_at")

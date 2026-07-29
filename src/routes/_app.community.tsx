@@ -56,7 +56,7 @@ function Community() {
     queryFn: async () => {
       let query = supabase
         .from("questions")
-        .select("*")
+        .select("id,user_id,title,body,subject,tags,is_resolved,view_count,vote_count,answer_count,created_at")
         .order("created_at", { ascending: false })
         .limit(50);
       if (search.trim()) query = query.ilike("title", `%${search.trim()}%`);
@@ -287,7 +287,7 @@ function AnswerThread({
     queryFn: async () => {
       const { data: answers, error } = await supabase
         .from("answers")
-        .select("*")
+        .select("id,question_id,user_id,body,is_accepted,vote_count,created_at")
         .eq("question_id", questionId)
         .order("is_accepted", { ascending: false })
         .order("vote_count", { ascending: false });

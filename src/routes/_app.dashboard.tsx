@@ -71,7 +71,7 @@ function Dashboard() {
       const since = new Date(Date.now() - 13 * 86_400_000).toISOString().slice(0, 10);
       const [profile, notes, quizzes, quizCount, attempts, decks, deckCount, cards, sessions, tasks] =
         await Promise.all([
-        supabase.from("profiles").select("*").eq("id", user!.id).maybeSingle(),
+        supabase.from("profiles").select("id,display_name,avatar_url,institution,course,xp,level,streak_days").eq("id", user!.id).maybeSingle(),
         supabase
           .from("notes")
           .select("id,title,course,created_at")
