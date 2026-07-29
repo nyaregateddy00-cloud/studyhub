@@ -65,7 +65,9 @@ function NotesPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("notes")
-        .select("*")
+        .select(
+          "id,user_id,title,content,institution,course,unit,topic,file_url,file_name,file_type,is_public,like_count,created_at",
+        )
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data;
@@ -77,6 +79,19 @@ function NotesPage() {
     enabled: Boolean(user?.id),
     queryFn: async () => {
       const { data, error } = await supabase.from("note_bookmarks").select("note_id");
+      if (error) throw error;
+      return new Set((data ?? []).map((row) => row.note_id));
+    },
+  });
+
+  const likesQuery = useQuery({
+    queryKey: ["note-likes", user?.id],
+    enabled: Boolean(user?.id),
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("note_likes")
+        .select("note_id")
+        .eq("user_id", user!.id);
       if (error) throw error;
       return new Set((data ?? []).map((row) => row.note_id));
     },
