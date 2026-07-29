@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
@@ -13,17 +14,39 @@ export type AppNotification = {
   created_at: string;
 };
 
+const NOTIFICATION_COLUMNS = "id,title,body,type,link,is_read,created_at";
+
 export function useNotifications() {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  // Realtime replaces aggressive polling; the interval below is only a
+  // low-frequency safety net and pauses whenever the tab is hidden.
+  useEffect(() => {
+    if (!user?.id) return;
+    const channel = supabase
+      .channel(`notifications:${user.id}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` },
+        () => queryClient.invalidateQueries({ queryKey: ["notifications", user.id] }),
+      )
+      .subscribe();
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [user?.id, queryClient]);
 
   return useQuery({
     queryKey: ["notifications", user?.id],
     enabled: Boolean(user?.id),
-    refetchInterval: 30000,
+    staleTime: 15_000,
+    refetchInterval: 120_000,
+    refetchIntervalInBackground: false,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("notifications")
-        .select("*")
+        .select(NOTIFICATION_COLUMNS)
         .order("created_at", { ascending: false })
         .limit(30);
       if (error) throw error;
