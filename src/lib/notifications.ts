@@ -71,6 +71,11 @@ export function useMarkNotificationsRead() {
   });
 }
 
+/**
+ * Inserts a notification for the signed-in user. Cross-user notifications are
+ * created by database triggers (e.g. new answers) because RLS on
+ * `notifications` intentionally scopes inserts to `auth.uid()`.
+ */
 export async function pushNotification(input: {
   userId: string;
   title: string;
@@ -78,6 +83,8 @@ export async function pushNotification(input: {
   type?: string;
   link?: string;
 }) {
+  const { data: auth } = await supabase.auth.getUser();
+  if (!auth.user || auth.user.id !== input.userId) return;
   await supabase.from("notifications").insert({
     user_id: input.userId,
     title: input.title,
