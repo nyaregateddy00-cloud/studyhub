@@ -58,6 +58,8 @@ function NotesPage() {
     isPublic: false,
   });
   const [file, setFile] = useState<File | null>(null);
+  const [reportNoteId, setReportNoteId] = useState<string | null>(null);
+  const [reportReason, setReportReason] = useState("");
 
   const notesQuery = useQuery({
     queryKey: ["notes", user?.id],
