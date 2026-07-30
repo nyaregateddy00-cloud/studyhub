@@ -102,7 +102,7 @@ export function GlobalSearch({ className }: { className?: string }) {
         </kbd>
       </button>
 
-      <CommandDialog open={open} onOpenChange={setOpen} shouldFilter={false}>
+      <CommandDialog open={open} onOpenChange={setOpen}>
         <CommandInput
           value={term}
           onValueChange={setTerm}
@@ -113,19 +113,17 @@ export function GlobalSearch({ className }: { className?: string }) {
             {results.isFetching ? "Searching…" : "No matches found."}
           </CommandEmpty>
           <CommandGroup heading="Pages">
-            {pages
-              .filter((page) => page.label.toLowerCase().includes(term.trim().toLowerCase()))
-              .map((page) => (
-                <CommandItem key={page.to} value={page.to} onSelect={() => go(page.to)}>
-                  <page.icon className="mr-2 size-4" />
-                  {page.label}
-                </CommandItem>
-              ))}
+            {pages.map((page) => (
+              <CommandItem key={page.to} value={page.label} onSelect={() => go(page.to)}>
+                <page.icon className="mr-2 size-4" />
+                {page.label}
+              </CommandItem>
+            ))}
           </CommandGroup>
           {(results.data?.notes.length ?? 0) > 0 && (
             <CommandGroup heading="Notes">
               {results.data!.notes.map((note) => (
-                <CommandItem key={note.id} value={`note-${note.id}`} onSelect={() => go("/notes")}>
+                <CommandItem key={note.id} value={`Note ${note.title}`} onSelect={() => go("/notes")}>
                   <BookOpen className="mr-2 size-4" />
                   {note.title}
                 </CommandItem>
@@ -135,7 +133,7 @@ export function GlobalSearch({ className }: { className?: string }) {
           {(results.data?.quizzes.length ?? 0) > 0 && (
             <CommandGroup heading="Quizzes">
               {results.data!.quizzes.map((quiz) => (
-                <CommandItem key={quiz.id} value={`quiz-${quiz.id}`} onSelect={() => go("/quizzes")}>
+                <CommandItem key={quiz.id} value={`Quiz ${quiz.title}`} onSelect={() => go("/quizzes")}>
                   <ListChecks className="mr-2 size-4" />
                   {quiz.title}
                 </CommandItem>
@@ -147,7 +145,7 @@ export function GlobalSearch({ className }: { className?: string }) {
               {results.data!.decks.map((deck) => (
                 <CommandItem
                   key={deck.id}
-                  value={`deck-${deck.id}`}
+                  value={`Deck ${deck.title}`}
                   onSelect={() => go("/flashcards")}
                 >
                   <Layers className="mr-2 size-4" />
@@ -161,7 +159,7 @@ export function GlobalSearch({ className }: { className?: string }) {
               {results.data!.questions.map((question) => (
                 <CommandItem
                   key={question.id}
-                  value={`question-${question.id}`}
+                  value={`Question ${question.title}`}
                   onSelect={() => go("/community")}
                 >
                   <Users className="mr-2 size-4" />
