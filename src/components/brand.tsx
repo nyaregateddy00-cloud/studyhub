@@ -5,7 +5,7 @@ export function BrandMark({ className }: { className?: string }) {
   return (
     <img
       src={logo}
-      alt="StudyHub logo"
+      alt="StudyHub graduation cap logo"
       width={512}
       height={512}
       className={cn("size-8 object-contain", className)}
