@@ -1,13 +1,22 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { CheckCircle2, ListChecks, Timer, XCircle } from "lucide-react";
+import { CheckCircle2, ListChecks, RotateCcw, Timer, XCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PageHeader } from "@/components/page-header";
+import { Progress } from "@/components/ui/progress";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
@@ -45,6 +54,8 @@ function QuizzesPage() {
   const createQuiz = useServerFn(generateQuiz);
   const [topic, setTopic] = useState("");
   const [source, setSource] = useState("");
+  const [difficulty, setDifficulty] = useState("medium");
+  const [count, setCount] = useState("6");
   const [active, setActive] = useState<ActiveQuiz | null>(null);
 
   const quizzesQuery = useQuery({
@@ -63,7 +74,7 @@ function QuizzesPage() {
   const generate = useMutation({
     mutationFn: async () => {
       const result = await createQuiz({
-        data: { source, topic: topic || undefined, count: 6, difficulty: "medium" },
+        data: { source, topic: topic || undefined, count: Number(count), difficulty },
       });
       const { data, error } = await supabase
         .from("quizzes")
@@ -71,7 +82,7 @@ function QuizzesPage() {
           user_id: user!.id,
           title: result.title,
           topic: topic || null,
-          difficulty: "medium",
+          difficulty,
           questions: result.questions,
         })
         .select("id,title,questions")
@@ -94,12 +105,10 @@ function QuizzesPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Quizzes</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Paste lecture material and get a timed practice quiz in seconds.
-        </p>
-      </div>
+      <PageHeader
+        title="Quizzes"
+        description="Paste lecture material and get a timed practice quiz in seconds."
+      />
 
       <form
         className="surface-card space-y-4 p-6"
@@ -108,15 +117,45 @@ function QuizzesPage() {
           generate.mutate();
         }}
       >
-        <div className="space-y-1.5">
-          <Label htmlFor="topic">Topic (optional)</Label>
-          <Input
-            id="topic"
-            value={topic}
-            maxLength={120}
-            placeholder="e.g. Thermodynamics"
-            onChange={(event) => setTopic(event.target.value)}
-          />
+        <div className="grid gap-3 sm:grid-cols-3">
+          <div className="space-y-1.5 sm:col-span-1">
+            <Label htmlFor="topic">Topic (optional)</Label>
+            <Input
+              id="topic"
+              value={topic}
+              maxLength={120}
+              placeholder="e.g. Thermodynamics"
+              onChange={(event) => setTopic(event.target.value)}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label>Difficulty</Label>
+            <Select value={difficulty} onValueChange={setDifficulty}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="easy">Easy</SelectItem>
+                <SelectItem value="medium">Medium</SelectItem>
+                <SelectItem value="hard">Hard</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
+            <Label>Questions</Label>
+            <Select value={count} onValueChange={setCount}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {["5", "6", "10", "15"].map((value) => (
+                  <SelectItem key={value} value={value}>
+                    {value} questions
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="source">Study material</Label>
@@ -193,6 +232,15 @@ function QuizRunner({ quiz, onExit }: { quiz: ActiveQuiz; onExit: () => void }) 
     0,
   );
 
+  const answered = quiz.questions.filter((_, index) => (answers[index] ?? "").trim()).length;
+  const percent = Math.round((score / quiz.questions.length) * 100);
+
+  function restart() {
+    setAnswers({});
+    setSubmitted(false);
+    setSeconds(0);
+  }
+
   async function submit() {
     setSubmitted(true);
     const { error } = await supabase.from("quiz_attempts").insert({
@@ -215,12 +263,26 @@ function QuizRunner({ quiz, onExit }: { quiz: ActiveQuiz; onExit: () => void }) 
           <p className="mt-1 flex items-center gap-1.5 text-sm text-muted-foreground">
             <Timer className="size-4" />
             {Math.floor(seconds / 60)}:{String(seconds % 60).padStart(2, "0")}
+            <span aria-hidden>·</span>
+            {answered}/{quiz.questions.length} answered
           </p>
         </div>
-        <Button variant="outline" onClick={onExit}>
-          Back
-        </Button>
+        <div className="flex items-center gap-2">
+          {submitted && (
+            <Button variant="outline" onClick={restart}>
+              <RotateCcw className="size-4" />
+              Retry
+            </Button>
+          )}
+          <Button variant="outline" onClick={onExit}>
+            Back
+          </Button>
+        </div>
       </div>
+
+      {!submitted && (
+        <Progress value={(answered / quiz.questions.length) * 100} className="h-2" />
+      )}
 
       {submitted && (
         <div className="surface-card p-6 text-center">
@@ -228,7 +290,15 @@ function QuizRunner({ quiz, onExit }: { quiz: ActiveQuiz; onExit: () => void }) 
             {score}/{quiz.questions.length}
           </p>
           <p className="mt-1 text-sm text-muted-foreground">
-            {Math.round((score / quiz.questions.length) * 100)}% in {seconds}s
+            {percent}% in {Math.floor(seconds / 60)}m {seconds % 60}s
+          </p>
+          <Progress value={percent} className="mx-auto mt-4 h-2 max-w-sm" />
+          <p className="mt-3 text-sm font-medium">
+            {percent >= 80
+              ? "Excellent — you've got this topic locked in."
+              : percent >= 50
+                ? "Solid effort. Review the misses and try again."
+                : "Worth another pass — check the explanations below."}
           </p>
         </div>
       )}
@@ -286,9 +356,16 @@ function QuizRunner({ quiz, onExit }: { quiz: ActiveQuiz; onExit: () => void }) 
       </ol>
 
       {!submitted && (
-        <Button className="w-full" onClick={submit}>
-          Submit answers
-        </Button>
+        <div className="sticky bottom-4 space-y-2">
+          {answered < quiz.questions.length && (
+            <p className="text-center text-xs text-muted-foreground">
+              {quiz.questions.length - answered} question(s) still unanswered.
+            </p>
+          )}
+          <Button className="w-full" onClick={submit}>
+            Submit answers
+          </Button>
+        </div>
       )}
     </div>
   );

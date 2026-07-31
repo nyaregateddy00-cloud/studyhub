@@ -1,11 +1,22 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { Bookmark, Download, FileText, Flag, Heart, Plus, Search } from "lucide-react";
+import {
+  Bookmark,
+  Download,
+  FileText,
+  Flag,
+  Globe,
+  Heart,
+  Paperclip,
+  Plus,
+  Search,
+} from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -17,7 +28,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import { PageHeader } from "@/components/page-header";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 
@@ -49,6 +62,7 @@ function NotesPage() {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const [filter, setFilter] = useState<"all" | "mine" | "shared" | "saved">("all");
   const [form, setForm] = useState({
     title: "",
     institution: "",
@@ -209,28 +223,39 @@ function NotesPage() {
   });
 
   const term = query.trim().toLowerCase();
-  const notes = (notesQuery.data ?? []).filter((note) =>
-    term
-      ? [note.title, note.course, note.unit, note.institution, note.topic]
-          .filter(Boolean)
-          .some((value) => String(value).toLowerCase().includes(term))
-      : true,
-  );
+  const notes = (notesQuery.data ?? [])
+    .filter((note) =>
+      term
+        ? [note.title, note.course, note.unit, note.institution, note.topic]
+            .filter(Boolean)
+            .some((value) => String(value).toLowerCase().includes(term))
+        : true,
+    )
+    .filter((note) => {
+      if (filter === "mine") return note.user_id === user?.id;
+      if (filter === "shared") return note.is_public;
+      if (filter === "saved") return bookmarksQuery.data?.has(note.id) ?? false;
+      return true;
+    });
+
+  const counts = {
+    all: (notesQuery.data ?? []).length,
+    mine: (notesQuery.data ?? []).filter((note) => note.user_id === user?.id).length,
+    shared: (notesQuery.data ?? []).filter((note) => note.is_public).length,
+    saved: bookmarksQuery.data?.size ?? 0,
+  };
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold">Notes</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Your library plus notes shared by other students.
-          </p>
-        </div>
-        <Dialog open={open} onOpenChange={setOpen}>
+      <PageHeader
+        title="Notes"
+        description="Your library plus notes shared by other students."
+        actions={
+          <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button>
               <Plus className="size-4" />
-              New note
+              <span className="hidden sm:inline">New note</span>
             </Button>
           </DialogTrigger>
           <DialogContent className="max-h-[90vh] overflow-y-auto">
@@ -305,17 +330,28 @@ function NotesPage() {
               </Button>
             </form>
           </DialogContent>
-        </Dialog>
-      </div>
+          </Dialog>
+        }
+      />
 
-      <div className="relative">
-        <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          className="pl-9"
-          placeholder="Search by title, course or unit"
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-        />
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div className="relative flex-1">
+          <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            className="pl-9"
+            placeholder="Search by title, course or unit"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+          />
+        </div>
+        <Tabs value={filter} onValueChange={(value) => setFilter(value as typeof filter)}>
+          <TabsList className="w-full sm:w-auto">
+            <TabsTrigger value="all">All ({counts.all})</TabsTrigger>
+            <TabsTrigger value="mine">Mine ({counts.mine})</TabsTrigger>
+            <TabsTrigger value="shared">Shared ({counts.shared})</TabsTrigger>
+            <TabsTrigger value="saved">Saved ({counts.saved})</TabsTrigger>
+          </TabsList>
+        </Tabs>
       </div>
 
       {notesQuery.isLoading ? (
@@ -328,21 +364,42 @@ function NotesPage() {
         <div className="surface-card p-12 text-center">
           <FileText className="mx-auto size-8 text-muted-foreground" />
           <p className="mt-3 text-sm text-muted-foreground">
-            No notes here yet. Add your first one to get started.
+            {term || filter !== "all"
+              ? "No notes match this filter yet."
+              : "No notes here yet. Add your first one to get started."}
           </p>
+          {!term && filter === "all" && (
+            <Button className="mt-4" onClick={() => setOpen(true)}>
+              <Plus className="size-4" />
+              Add your first note
+            </Button>
+          )}
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {notes.map((note) => (
             <article key={note.id} className="surface-card lift flex flex-col p-5">
-              <h2 className="font-semibold">{note.title}</h2>
+              <div className="flex items-start justify-between gap-2">
+                <h2 className="font-semibold leading-snug">{note.title}</h2>
+                {note.is_public && (
+                  <Badge variant="secondary" className="shrink-0 gap-1">
+                    <Globe className="size-3" /> Shared
+                  </Badge>
+                )}
+              </div>
               <p className="mt-1 text-xs text-muted-foreground">
                 {[note.course, note.unit].filter(Boolean).join(" · ") || "Uncategorised"}
               </p>
               {note.content && (
                 <p className="mt-3 line-clamp-3 text-sm text-muted-foreground">{note.content}</p>
               )}
-              <div className="mt-4 flex items-center gap-1 border-t border-border pt-3">
+              {note.file_name && (
+                <p className="mt-3 flex items-center gap-1.5 truncate text-xs text-muted-foreground">
+                  <Paperclip className="size-3 shrink-0" />
+                  {note.file_name}
+                </p>
+              )}
+              <div className="mt-auto flex items-center gap-1 border-t border-border pt-3">
                 <Button
                   variant="ghost"
                   size="sm"
