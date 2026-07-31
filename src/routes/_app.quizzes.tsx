@@ -1,13 +1,22 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { CheckCircle2, ListChecks, Timer, XCircle } from "lucide-react";
+import { CheckCircle2, ListChecks, RotateCcw, Timer, XCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PageHeader } from "@/components/page-header";
+import { Progress } from "@/components/ui/progress";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
@@ -45,6 +54,8 @@ function QuizzesPage() {
   const createQuiz = useServerFn(generateQuiz);
   const [topic, setTopic] = useState("");
   const [source, setSource] = useState("");
+  const [difficulty, setDifficulty] = useState("medium");
+  const [count, setCount] = useState("6");
   const [active, setActive] = useState<ActiveQuiz | null>(null);
 
   const quizzesQuery = useQuery({
@@ -63,7 +74,7 @@ function QuizzesPage() {
   const generate = useMutation({
     mutationFn: async () => {
       const result = await createQuiz({
-        data: { source, topic: topic || undefined, count: 6, difficulty: "medium" },
+        data: { source, topic: topic || undefined, count: Number(count), difficulty },
       });
       const { data, error } = await supabase
         .from("quizzes")
@@ -71,7 +82,7 @@ function QuizzesPage() {
           user_id: user!.id,
           title: result.title,
           topic: topic || null,
-          difficulty: "medium",
+          difficulty,
           questions: result.questions,
         })
         .select("id,title,questions")
@@ -94,12 +105,10 @@ function QuizzesPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Quizzes</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Paste lecture material and get a timed practice quiz in seconds.
-        </p>
-      </div>
+      <PageHeader
+        title="Quizzes"
+        description="Paste lecture material and get a timed practice quiz in seconds."
+      />
 
       <form
         className="surface-card space-y-4 p-6"
@@ -108,15 +117,45 @@ function QuizzesPage() {
           generate.mutate();
         }}
       >
-        <div className="space-y-1.5">
-          <Label htmlFor="topic">Topic (optional)</Label>
-          <Input
-            id="topic"
-            value={topic}
-            maxLength={120}
-            placeholder="e.g. Thermodynamics"
-            onChange={(event) => setTopic(event.target.value)}
-          />
+        <div className="grid gap-3 sm:grid-cols-3">
+          <div className="space-y-1.5 sm:col-span-1">
+            <Label htmlFor="topic">Topic (optional)</Label>
+            <Input
+              id="topic"
+              value={topic}
+              maxLength={120}
+              placeholder="e.g. Thermodynamics"
+              onChange={(event) => setTopic(event.target.value)}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label>Difficulty</Label>
+            <Select value={difficulty} onValueChange={setDifficulty}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="easy">Easy</SelectItem>
+                <SelectItem value="medium">Medium</SelectItem>
+                <SelectItem value="hard">Hard</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
+            <Label>Questions</Label>
+            <Select value={count} onValueChange={setCount}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {["5", "6", "10", "15"].map((value) => (
+                  <SelectItem key={value} value={value}>
+                    {value} questions
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="source">Study material</Label>
