@@ -232,6 +232,15 @@ function QuizRunner({ quiz, onExit }: { quiz: ActiveQuiz; onExit: () => void }) 
     0,
   );
 
+  const answered = quiz.questions.filter((_, index) => (answers[index] ?? "").trim()).length;
+  const percent = Math.round((score / quiz.questions.length) * 100);
+
+  function restart() {
+    setAnswers({});
+    setSubmitted(false);
+    setSeconds(0);
+  }
+
   async function submit() {
     setSubmitted(true);
     const { error } = await supabase.from("quiz_attempts").insert({
@@ -254,12 +263,26 @@ function QuizRunner({ quiz, onExit }: { quiz: ActiveQuiz; onExit: () => void }) 
           <p className="mt-1 flex items-center gap-1.5 text-sm text-muted-foreground">
             <Timer className="size-4" />
             {Math.floor(seconds / 60)}:{String(seconds % 60).padStart(2, "0")}
+            <span aria-hidden>·</span>
+            {answered}/{quiz.questions.length} answered
           </p>
         </div>
-        <Button variant="outline" onClick={onExit}>
-          Back
-        </Button>
+        <div className="flex items-center gap-2">
+          {submitted && (
+            <Button variant="outline" onClick={restart}>
+              <RotateCcw className="size-4" />
+              Retry
+            </Button>
+          )}
+          <Button variant="outline" onClick={onExit}>
+            Back
+          </Button>
+        </div>
       </div>
+
+      {!submitted && (
+        <Progress value={(answered / quiz.questions.length) * 100} className="h-2" />
+      )}
 
       {submitted && (
         <div className="surface-card p-6 text-center">
@@ -267,7 +290,15 @@ function QuizRunner({ quiz, onExit }: { quiz: ActiveQuiz; onExit: () => void }) 
             {score}/{quiz.questions.length}
           </p>
           <p className="mt-1 text-sm text-muted-foreground">
-            {Math.round((score / quiz.questions.length) * 100)}% in {seconds}s
+            {percent}% in {Math.floor(seconds / 60)}m {seconds % 60}s
+          </p>
+          <Progress value={percent} className="mx-auto mt-4 h-2 max-w-sm" />
+          <p className="mt-3 text-sm font-medium">
+            {percent >= 80
+              ? "Excellent — you've got this topic locked in."
+              : percent >= 50
+                ? "Solid effort. Review the misses and try again."
+                : "Worth another pass — check the explanations below."}
           </p>
         </div>
       )}
@@ -325,9 +356,16 @@ function QuizRunner({ quiz, onExit }: { quiz: ActiveQuiz; onExit: () => void }) 
       </ol>
 
       {!submitted && (
-        <Button className="w-full" onClick={submit}>
-          Submit answers
-        </Button>
+        <div className="sticky bottom-4 space-y-2">
+          {answered < quiz.questions.length && (
+            <p className="text-center text-xs text-muted-foreground">
+              {quiz.questions.length - answered} question(s) still unanswered.
+            </p>
+          )}
+          <Button className="w-full" onClick={submit}>
+            Submit answers
+          </Button>
+        </div>
       )}
     </div>
   );
