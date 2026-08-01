@@ -24,8 +24,9 @@ export function useNotifications() {
   // low-frequency safety net and pauses whenever the tab is hidden.
   useEffect(() => {
     if (!user?.id) return;
+    const channelName = `notifications:${user.id}:${Math.random().toString(36).slice(2)}`;
     const channel = supabase
-      .channel(`notifications:${user.id}`)
+      .channel(channelName)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` },
