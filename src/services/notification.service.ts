@@ -48,7 +48,7 @@ export const NotificationService = {
 
   subscribeToChanges(userId: string, onChange: () => void) {
     const channel = supabase
-      .channel(`notifications:${userId}`)
+      .channel(`notifications:${userId}:${Math.random().toString(36).slice(2)}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "notifications", filter: `user_id=eq.${userId}` },
