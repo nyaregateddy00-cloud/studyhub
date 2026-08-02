@@ -15,11 +15,11 @@ export const Route = createFileRoute("/")({
         content:
           "Share and search course notes, generate quizzes from any PDF, drill flashcards and ask an AI tutor — all in one student workspace.",
       },
-      { property: "og:title", content: "StudyHub — Learn Smarter. Revise Faster." },
+      { property: "og:title", content: "StudyHub — Learn Smarter. Revise Faster. Succeed Together." },
       {
         property: "og:description",
         content:
-          "Share and search course notes, generate quizzes from any PDF, drill flashcards and ask an AI tutor.",
+          "Share and search course notes, generate quizzes from any PDF, drill flashcards and ask an AI tutor — all in one student workspace.",
       },
     ],
   }),
