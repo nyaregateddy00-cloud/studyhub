@@ -10,6 +10,7 @@ import {
   Paperclip,
   Plus,
   Search,
+  Eye,
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -31,6 +32,7 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { PageHeader } from "@/components/page-header";
+import { NoteViewerDialog } from "@/components/notes/note-viewer-dialog";
 import { useAuth } from "@/lib/auth";
 import { NotesService } from "@/services/notes.service";
 
@@ -74,6 +76,7 @@ function NotesPage() {
   const [file, setFile] = useState<File | null>(null);
   const [reportNoteId, setReportNoteId] = useState<string | null>(null);
   const [reportReason, setReportReason] = useState("");
+  const [viewNoteId, setViewNoteId] = useState<string | null>(null);
 
   const notesQuery = useQuery({
     queryKey: ["notes", user?.id],
@@ -332,7 +335,13 @@ function NotesPage() {
           {notes.map((note) => (
             <article key={note.id} className="surface-card lift flex flex-col p-5">
               <div className="flex items-start justify-between gap-2">
-                <h2 className="font-semibold leading-snug">{note.title}</h2>
+                <button
+                  type="button"
+                  className="text-left font-semibold leading-snug hover:underline"
+                  onClick={() => setViewNoteId(note.id)}
+                >
+                  {note.title}
+                </button>
                 {note.is_public && (
                   <Badge variant="secondary" className="shrink-0 gap-1">
                     <Globe className="size-3" /> Shared
@@ -352,6 +361,10 @@ function NotesPage() {
                 </p>
               )}
               <div className="mt-auto flex items-center gap-1 border-t border-border pt-3">
+                <Button variant="ghost" size="sm" onClick={() => setViewNoteId(note.id)}>
+                  <Eye className="size-4" />
+                  View
+                </Button>
                 <Button
                   variant="ghost"
                   size="sm"
