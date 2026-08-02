@@ -425,6 +425,14 @@ function NotesPage() {
         </div>
       )}
 
+      <NoteViewerDialog
+        note={(notesQuery.data ?? []).find((item) => item.id === viewNoteId) ?? null}
+        onOpenChange={(next) => {
+          if (!next) setViewNoteId(null);
+        }}
+        onDownload={download}
+      />
+
       <Dialog
         open={reportNoteId !== null}
         onOpenChange={(next) => {
