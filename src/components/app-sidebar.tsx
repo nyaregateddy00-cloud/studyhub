@@ -140,11 +140,7 @@ export function AppSidebar() {
               <SidebarMenu>
                 {section.items.map((item) => (
                   <SidebarMenuItem key={`${section.label}-${item.to}-${item.label}`}>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={pathname === item.to}
-                      tooltip={item.label}
-                    >
+                    <SidebarMenuButton asChild isActive={pathname === item.to} tooltip={item.label}>
                       <Link to={item.to} onClick={() => setOpenMobile(false)}>
                         <item.icon className="size-4 shrink-0" />
                         <span className="min-w-0 truncate">{item.label}</span>

@@ -5,15 +5,18 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth, useSignOut } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
+import { AuthService } from "@/services/auth.service";
 
 export const Route = createFileRoute("/_app/settings")({
   head: () => ({
     meta: [
       { title: "Settings — StudyHub" },
-      { name: "description", content: "Manage appearance, account security and your StudyHub session." },
+      {
+        name: "description",
+        content: "Manage appearance, account security and your StudyHub session.",
+      },
       { property: "og:title", content: "Settings — StudyHub" },
       { property: "og:description", content: "Appearance, password and account controls." },
     ],
@@ -28,11 +31,15 @@ function Settings() {
 
   async function sendReset() {
     if (!user?.email) return;
-    const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
-      redirectTo: `${window.location.origin}/reset-password`,
-    });
-    if (error) toast.error(error.message);
-    else toast.success("Password reset email sent");
+    try {
+      await AuthService.requestPasswordReset(
+        user.email,
+        `${window.location.origin}/reset-password`,
+      );
+      toast.success("Password reset email sent");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Something went wrong.");
+    }
   }
 
   return (

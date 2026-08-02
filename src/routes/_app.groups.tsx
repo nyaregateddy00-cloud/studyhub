@@ -1,15 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import {
-  ArrowLeft,
-  Copy,
-  LogOut,
-  Plus,
-  Search,
-  Send,
-  Trash2,
-  UsersRound,
-} from "lucide-react";
+import { ArrowLeft, Copy, LogOut, Plus, Search, Send, Trash2, UsersRound } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -356,13 +347,17 @@ function Groups() {
               >
                 <div className="space-y-2">
                   <div className="flex items-start justify-between gap-3">
-                    <h2 className="font-display text-lg font-semibold leading-tight">{group.name}</h2>
+                    <h2 className="font-display text-lg font-semibold leading-tight">
+                      {group.name}
+                    </h2>
                     <Badge variant={group.is_public ? "secondary" : "outline"}>
                       {group.is_public ? "Public" : "Private"}
                     </Badge>
                   </div>
                   {group.description && (
-                    <p className="line-clamp-2 text-sm text-muted-foreground">{group.description}</p>
+                    <p className="line-clamp-2 text-sm text-muted-foreground">
+                      {group.description}
+                    </p>
                   )}
                   <div className="flex flex-wrap gap-1.5 text-xs text-muted-foreground">
                     {group.subject && <Badge variant="outline">{group.subject}</Badge>}

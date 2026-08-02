@@ -1,20 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import { NotificationService, type NotificationRow } from "@/services/notification.service";
 
-export type AppNotification = {
-  id: string;
-  title: string;
-  body: string | null;
-  type: string;
-  link: string | null;
-  is_read: boolean;
-  created_at: string;
-};
-
-const NOTIFICATION_COLUMNS = "id,title,body,type,link,is_read,created_at";
+export type AppNotification = NotificationRow;
 
 export function useNotifications() {
   const { user } = useAuth();
@@ -24,18 +14,9 @@ export function useNotifications() {
   // low-frequency safety net and pauses whenever the tab is hidden.
   useEffect(() => {
     if (!user?.id) return;
-    const channelName = `notifications:${user.id}:${Math.random().toString(36).slice(2)}`;
-    const channel = supabase
-      .channel(channelName)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` },
-        () => queryClient.invalidateQueries({ queryKey: ["notifications", user.id] }),
-      )
-      .subscribe();
-    return () => {
-      void supabase.removeChannel(channel);
-    };
+    return NotificationService.subscribeToChanges(user.id, () =>
+      queryClient.invalidateQueries({ queryKey: ["notifications", user.id] }),
+    );
   }, [user?.id, queryClient]);
 
   return useQuery({
@@ -44,15 +25,7 @@ export function useNotifications() {
     staleTime: 15_000,
     refetchInterval: 120_000,
     refetchIntervalInBackground: false,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("notifications")
-        .select(NOTIFICATION_COLUMNS)
-        .order("created_at", { ascending: false })
-        .limit(30);
-      if (error) throw error;
-      return (data ?? []) as AppNotification[];
-    },
+    queryFn: () => NotificationService.list(30),
   });
 }
 
@@ -61,21 +34,15 @@ export function useMarkNotificationsRead() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (ids?: string[]) => {
-      let query = supabase.from("notifications").update({ is_read: true }).eq("user_id", user!.id);
-      if (ids?.length) query = query.in("id", ids);
-      else query = query.eq("is_read", false);
-      const { error } = await query;
-      if (error) throw error;
-    },
+    mutationFn: (ids?: string[]) => NotificationService.markRead(user!.id, ids),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["notifications", user?.id] }),
   });
 }
 
 /**
- * Inserts a notification for the signed-in user. Cross-user notifications are
- * created by database triggers (e.g. new answers) because RLS on
- * `notifications` intentionally scopes inserts to `auth.uid()`.
+ * Fire-and-forget: matches the previous behavior of this helper exactly, so
+ * callers in the planner (task/session completion) don't start failing if a
+ * notification insert has a transient error.
  */
 export async function pushNotification(input: {
   userId: string;
@@ -84,13 +51,9 @@ export async function pushNotification(input: {
   type?: string;
   link?: string;
 }) {
-  const { data: auth } = await supabase.auth.getUser();
-  if (!auth.user || auth.user.id !== input.userId) return;
-  await supabase.from("notifications").insert({
-    user_id: input.userId,
-    title: input.title,
-    body: input.body ?? null,
-    type: input.type ?? "info",
-    link: input.link ?? null,
-  });
+  try {
+    await NotificationService.push(input);
+  } catch {
+    // Intentionally swallowed — see doc comment above.
+  }
 }

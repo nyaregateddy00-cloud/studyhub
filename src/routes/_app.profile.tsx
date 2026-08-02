@@ -13,10 +13,10 @@ import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { getLeaderboard } from "@/lib/leaderboard.functions";
 import { cn } from "@/lib/utils";
+import { levelProgress, UserService } from "@/services/user.service";
 
 export const Route = createFileRoute("/_app/profile")({
   head: () => ({
@@ -27,7 +27,10 @@ export const Route = createFileRoute("/_app/profile")({
         content: "Your study stats, XP level, earned badges and the StudyHub leaderboard.",
       },
       { property: "og:title", content: "Profile & Badges — StudyHub" },
-      { property: "og:description", content: "Track XP, badges and how you rank against other students." },
+      {
+        property: "og:description",
+        content: "Track XP, badges and how you rank against other students.",
+      },
     ],
   }),
   component: ProfilePage,
@@ -54,24 +57,13 @@ function ProfilePage() {
     queryKey: ["profile-page", user?.id],
     enabled: Boolean(user?.id),
     queryFn: async () => {
-      const [profile, badges, leaderboard, notes, attempts, tasks, answers] = await Promise.all([
-        supabase.from("profiles").select("id,display_name,avatar_url,bio,institution,course,year_of_study,xp,level,streak_days").eq("id", user!.id).maybeSingle(),
-        supabase.from("user_badges").select("id,badge_key,earned_at").eq("user_id", user!.id),
+      const [profile, badges, leaderboard, counts] = await Promise.all([
+        UserService.getExtendedProfile(user!.id),
+        UserService.getBadges(user!.id),
         getLeaderboard(),
-        supabase.from("notes").select("id", { count: "exact", head: true }).eq("user_id", user!.id),
-        supabase.from("quiz_attempts").select("id", { count: "exact", head: true }),
-        supabase.from("study_tasks").select("id", { count: "exact", head: true }).eq("completed", true),
-        supabase.from("answers").select("id", { count: "exact", head: true }).eq("user_id", user!.id),
+        UserService.getActivityCounts(user!.id),
       ]);
-      return {
-        profile: profile.data,
-        badges: badges.data ?? [],
-        leaderboard,
-        noteCount: notes.count ?? 0,
-        attemptCount: attempts.count ?? 0,
-        completedTasks: tasks.count ?? 0,
-        answerCount: answers.count ?? 0,
-      };
+      return { profile, badges, leaderboard, ...counts };
     },
   });
 
@@ -84,18 +76,13 @@ function ProfilePage() {
   }, [data?.profile]);
 
   const save = useMutation({
-    mutationFn: async () => {
-      const { error } = await supabase
-        .from("profiles")
-        .update({
-          display_name: displayName.trim().slice(0, 80) || null,
-          institution: institution.trim().slice(0, 120) || null,
-          course: course.trim().slice(0, 120) || null,
-          bio: bio.trim().slice(0, 500) || null,
-        })
-        .eq("id", user!.id);
-      if (error) throw error;
-    },
+    mutationFn: () =>
+      UserService.updateProfile(user!.id, {
+        display_name: displayName.trim().slice(0, 80) || null,
+        institution: institution.trim().slice(0, 120) || null,
+        course: course.trim().slice(0, 120) || null,
+        bio: bio.trim().slice(0, 500) || null,
+      }),
     onSuccess: async () => {
       toast.success("Profile updated");
       await queryClient.invalidateQueries({ queryKey: ["profile-page", user?.id] });
@@ -116,10 +103,9 @@ function ProfilePage() {
     if ((data.profile?.level ?? 1) >= 5) shouldHave.push("level_5");
     const missing = shouldHave.filter((key) => !earned.has(key));
     if (missing.length === 0) return;
-    void supabase
-      .from("user_badges")
-      .insert(missing.map((key) => ({ user_id: user.id, badge_key: key })))
-      .then(() => queryClient.invalidateQueries({ queryKey: ["profile-page", user.id] }));
+    void UserService.awardBadges(user.id, missing).then(() =>
+      queryClient.invalidateQueries({ queryKey: ["profile-page", user.id] }),
+    );
   }, [data, user, queryClient]);
 
   if (isLoading || !data) {
@@ -156,7 +142,7 @@ function ProfilePage() {
             </Badge>
             <Badge variant="secondary">{xp} XP</Badge>
           </div>
-          <Progress value={((xp % 500) / 500) * 100} className="mt-3 max-w-sm" />
+          <Progress value={levelProgress(xp, level).percent} className="mt-3 max-w-sm" />
         </div>
       </div>
 
@@ -171,14 +157,15 @@ function ProfilePage() {
           {badgeCatalog.map((badge) => {
             const has = earned.has(badge.key);
             return (
-              <div
-                key={badge.key}
-                className={cn("surface-card p-5", !has && "opacity-50")}
-              >
+              <div key={badge.key} className={cn("surface-card p-5", !has && "opacity-50")}>
                 <Award className={cn("size-6", has ? "text-warning" : "text-muted-foreground")} />
                 <p className="mt-3 font-semibold">{badge.label}</p>
                 <p className="text-xs text-muted-foreground">{badge.hint}</p>
-                {has && <Badge className="mt-3 bg-accent/15 text-accent" variant="secondary">Earned</Badge>}
+                {has && (
+                  <Badge className="mt-3 bg-accent/15 text-accent" variant="secondary">
+                    Earned
+                  </Badge>
+                )}
               </div>
             );
           })}
@@ -192,7 +179,9 @@ function ProfilePage() {
                 {index < 3 && <Medal className="size-4 text-warning" />}
                 <Avatar className="size-8">
                   <AvatarImage src={row.avatar_url ?? undefined} alt="" />
-                  <AvatarFallback>{(row.display_name ?? "S").slice(0, 2).toUpperCase()}</AvatarFallback>
+                  <AvatarFallback>
+                    {(row.display_name ?? "S").slice(0, 2).toUpperCase()}
+                  </AvatarFallback>
                 </Avatar>
                 <span
                   className={cn(
@@ -248,7 +237,11 @@ function ProfilePage() {
                 onChange={(event) => setBio(event.target.value)}
               />
             </div>
-            <Button className="md:col-span-2 md:w-fit" disabled={save.isPending} onClick={() => save.mutate()}>
+            <Button
+              className="md:col-span-2 md:w-fit"
+              disabled={save.isPending}
+              onClick={() => save.mutate()}
+            >
               <Save className="mr-1 size-4" /> Save profile
             </Button>
           </div>

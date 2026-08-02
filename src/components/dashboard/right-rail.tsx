@@ -2,7 +2,12 @@ import { Link } from "@tanstack/react-router";
 import { BookMarked, Clock, Flame, Megaphone, Sparkles } from "lucide-react";
 
 import { DashboardCard, EmptyState, SectionHeader } from "@/components/dashboard/primitives";
-import { announcements, recommendedMaterials, trendingNotes } from "@/components/dashboard/mock-data";
+import {
+  announcements,
+  recommendedMaterials,
+  trendingNotes,
+} from "@/components/dashboard/mock-data";
+import { PlannerWidget } from "@/components/dashboard/planner-widget";
 import { Badge } from "@/components/ui/badge";
 
 type Deadline = { id: string; title: string; due_date: string | null; subject: string | null };
@@ -20,6 +25,8 @@ function formatDue(due: string | null) {
 export function DashboardRightRail({ deadlines }: { deadlines: Deadline[] }) {
   return (
     <aside className="space-y-4">
+      <PlannerWidget delay={0} />
+
       <DashboardCard delay={60}>
         <SectionHeader title="Announcements" icon={Megaphone} />
         <ul className="mt-4 space-y-3">
@@ -89,7 +96,10 @@ export function DashboardRightRail({ deadlines }: { deadlines: Deadline[] }) {
         <SectionHeader title="Recommended" icon={Sparkles} />
         <ul className="mt-3 space-y-2">
           {recommendedMaterials.map((item) => (
-            <li key={item.id} className="flex items-start gap-3 rounded-lg p-2 hover:bg-secondary/60">
+            <li
+              key={item.id}
+              className="flex items-start gap-3 rounded-lg p-2 hover:bg-secondary/60"
+            >
               <BookMarked className="mt-0.5 size-4 shrink-0 text-accent" />
               <div className="min-w-0">
                 <p className="truncate text-sm font-medium">{item.title}</p>

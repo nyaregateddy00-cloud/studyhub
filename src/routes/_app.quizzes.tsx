@@ -19,9 +19,9 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
-import { generateQuiz } from "@/lib/study-ai.functions";
+import { generateQuiz } from "@/services/ai.service";
+import { QuizService } from "@/services/quiz.service";
 
 export const Route = createFileRoute("/_app/quizzes")({
   head: () => ({
@@ -29,10 +29,14 @@ export const Route = createFileRoute("/_app/quizzes")({
       { title: "Quizzes — StudyHub" },
       {
         name: "description",
-        content: "Generate timed practice quizzes from your notes or any text, and track your scores.",
+        content:
+          "Generate timed practice quizzes from your notes or any text, and track your scores.",
       },
       { property: "og:title", content: "Quizzes — StudyHub" },
-      { property: "og:description", content: "Generate timed practice quizzes and track your scores." },
+      {
+        property: "og:description",
+        content: "Generate timed practice quizzes and track your scores.",
+      },
     ],
   }),
   component: QuizzesPage,
@@ -61,14 +65,7 @@ function QuizzesPage() {
   const quizzesQuery = useQuery({
     queryKey: ["quizzes", user?.id],
     enabled: Boolean(user?.id),
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("quizzes")
-        .select("id,title,topic,questions,created_at")
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return data;
-    },
+    queryFn: () => QuizService.list(),
   });
 
   const generate = useMutation({
@@ -76,19 +73,13 @@ function QuizzesPage() {
       const result = await createQuiz({
         data: { source, topic: topic || undefined, count: Number(count), difficulty },
       });
-      const { data, error } = await supabase
-        .from("quizzes")
-        .insert({
-          user_id: user!.id,
-          title: result.title,
-          topic: topic || null,
-          difficulty,
-          questions: result.questions,
-        })
-        .select("id,title,questions")
-        .single();
-      if (error) throw error;
-      return data;
+      return QuizService.create({
+        user_id: user!.id,
+        title: result.title,
+        topic: topic || null,
+        difficulty,
+        questions: result.questions,
+      });
     },
     onSuccess: (data) => {
       toast.success("Quiz ready");
@@ -243,16 +234,19 @@ function QuizRunner({ quiz, onExit }: { quiz: ActiveQuiz; onExit: () => void }) 
 
   async function submit() {
     setSubmitted(true);
-    const { error } = await supabase.from("quiz_attempts").insert({
-      quiz_id: quiz.id,
-      user_id: user!.id,
-      score,
-      total: quiz.questions.length,
-      seconds_taken: seconds,
-      answers,
-    });
-    if (error) toast.error("Score couldn't be saved.");
-    else queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+    try {
+      await QuizService.submitAttempt({
+        quiz_id: quiz.id,
+        user_id: user!.id,
+        score,
+        total: quiz.questions.length,
+        seconds_taken: seconds,
+        answers,
+      });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+    } catch {
+      toast.error("Score couldn't be saved.");
+    }
   }
 
   return (
@@ -280,9 +274,7 @@ function QuizRunner({ quiz, onExit }: { quiz: ActiveQuiz; onExit: () => void }) 
         </div>
       </div>
 
-      {!submitted && (
-        <Progress value={(answered / quiz.questions.length) * 100} className="h-2" />
-      )}
+      {!submitted && <Progress value={(answered / quiz.questions.length) * 100} className="h-2" />}
 
       {submitted && (
         <div className="surface-card p-6 text-center">

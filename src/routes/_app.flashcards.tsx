@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { ChevronLeft, ChevronRight, Layers, PartyPopper, RotateCcw, Shuffle } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -12,9 +12,9 @@ import { PageHeader } from "@/components/page-header";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
-import { generateFlashcards } from "@/lib/study-ai.functions";
+import { generateFlashcards } from "@/services/ai.service";
+import { FlashcardService, SRS_INTERVAL_DAYS } from "@/services/flashcard.service";
 
 export const Route = createFileRoute("/_app/flashcards")({
   head: () => ({
@@ -33,8 +33,6 @@ export const Route = createFileRoute("/_app/flashcards")({
 
 type Card = { id: string; front: string; back: string; difficulty: string; review_count: number };
 
-const INTERVALS: Record<string, number> = { easy: 4, medium: 2, hard: 1 };
-
 function FlashcardsPage() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -46,14 +44,7 @@ function FlashcardsPage() {
   const decksQuery = useQuery({
     queryKey: ["decks", user?.id],
     enabled: Boolean(user?.id),
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("flashcard_decks")
-        .select("id,title,subject,created_at")
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return data;
-    },
+    queryFn: () => FlashcardService.listDecks(),
   });
 
   const generate = useMutation({
@@ -61,13 +52,12 @@ function FlashcardsPage() {
       const result = await createCards({
         data: { source, topic: subject || undefined, count: 8, difficulty: "medium" },
       });
-      const { data: deck, error } = await supabase
-        .from("flashcard_decks")
-        .insert({ user_id: user!.id, title: result.title, subject: subject || null })
-        .select("id,title")
-        .single();
-      if (error) throw error;
-      const { error: cardsError } = await supabase.from("flashcards").insert(
+      const deck = await FlashcardService.createDeck({
+        user_id: user!.id,
+        title: result.title,
+        subject: subject || null,
+      });
+      await FlashcardService.addCards(
         result.cards.map((card) => ({
           deck_id: deck.id,
           user_id: user!.id,
@@ -75,7 +65,6 @@ function FlashcardsPage() {
           back: card.back,
         })),
       );
-      if (cardsError) throw cardsError;
       return deck;
     },
     onSuccess: (deck) => {
@@ -156,13 +145,7 @@ function FlashcardsPage() {
   );
 }
 
-function DeckReview({
-  deck,
-  onExit,
-}: {
-  deck: { id: string; title: string };
-  onExit: () => void;
-}) {
+function DeckReview({ deck, onExit }: { deck: { id: string; title: string }; onExit: () => void }) {
   const queryClient = useQueryClient();
   const [index, setIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
@@ -171,31 +154,16 @@ function DeckReview({
 
   const cardsQuery = useQuery({
     queryKey: ["cards", deck.id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("flashcards")
-        .select("id,front,back,difficulty,review_count")
-        .eq("deck_id", deck.id)
-        .order("next_review_at", { ascending: true });
-      if (error) throw error;
-      return data as Card[];
-    },
+    queryFn: () => FlashcardService.listCards(deck.id) as Promise<Card[]>,
   });
 
   const grade = useMutation({
-    mutationFn: async ({ card, difficulty }: { card: Card; difficulty: string }) => {
-      const next = new Date();
-      next.setDate(next.getDate() + INTERVALS[difficulty]);
-      const { error } = await supabase
-        .from("flashcards")
-        .update({
-          difficulty,
-          review_count: card.review_count + 1,
-          next_review_at: next.toISOString(),
-        })
-        .eq("id", card.id);
-      if (error) throw error;
-    },
+    mutationFn: ({ card, difficulty }: { card: Card; difficulty: string }) =>
+      FlashcardService.gradeCard(
+        card.id,
+        difficulty as keyof typeof SRS_INTERVAL_DAYS,
+        card.review_count,
+      ),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["cards", deck.id] }),
     onError: () => toast.error("Couldn't save that review."),
   });
@@ -208,10 +176,10 @@ function DeckReview({
   const card = cards[index];
   const done = cards.length > 0 && graded.size >= cards.length;
 
-  function advance() {
+  const advance = useCallback(() => {
     setFlipped(false);
     setIndex((value) => (cards.length ? (value + 1) % cards.length : 0));
-  }
+  }, [cards.length]);
 
   function shuffle() {
     const ids = (cardsQuery.data ?? []).map((item) => item.id);
@@ -226,7 +194,8 @@ function DeckReview({
 
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
-      if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) return;
+      if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement)
+        return;
       if (event.code === "Space") {
         event.preventDefault();
         setFlipped((value) => !value);
@@ -239,14 +208,16 @@ function DeckReview({
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [cards.length]);
+  }, [cards.length, advance]);
 
   return (
     <div className="space-y-6">
       <PageHeader
         title={deck.title}
         description={
-          cards.length ? `Card ${index + 1} of ${cards.length} · ${graded.size} reviewed` : "Loading cards"
+          cards.length
+            ? `Card ${index + 1} of ${cards.length} · ${graded.size} reviewed`
+            : "Loading cards"
         }
         actions={
           <>
@@ -261,9 +232,7 @@ function DeckReview({
         }
       />
 
-      {cards.length > 0 && (
-        <Progress value={(graded.size / cards.length) * 100} className="h-2" />
-      )}
+      {cards.length > 0 && <Progress value={(graded.size / cards.length) * 100} className="h-2" />}
 
       {cardsQuery.isLoading || !card ? (
         <Skeleton className="h-64" />
@@ -340,7 +309,7 @@ function DeckReview({
               >
                 {difficulty}
                 <span className="ml-1 text-xs text-muted-foreground">
-                  {INTERVALS[difficulty]}d
+                  {SRS_INTERVAL_DAYS[difficulty]}d
                 </span>
               </Button>
             ))}

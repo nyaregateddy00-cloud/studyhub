@@ -22,7 +22,10 @@ export const Route = createFileRoute("/_app/community")({
         content: "Ask questions, answer classmates and upvote the best study explanations.",
       },
       { property: "og:title", content: "Community Q&A — StudyHub" },
-      { property: "og:description", content: "Ask, answer and upvote study questions with your peers." },
+      {
+        property: "og:description",
+        content: "Ask, answer and upvote study questions with your peers.",
+      },
     ],
   }),
   component: Community,
@@ -56,7 +59,9 @@ function Community() {
     queryFn: async () => {
       let query = supabase
         .from("questions")
-        .select("id,user_id,title,body,subject,tags,is_resolved,view_count,vote_count,answer_count,created_at")
+        .select(
+          "id,user_id,title,body,subject,tags,is_resolved,view_count,vote_count,answer_count,created_at",
+        )
         .order("created_at", { ascending: false })
         .limit(50);
       if (search.trim()) query = query.ilike("title", `%${search.trim()}%`);

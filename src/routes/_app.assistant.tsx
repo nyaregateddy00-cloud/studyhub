@@ -37,10 +37,14 @@ export const Route = createFileRoute("/_app/assistant")({
       { title: "AI tutor — StudyHub" },
       {
         name: "description",
-        content: "Ask StudyHub's AI tutor to explain topics, summarise notes and build revision plans.",
+        content:
+          "Ask StudyHub's AI tutor to explain topics, summarise notes and build revision plans.",
       },
       { property: "og:title", content: "AI tutor — StudyHub" },
-      { property: "og:description", content: "Explanations, summaries and revision plans on demand." },
+      {
+        property: "og:description",
+        content: "Explanations, summaries and revision plans on demand.",
+      },
     ],
   }),
   component: Assistant,
@@ -166,7 +170,9 @@ function Assistant() {
                   {message.role === "assistant" && (
                     <div className="flex items-center gap-2">
                       <BrandMark className="size-5" />
-                      <span className="text-xs font-medium text-muted-foreground">StudyHub tutor</span>
+                      <span className="text-xs font-medium text-muted-foreground">
+                        StudyHub tutor
+                      </span>
                     </div>
                   )}
                   <MessageContent>

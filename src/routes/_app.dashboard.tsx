@@ -36,12 +36,16 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import { levelProgress } from "@/services/user.service";
 
 export const Route = createFileRoute("/_app/dashboard")({
   head: () => ({
     meta: [
       { title: "Dashboard — StudyHub" },
-      { name: "description", content: "Your streak, XP, recent notes and quiz activity in StudyHub." },
+      {
+        name: "description",
+        content: "Your streak, XP, recent notes and quiz activity in StudyHub.",
+      },
       { property: "og:title", content: "Dashboard — StudyHub" },
       { property: "og:description", content: "Track your streak, XP and recent study activity." },
     ],
@@ -69,9 +73,23 @@ function Dashboard() {
     enabled: Boolean(user?.id),
     queryFn: async () => {
       const since = new Date(Date.now() - 13 * 86_400_000).toISOString().slice(0, 10);
-      const [profile, notes, quizzes, quizCount, attempts, decks, deckCount, cards, sessions, tasks] =
-        await Promise.all([
-        supabase.from("profiles").select("id,display_name,avatar_url,institution,course,xp,level,streak_days").eq("id", user!.id).maybeSingle(),
+      const [
+        profile,
+        notes,
+        quizzes,
+        quizCount,
+        attempts,
+        decks,
+        deckCount,
+        cards,
+        sessions,
+        tasks,
+      ] = await Promise.all([
+        supabase
+          .from("profiles")
+          .select("id,display_name,avatar_url,institution,course,xp,level,streak_days")
+          .eq("id", user!.id)
+          .maybeSingle(),
         supabase
           .from("notes")
           .select("id,title,course,created_at")
@@ -84,7 +102,10 @@ function Dashboard() {
           .eq("user_id", user!.id)
           .order("created_at", { ascending: false })
           .limit(4),
-        supabase.from("quizzes").select("id", { count: "exact", head: true }).eq("user_id", user!.id),
+        supabase
+          .from("quizzes")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", user!.id),
         supabase
           .from("quiz_attempts")
           .select("score,total,created_at")
@@ -148,7 +169,11 @@ function Dashboard() {
       return {
         day: dayLabels[date.getDay()],
         hours: Math.round((minutes / 60) * 10) / 10,
-        caption: date.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" }),
+        caption: date.toLocaleDateString(undefined, {
+          weekday: "short",
+          month: "short",
+          day: "numeric",
+        }),
       };
     });
 
@@ -158,10 +183,13 @@ function Dashboard() {
       .map((attempt, index) => ({
         label: `#${index + 1}`,
         score: Math.round((attempt.score / Math.max(attempt.total, 1)) * 100),
-        caption: `Attempt ${index + 1} · ${new Date(attempt.created_at).toLocaleDateString(undefined, {
-          month: "short",
-          day: "numeric",
-        })}`,
+        caption: `Attempt ${index + 1} · ${new Date(attempt.created_at).toLocaleDateString(
+          undefined,
+          {
+            month: "short",
+            day: "numeric",
+          },
+        )}`,
       }));
 
     const subjectTotals = new Map<string, number>();
@@ -197,7 +225,7 @@ function Dashboard() {
 
   const xp = data.profile?.xp ?? 0;
   const level = data.profile?.level ?? 1;
-  const xpInLevel = xp % 500;
+  const xpInLevel = levelProgress(xp, level).into;
   const quote = quoteOfTheDay();
   const name = data.profile?.display_name ?? user?.email?.split("@")[0] ?? "there";
   const initials = name.slice(0, 2).toUpperCase();
@@ -236,7 +264,12 @@ function Dashboard() {
             </Badge>
             <Sheet>
               <SheetTrigger asChild>
-                <Button variant="outline" size="icon-sm" className="xl:hidden" aria-label="Open highlights">
+                <Button
+                  variant="outline"
+                  size="icon-sm"
+                  className="xl:hidden"
+                  aria-label="Open highlights"
+                >
                   <PanelRightOpen className="size-4" />
                 </Button>
               </SheetTrigger>
@@ -342,8 +375,12 @@ function Dashboard() {
                     onValueChange={(value) => value && setHoursRange(value as "7" | "14")}
                     variant="outline"
                   >
-                    <ToggleGroupItem value="7" aria-label="Last 7 days">7d</ToggleGroupItem>
-                    <ToggleGroupItem value="14" aria-label="Last 14 days">14d</ToggleGroupItem>
+                    <ToggleGroupItem value="7" aria-label="Last 7 days">
+                      7d
+                    </ToggleGroupItem>
+                    <ToggleGroupItem value="14" aria-label="Last 14 days">
+                      14d
+                    </ToggleGroupItem>
                   </ToggleGroup>
                 }
               />
@@ -363,8 +400,12 @@ function Dashboard() {
                     onValueChange={(value) => value && setQuizRange(value as "5" | "8")}
                     variant="outline"
                   >
-                    <ToggleGroupItem value="5" aria-label="Last 5 attempts">5</ToggleGroupItem>
-                    <ToggleGroupItem value="8" aria-label="Last 8 attempts">8</ToggleGroupItem>
+                    <ToggleGroupItem value="5" aria-label="Last 5 attempts">
+                      5
+                    </ToggleGroupItem>
+                    <ToggleGroupItem value="8" aria-label="Last 8 attempts">
+                      8
+                    </ToggleGroupItem>
                   </ToggleGroup>
                 }
               />

@@ -63,7 +63,9 @@ export function StatTile({
       style={{ animationDelay: `${delay}ms`, animationFillMode: "backwards" }}
     >
       <div className="flex items-center justify-between gap-2">
-        <span className={cn("grid size-9 shrink-0 place-items-center rounded-xl bg-secondary", tone)}>
+        <span
+          className={cn("grid size-9 shrink-0 place-items-center rounded-xl bg-secondary", tone)}
+        >
           <Icon className="size-4" />
         </span>
       </div>

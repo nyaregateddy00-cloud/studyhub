@@ -109,9 +109,7 @@ export function GlobalSearch({ className }: { className?: string }) {
           placeholder="Search pages, notes, quizzes, decks, questions…"
         />
         <CommandList>
-          <CommandEmpty>
-            {results.isFetching ? "Searching…" : "No matches found."}
-          </CommandEmpty>
+          <CommandEmpty>{results.isFetching ? "Searching…" : "No matches found."}</CommandEmpty>
           <CommandGroup heading="Pages">
             {pages.map((page) => (
               <CommandItem key={page.to} value={page.label} onSelect={() => go(page.to)}>
@@ -123,7 +121,11 @@ export function GlobalSearch({ className }: { className?: string }) {
           {(results.data?.notes.length ?? 0) > 0 && (
             <CommandGroup heading="Notes">
               {results.data!.notes.map((note) => (
-                <CommandItem key={note.id} value={`Note ${note.title}`} onSelect={() => go("/notes")}>
+                <CommandItem
+                  key={note.id}
+                  value={`Note ${note.title}`}
+                  onSelect={() => go("/notes")}
+                >
                   <BookOpen className="mr-2 size-4" />
                   {note.title}
                 </CommandItem>
@@ -133,7 +135,11 @@ export function GlobalSearch({ className }: { className?: string }) {
           {(results.data?.quizzes.length ?? 0) > 0 && (
             <CommandGroup heading="Quizzes">
               {results.data!.quizzes.map((quiz) => (
-                <CommandItem key={quiz.id} value={`Quiz ${quiz.title}`} onSelect={() => go("/quizzes")}>
+                <CommandItem
+                  key={quiz.id}
+                  value={`Quiz ${quiz.title}`}
+                  onSelect={() => go("/quizzes")}
+                >
                   <ListChecks className="mr-2 size-4" />
                   {quiz.title}
                 </CommandItem>

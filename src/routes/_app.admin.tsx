@@ -6,14 +6,17 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import { AdminService } from "@/services/admin.service";
 
 export const Route = createFileRoute("/_app/admin")({
   head: () => ({
     meta: [
       { title: "Admin & Moderation — StudyHub" },
-      { name: "description", content: "Review reported notes and moderate community content on StudyHub." },
+      {
+        name: "description",
+        content: "Review reported notes and moderate community content on StudyHub.",
+      },
       { property: "og:title", content: "Admin & Moderation — StudyHub" },
       { property: "og:description", content: "Reported content queue for StudyHub staff." },
     ],
@@ -28,13 +31,7 @@ function Admin() {
   const { data: role, isLoading: roleLoading } = useQuery({
     queryKey: ["my-role", user?.id],
     enabled: Boolean(user?.id),
-    queryFn: async () => {
-      const [admin, moderator] = await Promise.all([
-        supabase.rpc("has_role", { _user_id: user!.id, _role: "admin" }),
-        supabase.rpc("has_role", { _user_id: user!.id, _role: "moderator" }),
-      ]);
-      return { isAdmin: Boolean(admin.data), isModerator: Boolean(moderator.data) };
-    },
+    queryFn: () => AdminService.getStaffRole(user!.id),
   });
 
   const isStaff = Boolean(role?.isAdmin || role?.isModerator);
@@ -42,27 +39,11 @@ function Admin() {
   const { data, isLoading } = useQuery({
     queryKey: ["admin-queue"],
     enabled: isStaff,
-    queryFn: async () => {
-      const [reports, questions] = await Promise.all([
-        supabase.from("note_reports").select("id,note_id,user_id,reason,status,created_at").order("created_at", { ascending: false }),
-        supabase
-          .from("questions")
-          .select("id,title,created_at")
-          .order("created_at", { ascending: false })
-          .limit(20),
-      ]);
-      return { reports: reports.data ?? [], questions: questions.data ?? [] };
-    },
+    queryFn: () => AdminService.getModerationQueue(),
   });
 
   const resolve = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from("note_reports")
-        .update({ status: "resolved" })
-        .eq("id", id);
-      if (error) throw error;
-    },
+    mutationFn: (id: string) => AdminService.resolveReport(id),
     onSuccess: async () => {
       toast.success("Report resolved");
       await queryClient.invalidateQueries({ queryKey: ["admin-queue"] });
@@ -71,10 +52,7 @@ function Admin() {
   });
 
   const removeNote = useMutation({
-    mutationFn: async (noteId: string) => {
-      const { error } = await supabase.from("notes").delete().eq("id", noteId);
-      if (error) throw error;
-    },
+    mutationFn: (noteId: string) => AdminService.removeNote(noteId),
     onSuccess: async () => {
       toast.success("Note removed");
       await queryClient.invalidateQueries({ queryKey: ["admin-queue"] });
@@ -83,10 +61,7 @@ function Admin() {
   });
 
   const removeQuestion = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from("questions").delete().eq("id", id);
-      if (error) throw error;
-    },
+    mutationFn: (id: string) => AdminService.removeQuestion(id),
     onSuccess: async () => {
       toast.success("Question removed");
       await queryClient.invalidateQueries({ queryKey: ["admin-queue"] });
@@ -136,7 +111,11 @@ function Admin() {
                     <Button size="sm" variant="outline" onClick={() => resolve.mutate(report.id)}>
                       <ShieldCheck className="mr-1 size-4" /> Resolve
                     </Button>
-                    <Button size="sm" variant="ghost" onClick={() => removeNote.mutate(report.note_id)}>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => removeNote.mutate(report.note_id)}
+                    >
                       <Trash2 className="mr-1 size-4" /> Delete note
                     </Button>
                   </li>
@@ -151,7 +130,11 @@ function Admin() {
               {data.questions.map((question) => (
                 <li key={question.id} className="flex items-center gap-3 py-3">
                   <span className="min-w-0 flex-1 truncate text-sm">{question.title}</span>
-                  <Button size="sm" variant="ghost" onClick={() => removeQuestion.mutate(question.id)}>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => removeQuestion.mutate(question.id)}
+                  >
                     <Trash2 className="mr-1 size-4" /> Remove
                   </Button>
                 </li>

@@ -31,8 +31,8 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { PageHeader } from "@/components/page-header";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import { NotesService } from "@/services/notes.service";
 
 export const Route = createFileRoute("/_app/notes")({
   head: () => ({
@@ -78,52 +78,25 @@ function NotesPage() {
   const notesQuery = useQuery({
     queryKey: ["notes", user?.id],
     enabled: Boolean(user?.id),
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("notes")
-        .select(
-          "id,user_id,title,content,institution,course,unit,topic,file_url,file_name,file_type,is_public,like_count,created_at",
-        )
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return data;
-    },
+    queryFn: () => NotesService.list(),
   });
 
   const bookmarksQuery = useQuery({
     queryKey: ["note-bookmarks", user?.id],
     enabled: Boolean(user?.id),
-    queryFn: async () => {
-      const { data, error } = await supabase.from("note_bookmarks").select("note_id");
-      if (error) throw error;
-      return new Set((data ?? []).map((row) => row.note_id));
-    },
+    queryFn: () => NotesService.listBookmarkedIds(),
   });
 
   const likesQuery = useQuery({
     queryKey: ["note-likes", user?.id],
     enabled: Boolean(user?.id),
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("note_likes")
-        .select("note_id")
-        .eq("user_id", user!.id);
-      if (error) throw error;
-      return new Set((data ?? []).map((row) => row.note_id));
-    },
+    queryFn: () => NotesService.listLikedIds(user!.id),
   });
 
   const createNote = useMutation({
     mutationFn: async () => {
       const parsed = noteSchema.parse(form);
-      let filePath: string | null = null;
-      if (file) {
-        const path = `${user!.id}/${crypto.randomUUID()}-${file.name}`;
-        const { error } = await supabase.storage.from("notes").upload(path, file);
-        if (error) throw error;
-        filePath = path;
-      }
-      const { error } = await supabase.from("notes").insert({
+      await NotesService.create({
         user_id: user!.id,
         title: parsed.title,
         content: parsed.content || null,
@@ -131,11 +104,8 @@ function NotesPage() {
         course: parsed.course || null,
         unit: parsed.unit || null,
         is_public: form.isPublic,
-        file_url: filePath,
-        file_name: file?.name ?? null,
-        file_type: file?.type ?? null,
+        file,
       });
-      if (error) throw error;
     },
     onSuccess: () => {
       toast.success("Note saved");
@@ -150,20 +120,14 @@ function NotesPage() {
 
   const toggleLike = useMutation({
     mutationFn: async (noteId: string) => {
-      if (likesQuery.data?.has(noteId)) {
-        const { error } = await supabase
-          .from("note_likes")
-          .delete()
-          .eq("note_id", noteId)
-          .eq("user_id", user!.id);
-        if (error) throw error;
-        return;
+      const liked = likesQuery.data?.has(noteId) ?? false;
+      try {
+        await NotesService.setLiked(noteId, user!.id, !liked);
+      } catch (error) {
+        // A duplicate means another tab already liked it — treat as success.
+        const code = (error as { code?: string })?.code;
+        if (code !== "23505") throw error;
       }
-      const { error } = await supabase
-        .from("note_likes")
-        .insert({ note_id: noteId, user_id: user!.id });
-      // A duplicate means another tab already liked it — treat as success.
-      if (error && error.code !== "23505") throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notes"] });
@@ -174,32 +138,23 @@ function NotesPage() {
 
   const toggleBookmark = useMutation({
     mutationFn: async (noteId: string) => {
-      if (bookmarksQuery.data?.has(noteId)) {
-        const { error } = await supabase
-          .from("note_bookmarks")
-          .delete()
-          .eq("note_id", noteId)
-          .eq("user_id", user!.id);
-        if (error) throw error;
-        return;
-      }
-      const { error } = await supabase
-        .from("note_bookmarks")
-        .insert({ note_id: noteId, user_id: user!.id });
-      if (error) throw error;
+      const bookmarked = bookmarksQuery.data?.has(noteId) ?? false;
+      await NotesService.setBookmarked(noteId, user!.id, !bookmarked);
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["note-bookmarks"] }),
     onError: () => toast.error("Could not update the bookmark."),
   });
 
   async function download(path: string, name: string) {
-    const { data, error } = await supabase.storage.from("notes").createSignedUrl(path, 60);
-    if (error || !data) {
+    let signedUrl: string;
+    try {
+      signedUrl = await NotesService.getAttachmentUrl(path, 60);
+    } catch {
       toast.error("Could not prepare the download.");
       return;
     }
     const link = document.createElement("a");
-    link.href = data.signedUrl;
+    link.href = signedUrl;
     link.download = name;
     link.click();
   }
@@ -208,10 +163,7 @@ function NotesPage() {
     mutationFn: async () => {
       const reason = reportReason.trim();
       if (!reportNoteId || !reason) throw new Error("Please describe the problem.");
-      const { error } = await supabase
-        .from("note_reports")
-        .insert({ note_id: reportNoteId, user_id: user!.id, reason: reason.slice(0, 500) });
-      if (error) throw error;
+      await NotesService.report(reportNoteId, user!.id, reason.slice(0, 500));
     },
     onSuccess: () => {
       toast.success("Thanks — our moderators will review it.");
@@ -252,84 +204,84 @@ function NotesPage() {
         description="Your library plus notes shared by other students."
         actions={
           <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="size-4" />
-              <span className="hidden sm:inline">New note</span>
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Add a note</DialogTitle>
-            </DialogHeader>
-            <form
-              className="space-y-4"
-              onSubmit={(event) => {
-                event.preventDefault();
-                createNote.mutate();
-              }}
-            >
-              <div className="space-y-1.5">
-                <Label htmlFor="title">Title</Label>
-                <Input
-                  id="title"
-                  value={form.title}
-                  maxLength={140}
-                  required
-                  onChange={(event) => setForm({ ...form, title: event.target.value })}
-                />
-              </div>
-              <div className="grid gap-3 sm:grid-cols-3">
-                {(["institution", "course", "unit"] as const).map((field) => (
-                  <div key={field} className="space-y-1.5">
-                    <Label htmlFor={field} className="capitalize">
-                      {field}
-                    </Label>
-                    <Input
-                      id={field}
-                      value={form[field]}
-                      maxLength={120}
-                      onChange={(event) => setForm({ ...form, [field]: event.target.value })}
-                    />
-                  </div>
-                ))}
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="content">Note content</Label>
-                <Textarea
-                  id="content"
-                  rows={6}
-                  maxLength={20000}
-                  value={form.content}
-                  onChange={(event) => setForm({ ...form, content: event.target.value })}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="file">Attach a file (PDF, DOCX, PPTX)</Label>
-                <Input
-                  id="file"
-                  type="file"
-                  accept=".pdf,.doc,.docx,.ppt,.pptx,.txt,.md,image/*"
-                  onChange={(event) => setFile(event.target.files?.[0] ?? null)}
-                />
-              </div>
-              <div className="flex items-center justify-between rounded-lg border border-border p-3">
-                <div>
-                  <p className="text-sm font-medium">Share with the community</p>
-                  <p className="text-xs text-muted-foreground">
-                    Public notes appear in everyone's library.
-                  </p>
-                </div>
-                <Switch
-                  checked={form.isPublic}
-                  onCheckedChange={(checked) => setForm({ ...form, isPublic: checked })}
-                />
-              </div>
-              <Button type="submit" className="w-full" disabled={createNote.isPending}>
-                {createNote.isPending ? "Saving..." : "Save note"}
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="size-4" />
+                <span className="hidden sm:inline">New note</span>
               </Button>
-            </form>
-          </DialogContent>
+            </DialogTrigger>
+            <DialogContent className="max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Add a note</DialogTitle>
+              </DialogHeader>
+              <form
+                className="space-y-4"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  createNote.mutate();
+                }}
+              >
+                <div className="space-y-1.5">
+                  <Label htmlFor="title">Title</Label>
+                  <Input
+                    id="title"
+                    value={form.title}
+                    maxLength={140}
+                    required
+                    onChange={(event) => setForm({ ...form, title: event.target.value })}
+                  />
+                </div>
+                <div className="grid gap-3 sm:grid-cols-3">
+                  {(["institution", "course", "unit"] as const).map((field) => (
+                    <div key={field} className="space-y-1.5">
+                      <Label htmlFor={field} className="capitalize">
+                        {field}
+                      </Label>
+                      <Input
+                        id={field}
+                        value={form[field]}
+                        maxLength={120}
+                        onChange={(event) => setForm({ ...form, [field]: event.target.value })}
+                      />
+                    </div>
+                  ))}
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="content">Note content</Label>
+                  <Textarea
+                    id="content"
+                    rows={6}
+                    maxLength={20000}
+                    value={form.content}
+                    onChange={(event) => setForm({ ...form, content: event.target.value })}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="file">Attach a file (PDF, DOCX, PPTX)</Label>
+                  <Input
+                    id="file"
+                    type="file"
+                    accept=".pdf,.doc,.docx,.ppt,.pptx,.txt,.md,image/*"
+                    onChange={(event) => setFile(event.target.files?.[0] ?? null)}
+                  />
+                </div>
+                <div className="flex items-center justify-between rounded-lg border border-border p-3">
+                  <div>
+                    <p className="text-sm font-medium">Share with the community</p>
+                    <p className="text-xs text-muted-foreground">
+                      Public notes appear in everyone's library.
+                    </p>
+                  </div>
+                  <Switch
+                    checked={form.isPublic}
+                    onCheckedChange={(checked) => setForm({ ...form, isPublic: checked })}
+                  />
+                </div>
+                <Button type="submit" className="w-full" disabled={createNote.isPending}>
+                  {createNote.isPending ? "Saving..." : "Save note"}
+                </Button>
+              </form>
+            </DialogContent>
           </Dialog>
         }
       />
@@ -418,12 +370,16 @@ function NotesPage() {
                   variant="ghost"
                   size="icon-sm"
                   onClick={() => toggleBookmark.mutate(note.id)}
-                  aria-label={bookmarksQuery.data?.has(note.id) ? "Remove bookmark" : "Bookmark note"}
+                  aria-label={
+                    bookmarksQuery.data?.has(note.id) ? "Remove bookmark" : "Bookmark note"
+                  }
                   aria-pressed={bookmarksQuery.data?.has(note.id) ?? false}
                 >
                   <Bookmark
                     className={
-                      bookmarksQuery.data?.has(note.id) ? "size-4 fill-primary text-primary" : "size-4"
+                      bookmarksQuery.data?.has(note.id)
+                        ? "size-4 fill-primary text-primary"
+                        : "size-4"
                     }
                   />
                 </Button>

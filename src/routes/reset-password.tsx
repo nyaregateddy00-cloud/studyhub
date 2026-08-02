@@ -6,7 +6,7 @@ import { BrandLock } from "@/components/brand";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { supabase } from "@/integrations/supabase/client";
+import { AuthService } from "@/services/auth.service";
 
 export const Route = createFileRoute("/reset-password")({
   ssr: false,
@@ -29,14 +29,15 @@ function ResetPassword() {
   async function submit(event: React.FormEvent) {
     event.preventDefault();
     setBusy(true);
-    const { error } = await supabase.auth.updateUser({ password });
-    setBusy(false);
-    if (error) {
-      toast.error(error.message);
-      return;
+    try {
+      await AuthService.updatePassword(password);
+      toast.success("Password updated");
+      navigate({ to: "/dashboard", replace: true });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Something went wrong.");
+    } finally {
+      setBusy(false);
     }
-    toast.success("Password updated");
-    navigate({ to: "/dashboard", replace: true });
   }
 
   return (

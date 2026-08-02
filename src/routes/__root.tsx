@@ -89,7 +89,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:title", content: "StudyHub — Learn Smarter. Revise Faster." },
       {
         property: "og:description",
-        content: "AI-powered notes, quizzes and flashcards for university and high school students.",
+        content:
+          "AI-powered notes, quizzes and flashcards for university and high school students.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

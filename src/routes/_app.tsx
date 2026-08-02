@@ -69,12 +69,7 @@ function AppLayout() {
               </div>
               <div className="ml-auto flex shrink-0 items-center gap-1">
                 <NotificationBell />
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={toggle}
-                  aria-label="Toggle dark mode"
-                >
+                <Button variant="ghost" size="icon" onClick={toggle} aria-label="Toggle dark mode">
                   {theme === "dark" ? <Sun className="size-4" /> : <Moon className="size-4" />}
                 </Button>
               </div>

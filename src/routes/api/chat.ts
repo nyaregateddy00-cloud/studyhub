@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { convertToModelMessages, streamText, type UIMessage } from "ai";
 
-import { CHAT_MODEL, createLovableAiGatewayProvider } from "@/lib/ai-gateway.server";
+import { getActiveProvider } from "@/lib/ai/provider.server";
 
 const SYSTEM_PROMPT = `You are StudyHub's AI tutor for university and high-school students.
 Explain concepts clearly and step by step, using short paragraphs, headings and bullet lists in markdown.
@@ -17,12 +17,15 @@ export const Route = createFileRoute("/api/chat")({
           return new Response("Messages are required", { status: 400 });
         }
 
-        const key = process.env.LOVABLE_API_KEY;
-        if (!key) return new Response("AI is not configured", { status: 500 });
+        let model;
+        try {
+          model = getActiveProvider().chatModel();
+        } catch {
+          return new Response("AI is not configured", { status: 500 });
+        }
 
-        const gateway = createLovableAiGatewayProvider(key);
         const result = streamText({
-          model: gateway(CHAT_MODEL),
+          model,
           system: SYSTEM_PROMPT,
           messages: await convertToModelMessages(messages as UIMessage[]),
         });

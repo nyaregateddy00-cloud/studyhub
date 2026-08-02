@@ -6,9 +6,8 @@ import { BrandLock } from "@/components/brand";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { lovable } from "@/integrations/lovable/index";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import { AuthService } from "@/services/auth.service";
 
 type Mode = "signin" | "signup" | "forgot";
 
@@ -20,7 +19,8 @@ export const Route = createFileRoute("/auth")({
       { title: "Sign in — StudyHub" },
       {
         name: "description",
-        content: "Sign in or create your StudyHub account to reach your notes, quizzes and AI tutor.",
+        content:
+          "Sign in or create your StudyHub account to reach your notes, quizzes and AI tutor.",
       },
       { property: "og:title", content: "Sign in — StudyHub" },
       { property: "og:description", content: "Access your StudyHub notes, quizzes and AI tutor." },
@@ -48,35 +48,20 @@ function AuthPage() {
     setBusy(true);
     try {
       if (mode === "forgot") {
-        const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-          redirectTo: `${window.location.origin}/reset-password`,
-        });
-        if (error) throw error;
+        await AuthService.requestPasswordReset(email, `${window.location.origin}/reset-password`);
         toast.success("Check your inbox for the reset link.");
         setMode("signin");
         return;
       }
 
       if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
-          email: email.trim(),
-          password,
-          options: {
-            emailRedirectTo: window.location.origin,
-            data: { full_name: fullName.trim() },
-          },
-        });
-        if (error) throw error;
+        await AuthService.signUp({ email, password, fullName });
         toast.success("Account created. Check your email to confirm, then sign in.");
         setMode("signin");
         return;
       }
 
-      const { error } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
-        password,
-      });
-      if (error) throw error;
+      await AuthService.signIn({ email, password });
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Something went wrong.");
     } finally {
@@ -86,9 +71,7 @@ function AuthPage() {
 
   async function handleGoogle() {
     setBusy(true);
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
-    });
+    const result = await AuthService.signInWithGoogle(window.location.origin);
     if (result.error) {
       setBusy(false);
       toast.error("Google sign-in failed. Please try again.");
@@ -158,7 +141,11 @@ function AuthPage() {
             </div>
           )}
           <Button type="submit" className="w-full" disabled={busy}>
-            {mode === "signup" ? "Create account" : mode === "forgot" ? "Send reset link" : "Sign in"}
+            {mode === "signup"
+              ? "Create account"
+              : mode === "forgot"
+                ? "Send reset link"
+                : "Sign in"}
           </Button>
         </form>
 
@@ -178,16 +165,28 @@ function AuthPage() {
         <div className="mt-6 flex flex-col gap-1 text-sm text-muted-foreground">
           {mode === "signin" && (
             <>
-              <button type="button" className="text-left hover:text-foreground" onClick={() => setMode("forgot")}>
+              <button
+                type="button"
+                className="text-left hover:text-foreground"
+                onClick={() => setMode("forgot")}
+              >
                 Forgot your password?
               </button>
-              <button type="button" className="text-left hover:text-foreground" onClick={() => setMode("signup")}>
+              <button
+                type="button"
+                className="text-left hover:text-foreground"
+                onClick={() => setMode("signup")}
+              >
                 New here? Create an account
               </button>
             </>
           )}
           {mode !== "signin" && (
-            <button type="button" className="text-left hover:text-foreground" onClick={() => setMode("signin")}>
+            <button
+              type="button"
+              className="text-left hover:text-foreground"
+              onClick={() => setMode("signin")}
+            >
               Back to sign in
             </button>
           )}

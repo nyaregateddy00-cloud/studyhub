@@ -11,11 +11,7 @@ import {
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useMarkNotificationsRead, useNotifications } from "@/lib/notifications";
@@ -112,7 +108,9 @@ export function NotificationBell() {
                     <span
                       className={cn(
                         "mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg",
-                        item.is_read ? "bg-secondary text-muted-foreground" : "bg-primary/10 text-primary",
+                        item.is_read
+                          ? "bg-secondary text-muted-foreground"
+                          : "bg-primary/10 text-primary",
                       )}
                     >
                       <Icon className="size-4" />

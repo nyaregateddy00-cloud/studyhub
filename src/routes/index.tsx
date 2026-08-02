@@ -1,14 +1,5 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import {
-  ArrowRight,
-  BookOpen,
-  Bot,
-  Flame,
-  Layers,
-  ListChecks,
-  Moon,
-  Sun,
-} from "lucide-react";
+import { ArrowRight, BookOpen, Bot, Flame, Layers, ListChecks, Moon, Sun } from "lucide-react";
 
 import { BrandLock } from "@/components/brand";
 import { Button } from "@/components/ui/button";
