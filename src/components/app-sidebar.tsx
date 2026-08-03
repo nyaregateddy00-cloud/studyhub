@@ -36,6 +36,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { initialsOf, levelProgress, useProfileSummary } from "@/hooks/use-profile";
+import { useSubscription } from "@/hooks/use-subscription";
 import { useSignOut } from "@/lib/auth";
 import { useNotifications } from "@/lib/notifications";
 import { cn } from "@/lib/utils";
@@ -86,6 +87,7 @@ export function AppSidebar() {
   const pathname = useRouterState({ select: (router) => router.location.pathname });
   const { data: profile } = useProfileSummary();
   const { data: notifications } = useNotifications();
+  const { status: subscriptionStatus } = useSubscription();
   const signOut = useSignOut();
 
   const unread = (notifications ?? []).filter((item) => !item.is_read).length;
