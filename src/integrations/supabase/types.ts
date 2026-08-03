@@ -300,6 +300,51 @@ export type Database = {
         }
         Relationships: []
       }
+      payments: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          email: string | null
+          id: string
+          method: string
+          phone_number: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          transaction_code: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          email?: string | null
+          id?: string
+          method?: string
+          phone_number: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          transaction_code: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          email?: string | null
+          id?: string
+          method?: string
+          phone_number?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          transaction_code?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       post_votes: {
         Row: {
           created_at: string
@@ -335,7 +380,14 @@ export type Database = {
           institution: string | null
           last_active_date: string | null
           level: number
+          onboarded_at: string | null
+          plan: string
+          premium_end_date: string | null
+          premium_start_date: string | null
+          premium_status: boolean
           streak_days: number
+          trial_end_date: string
+          trial_start_date: string
           updated_at: string
           xp: number
           year_of_study: number | null
@@ -350,7 +402,14 @@ export type Database = {
           institution?: string | null
           last_active_date?: string | null
           level?: number
+          onboarded_at?: string | null
+          plan?: string
+          premium_end_date?: string | null
+          premium_start_date?: string | null
+          premium_status?: boolean
           streak_days?: number
+          trial_end_date?: string
+          trial_start_date?: string
           updated_at?: string
           xp?: number
           year_of_study?: number | null
@@ -365,7 +424,14 @@ export type Database = {
           institution?: string | null
           last_active_date?: string | null
           level?: number
+          onboarded_at?: string | null
+          plan?: string
+          premium_end_date?: string | null
+          premium_start_date?: string | null
+          premium_status?: boolean
           streak_days?: number
+          trial_end_date?: string
+          trial_start_date?: string
           updated_at?: string
           xp?: number
           year_of_study?: number | null
@@ -485,6 +551,39 @@ export type Database = {
           title?: string
           topic?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      reviews: {
+        Row: {
+          avatar_url: string | null
+          comment: string
+          created_at: string
+          id: string
+          name: string
+          rating: number
+          university: string | null
+          user_id: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          comment: string
+          created_at?: string
+          id?: string
+          name: string
+          rating?: number
+          university?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          comment?: string
+          created_at?: string
+          id?: string
+          name?: string
+          rating?: number
+          university?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -704,6 +803,27 @@ export type Database = {
           subject?: string | null
           title?: string
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      usage_events: {
+        Row: {
+          created_at: string
+          id: string
+          kind: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: string
           user_id?: string
         }
         Relationships: []
