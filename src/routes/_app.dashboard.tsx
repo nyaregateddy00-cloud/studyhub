@@ -1,5 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
+
+import { SubscriptionBanner } from "@/components/premium/subscription-banner";
 import {
   BarChart3,
   BellRing,
