@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
-import { ShieldAlert, ShieldCheck, Trash2 } from "lucide-react";
+import { Link, createFileRoute } from "@tanstack/react-router";
+import { CreditCard, ShieldAlert, ShieldCheck, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
@@ -85,11 +85,21 @@ function Admin() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold">Moderation</h1>
-        <p className="mt-1 text-muted-foreground">
-          Signed in as {role?.isAdmin ? "admin" : "moderator"}.
-        </p>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="text-3xl font-bold">Moderation</h1>
+          <p className="mt-1 text-muted-foreground">
+            Signed in as {role?.isAdmin ? "admin" : "moderator"}.
+          </p>
+        </div>
+        {role?.isAdmin && (
+          <Link
+            to="/admin/payments"
+            className="inline-flex h-9 items-center gap-2 rounded-lg border border-border px-3 text-sm font-medium transition-colors hover:bg-accent"
+          >
+            <CreditCard className="size-4" /> Payment verification
+          </Link>
+        )}
       </div>
 
       {isLoading || !data ? (

@@ -15,9 +15,11 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
+import { Route as AppWelcomeRouteImport } from './routes/_app.welcome'
 import { Route as AppSettingsRouteImport } from './routes/_app.settings'
 import { Route as AppQuizzesRouteImport } from './routes/_app.quizzes'
 import { Route as AppProfileRouteImport } from './routes/_app.profile'
+import { Route as AppPremiumRouteImport } from './routes/_app.premium'
 import { Route as AppPlannerRouteImport } from './routes/_app.planner'
 import { Route as AppNotesRouteImport } from './routes/_app.notes'
 import { Route as AppGroupsRouteImport } from './routes/_app.groups'
@@ -27,6 +29,7 @@ import { Route as AppCommunityRouteImport } from './routes/_app.community'
 import { Route as AppAssistantRouteImport } from './routes/_app.assistant'
 import { Route as AppAnalyticsRouteImport } from './routes/_app.analytics'
 import { Route as AppAdminRouteImport } from './routes/_app.admin'
+import { Route as AppAdminPaymentsRouteImport } from './routes/_app.admin_.payments'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -57,6 +60,11 @@ const ApiChatRoute = ApiChatRouteImport.update({
   path: '/api/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppWelcomeRoute = AppWelcomeRouteImport.update({
+  id: '/welcome',
+  path: '/welcome',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppSettingsRoute = AppSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -70,6 +78,11 @@ const AppQuizzesRoute = AppQuizzesRouteImport.update({
 const AppProfileRoute = AppProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPremiumRoute = AppPremiumRouteImport.update({
+  id: '/premium',
+  path: '/premium',
   getParentRoute: () => AppRoute,
 } as any)
 const AppPlannerRoute = AppPlannerRouteImport.update({
@@ -117,6 +130,11 @@ const AppAdminRoute = AppAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AppRoute,
 } as any)
+const AppAdminPaymentsRoute = AppAdminPaymentsRouteImport.update({
+  id: '/admin_/payments',
+  path: '/admin/payments',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -132,10 +150,13 @@ export interface FileRoutesByFullPath {
   '/groups': typeof AppGroupsRoute
   '/notes': typeof AppNotesRoute
   '/planner': typeof AppPlannerRoute
+  '/premium': typeof AppPremiumRoute
   '/profile': typeof AppProfileRoute
   '/quizzes': typeof AppQuizzesRoute
   '/settings': typeof AppSettingsRoute
+  '/welcome': typeof AppWelcomeRoute
   '/api/chat': typeof ApiChatRoute
+  '/admin/payments': typeof AppAdminPaymentsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -151,10 +172,13 @@ export interface FileRoutesByTo {
   '/groups': typeof AppGroupsRoute
   '/notes': typeof AppNotesRoute
   '/planner': typeof AppPlannerRoute
+  '/premium': typeof AppPremiumRoute
   '/profile': typeof AppProfileRoute
   '/quizzes': typeof AppQuizzesRoute
   '/settings': typeof AppSettingsRoute
+  '/welcome': typeof AppWelcomeRoute
   '/api/chat': typeof ApiChatRoute
+  '/admin/payments': typeof AppAdminPaymentsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -172,10 +196,13 @@ export interface FileRoutesById {
   '/_app/groups': typeof AppGroupsRoute
   '/_app/notes': typeof AppNotesRoute
   '/_app/planner': typeof AppPlannerRoute
+  '/_app/premium': typeof AppPremiumRoute
   '/_app/profile': typeof AppProfileRoute
   '/_app/quizzes': typeof AppQuizzesRoute
   '/_app/settings': typeof AppSettingsRoute
+  '/_app/welcome': typeof AppWelcomeRoute
   '/api/chat': typeof ApiChatRoute
+  '/_app/admin_/payments': typeof AppAdminPaymentsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -193,10 +220,13 @@ export interface FileRouteTypes {
     | '/groups'
     | '/notes'
     | '/planner'
+    | '/premium'
     | '/profile'
     | '/quizzes'
     | '/settings'
+    | '/welcome'
     | '/api/chat'
+    | '/admin/payments'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -212,10 +242,13 @@ export interface FileRouteTypes {
     | '/groups'
     | '/notes'
     | '/planner'
+    | '/premium'
     | '/profile'
     | '/quizzes'
     | '/settings'
+    | '/welcome'
     | '/api/chat'
+    | '/admin/payments'
   id:
     | '__root__'
     | '/'
@@ -232,10 +265,13 @@ export interface FileRouteTypes {
     | '/_app/groups'
     | '/_app/notes'
     | '/_app/planner'
+    | '/_app/premium'
     | '/_app/profile'
     | '/_app/quizzes'
     | '/_app/settings'
+    | '/_app/welcome'
     | '/api/chat'
+    | '/_app/admin_/payments'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -291,6 +327,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiChatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/welcome': {
+      id: '/_app/welcome'
+      path: '/welcome'
+      fullPath: '/welcome'
+      preLoaderRoute: typeof AppWelcomeRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/settings': {
       id: '/_app/settings'
       path: '/settings'
@@ -310,6 +353,13 @@ declare module '@tanstack/react-router' {
       path: '/profile'
       fullPath: '/profile'
       preLoaderRoute: typeof AppProfileRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/premium': {
+      id: '/_app/premium'
+      path: '/premium'
+      fullPath: '/premium'
+      preLoaderRoute: typeof AppPremiumRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/planner': {
@@ -375,6 +425,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdminRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/admin_/payments': {
+      id: '/_app/admin_/payments'
+      path: '/admin/payments'
+      fullPath: '/admin/payments'
+      preLoaderRoute: typeof AppAdminPaymentsRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
@@ -388,9 +445,12 @@ interface AppRouteChildren {
   AppGroupsRoute: typeof AppGroupsRoute
   AppNotesRoute: typeof AppNotesRoute
   AppPlannerRoute: typeof AppPlannerRoute
+  AppPremiumRoute: typeof AppPremiumRoute
   AppProfileRoute: typeof AppProfileRoute
   AppQuizzesRoute: typeof AppQuizzesRoute
   AppSettingsRoute: typeof AppSettingsRoute
+  AppWelcomeRoute: typeof AppWelcomeRoute
+  AppAdminPaymentsRoute: typeof AppAdminPaymentsRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -403,9 +463,12 @@ const AppRouteChildren: AppRouteChildren = {
   AppGroupsRoute: AppGroupsRoute,
   AppNotesRoute: AppNotesRoute,
   AppPlannerRoute: AppPlannerRoute,
+  AppPremiumRoute: AppPremiumRoute,
   AppProfileRoute: AppProfileRoute,
   AppQuizzesRoute: AppQuizzesRoute,
   AppSettingsRoute: AppSettingsRoute,
+  AppWelcomeRoute: AppWelcomeRoute,
+  AppAdminPaymentsRoute: AppAdminPaymentsRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)

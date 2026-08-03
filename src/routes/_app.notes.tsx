@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useUsageGate } from "@/hooks/use-subscription";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -62,6 +63,7 @@ const noteSchema = z.object({
 function NotesPage() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const downloadGate = useUsageGate("download");
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<"all" | "mine" | "shared" | "saved">("all");
@@ -149,6 +151,12 @@ function NotesPage() {
   });
 
   async function download(path: string, name: string) {
+    if (!downloadGate.allowed) {
+      toast.error(
+        `Free plan limit reached (${downloadGate.limit} downloads a day). Upgrade to Premium for unlimited downloads.`,
+      );
+      return;
+    }
     let signedUrl: string;
     try {
       signedUrl = await NotesService.getAttachmentUrl(path, 60);
@@ -160,6 +168,7 @@ function NotesPage() {
     link.href = signedUrl;
     link.download = name;
     link.click();
+    await downloadGate.consume();
   }
 
   const submitReport = useMutation({
