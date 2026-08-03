@@ -63,6 +63,7 @@ const noteSchema = z.object({
 function NotesPage() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const downloadGate = useUsageGate("download");
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<"all" | "mine" | "shared" | "saved">("all");
