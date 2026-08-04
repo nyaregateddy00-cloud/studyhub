@@ -49,6 +49,7 @@ function ProfilePage() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [displayName, setDisplayName] = useState("");
+  const [username, setUsername] = useState("");
   const [institution, setInstitution] = useState("");
   const [course, setCourse] = useState("");
   const [bio, setBio] = useState("");
@@ -70,22 +71,31 @@ function ProfilePage() {
   useEffect(() => {
     if (!data?.profile) return;
     setDisplayName(data.profile.display_name ?? "");
+    setUsername(data.profile.username ?? "");
     setInstitution(data.profile.institution ?? "");
     setCourse(data.profile.course ?? "");
     setBio(data.profile.bio ?? "");
   }, [data?.profile]);
 
   const save = useMutation({
-    mutationFn: () =>
-      UserService.updateProfile(user!.id, {
+    mutationFn: async () => {
+      const cleaned = username.trim().toLowerCase().replace(/[^a-z0-9_]/g, "");
+      if (cleaned.length < 3) throw new Error("Username needs at least 3 letters or numbers.");
+      const free = await UserService.isUsernameAvailable(cleaned, user!.id);
+      if (!free) throw new Error("That username is already taken.");
+      setUsername(cleaned);
+      return UserService.updateProfile(user!.id, {
         display_name: displayName.trim().slice(0, 80) || null,
+        username: cleaned,
         institution: institution.trim().slice(0, 120) || null,
         course: course.trim().slice(0, 120) || null,
         bio: bio.trim().slice(0, 500) || null,
-      }),
+      });
+    },
     onSuccess: async () => {
       toast.success("Profile updated");
       await queryClient.invalidateQueries({ queryKey: ["profile-page", user?.id] });
+      await queryClient.invalidateQueries({ queryKey: ["profile-summary", user?.id] });
     },
     onError: (error: Error) => toast.error(error.message),
   });
@@ -130,6 +140,7 @@ function ProfilePage() {
         </Avatar>
         <div className="min-w-0 flex-1">
           <h1 className="text-2xl font-bold">{displayName || "Student"}</h1>
+          {username && <p className="text-sm font-medium text-primary">@{username}</p>}
           <p className="text-sm text-muted-foreground">
             {course || "Course not set"} · {institution || "Institution not set"}
           </p>
@@ -211,6 +222,14 @@ function ProfilePage() {
             </div>
             <div>
               <Label htmlFor="p-inst">Institution</Label>
+              <Input
+                id="p-username"
+                className="hidden"
+                readOnly
+                value={username}
+                aria-hidden="true"
+                tabIndex={-1}
+              />
               <Input
                 id="p-inst"
                 maxLength={120}
