@@ -14,6 +14,7 @@ import { initialsOf, useProfileSummary } from "@/hooks/use-profile";
 import { useSubscription } from "@/hooks/use-subscription";
 import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
+import { NotificationService } from "@/services/notification.service";
 import { ReviewService, type ReviewRow } from "@/services/review.service";
 import { SubscriptionService, TRIAL_DURATION_DAYS } from "@/services/subscription.service";
 
