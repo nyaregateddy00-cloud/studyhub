@@ -223,14 +223,6 @@ function ProfilePage() {
             <div>
               <Label htmlFor="p-inst">Institution</Label>
               <Input
-                id="p-username"
-                className="hidden"
-                readOnly
-                value={username}
-                aria-hidden="true"
-                tabIndex={-1}
-              />
-              <Input
                 id="p-inst"
                 maxLength={120}
                 value={institution}
