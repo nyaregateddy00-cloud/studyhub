@@ -1,13 +1,26 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { CreditCard, ShieldAlert, ShieldCheck, Trash2 } from "lucide-react";
+import {
+  Check,
+  CreditCard,
+  History,
+  ShieldAlert,
+  ShieldCheck,
+  Star,
+  TimerReset,
+  Trash2,
+  X,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/lib/auth";
+import { runPremiumExpirySweep } from "@/lib/premium-expiry.functions";
 import { AdminService } from "@/services/admin.service";
+import { ReviewService, type ReviewStatus } from "@/services/review.service";
 
 export const Route = createFileRoute("/_app/admin")({
   head: () => ({
@@ -43,28 +56,104 @@ function Admin() {
   });
 
   const resolve = useMutation({
-    mutationFn: (id: string) => AdminService.resolveReport(id),
+    mutationFn: async (id: string) => {
+      await AdminService.resolveReport(id);
+      await AdminService.log({
+        actorId: user!.id,
+        action: "resolve_report",
+        entityType: "note_report",
+        entityId: id,
+      });
+    },
     onSuccess: async () => {
       toast.success("Report resolved");
       await queryClient.invalidateQueries({ queryKey: ["admin-queue"] });
+      await queryClient.invalidateQueries({ queryKey: ["audit-log"] });
     },
     onError: (error: Error) => toast.error(error.message),
   });
 
   const removeNote = useMutation({
-    mutationFn: (noteId: string) => AdminService.removeNote(noteId),
+    mutationFn: async (noteId: string) => {
+      await AdminService.removeNote(noteId);
+      await AdminService.log({
+        actorId: user!.id,
+        action: "delete_note",
+        entityType: "note",
+        entityId: noteId,
+      });
+    },
     onSuccess: async () => {
       toast.success("Note removed");
       await queryClient.invalidateQueries({ queryKey: ["admin-queue"] });
+      await queryClient.invalidateQueries({ queryKey: ["audit-log"] });
     },
     onError: (error: Error) => toast.error(error.message),
   });
 
   const removeQuestion = useMutation({
-    mutationFn: (id: string) => AdminService.removeQuestion(id),
+    mutationFn: async (id: string) => {
+      await AdminService.removeQuestion(id);
+      await AdminService.log({
+        actorId: user!.id,
+        action: "delete_question",
+        entityType: "question",
+        entityId: id,
+      });
+    },
     onSuccess: async () => {
       toast.success("Question removed");
       await queryClient.invalidateQueries({ queryKey: ["admin-queue"] });
+      await queryClient.invalidateQueries({ queryKey: ["audit-log"] });
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
+
+  const pendingReviews = useQuery({
+    queryKey: ["reviews-moderation"],
+    enabled: isStaff,
+    queryFn: () => ReviewService.listForModeration("pending"),
+  });
+
+  const auditLog = useQuery({
+    queryKey: ["audit-log"],
+    enabled: isStaff,
+    queryFn: () => AdminService.listAuditLog(),
+  });
+
+  const moderateReview = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: ReviewStatus }) => {
+      await ReviewService.setStatus(id, status, user!.id);
+      await AdminService.log({
+        actorId: user!.id,
+        action: status === "approved" ? "approve_review" : "reject_review",
+        entityType: "review",
+        entityId: id,
+      });
+    },
+    onSuccess: async () => {
+      toast.success("Review updated");
+      await queryClient.invalidateQueries({ queryKey: ["reviews-moderation"] });
+      await queryClient.invalidateQueries({ queryKey: ["reviews"] });
+      await queryClient.invalidateQueries({ queryKey: ["audit-log"] });
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
+
+  const expirySweep = useMutation({
+    mutationFn: async () => {
+      const result = await runPremiumExpirySweep();
+      await AdminService.log({
+        actorId: user!.id,
+        action: "premium_expiry_sweep",
+        entityType: "subscription",
+        detail: `${result.expired} account(s) moved to free`,
+      });
+      return result;
+    },
+    onSuccess: async (result) => {
+      toast.success(`${result.expired} lapsed account(s) moved to free`);
+      await queryClient.invalidateQueries({ queryKey: ["audit-log"] });
     },
     onError: (error: Error) => toast.error(error.message),
   });
@@ -93,20 +182,43 @@ function Admin() {
           </p>
         </div>
         {role?.isAdmin && (
-          <Link
-            to="/admin/payments"
-            className="inline-flex h-9 items-center gap-2 rounded-lg border border-border px-3 text-sm font-medium transition-colors hover:bg-accent"
-          >
-            <CreditCard className="size-4" /> Payment verification
-          </Link>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/admin/payments">
+                <CreditCard className="size-4" /> Payment verification
+              </Link>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={expirySweep.isPending}
+              onClick={() => expirySweep.mutate()}
+            >
+              <TimerReset className="size-4" /> Run premium expiry sweep
+            </Button>
+          </div>
         )}
       </div>
 
       {isLoading || !data ? (
         <Skeleton className="h-64" />
       ) : (
-        <>
-          <div className="surface-card p-6">
+        <Tabs defaultValue="reports">
+          <TabsList>
+            <TabsTrigger value="reports">Reported notes</TabsTrigger>
+            <TabsTrigger value="reviews">
+              Reviews
+              {(pendingReviews.data?.length ?? 0) > 0 && (
+                <Badge className="ml-2" variant="destructive">
+                  {pendingReviews.data?.length}
+                </Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="community">Community</TabsTrigger>
+            <TabsTrigger value="audit">Audit log</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="reports" className="surface-card mt-6 p-6">
             <h2 className="text-lg font-semibold">Reported notes</h2>
             {data.reports.length === 0 ? (
               <p className="mt-3 text-sm text-muted-foreground">Queue is clear.</p>
@@ -132,9 +244,64 @@ function Admin() {
                 ))}
               </ul>
             )}
-          </div>
+          </TabsContent>
 
-          <div className="surface-card p-6">
+          <TabsContent value="reviews" className="surface-card mt-6 p-6">
+            <h2 className="text-lg font-semibold">Reviews awaiting approval</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              New student reviews stay hidden from the public wall until approved here.
+            </p>
+            {pendingReviews.isLoading ? (
+              <Skeleton className="mt-4 h-24" />
+            ) : (pendingReviews.data?.length ?? 0) === 0 ? (
+              <p className="mt-3 text-sm text-muted-foreground">Nothing waiting.</p>
+            ) : (
+              <ul className="mt-4 divide-y divide-border">
+                {pendingReviews.data?.map((review) => (
+                  <li key={review.id} className="flex flex-wrap items-start gap-3 py-4">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold">
+                        {review.name}
+                        {review.university && (
+                          <span className="font-normal text-muted-foreground">
+                            {" "}
+                            · {review.university}
+                          </span>
+                        )}
+                      </p>
+                      <p className="mt-1 flex items-center gap-1 text-xs text-warning">
+                        {Array.from({ length: review.rating }).map((_, index) => (
+                          <Star key={index} className="size-3 fill-current" />
+                        ))}
+                      </p>
+                      <p className="mt-2 text-sm text-muted-foreground">{review.comment}</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        onClick={() =>
+                          moderateReview.mutate({ id: review.id, status: "approved" })
+                        }
+                      >
+                        <Check className="mr-1 size-4" /> Approve
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() =>
+                          moderateReview.mutate({ id: review.id, status: "rejected" })
+                        }
+                      >
+                        <X className="mr-1 size-4" /> Reject
+                      </Button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </TabsContent>
+
+          <TabsContent value="community" className="surface-card mt-6 p-6">
             <h2 className="text-lg font-semibold">Recent community posts</h2>
             <ul className="mt-4 divide-y divide-border">
               {data.questions.map((question) => (
@@ -150,8 +317,35 @@ function Admin() {
                 </li>
               ))}
             </ul>
-          </div>
-        </>
+          </TabsContent>
+
+          <TabsContent value="audit" className="surface-card mt-6 p-6">
+            <h2 className="flex items-center gap-2 text-lg font-semibold">
+              <History className="size-4" /> Staff audit log
+            </h2>
+            {auditLog.isLoading ? (
+              <Skeleton className="mt-4 h-24" />
+            ) : (auditLog.data?.length ?? 0) === 0 ? (
+              <p className="mt-3 text-sm text-muted-foreground">No staff actions recorded yet.</p>
+            ) : (
+              <ul className="mt-4 divide-y divide-border text-sm">
+                {auditLog.data?.map((entry) => (
+                  <li key={entry.id} className="flex flex-wrap items-center gap-3 py-3">
+                    <Badge variant="secondary">{entry.action}</Badge>
+                    <span className="text-muted-foreground">
+                      {entry.entity_type}
+                      {entry.entity_id ? ` · ${entry.entity_id.slice(0, 8)}` : ""}
+                    </span>
+                    {entry.detail && <span className="truncate">{entry.detail}</span>}
+                    <span className="ml-auto text-xs text-muted-foreground">
+                      {new Date(entry.created_at).toLocaleString()}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </TabsContent>
+        </Tabs>
       )}
     </div>
   );
