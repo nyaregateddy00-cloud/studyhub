@@ -110,7 +110,7 @@ function Welcome() {
       });
     },
     onSuccess: async () => {
-      toast.success("Thanks for sharing your StudyHub story!");
+      toast.success("Thanks! Your review is with our team and appears once approved.");
       setComment("");
       await queryClient.invalidateQueries({ queryKey: ["reviews"] });
     },
