@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_audit_log: {
+        Row: {
+          action: string
+          actor_id: string
+          created_at: string
+          detail: string | null
+          entity_id: string | null
+          entity_type: string
+          id: string
+        }
+        Insert: {
+          action: string
+          actor_id: string
+          created_at?: string
+          detail?: string | null
+          entity_id?: string | null
+          entity_type: string
+          id?: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string
+          created_at?: string
+          detail?: string | null
+          entity_id?: string | null
+          entity_type?: string
+          id?: string
+        }
+        Relationships: []
+      }
       answers: {
         Row: {
           body: string
@@ -389,6 +419,7 @@ export type Database = {
           trial_end_date: string
           trial_start_date: string
           updated_at: string
+          username: string | null
           xp: number
           year_of_study: number | null
         }
@@ -411,6 +442,7 @@ export type Database = {
           trial_end_date?: string
           trial_start_date?: string
           updated_at?: string
+          username?: string | null
           xp?: number
           year_of_study?: number | null
         }
@@ -433,6 +465,7 @@ export type Database = {
           trial_end_date?: string
           trial_start_date?: string
           updated_at?: string
+          username?: string | null
           xp?: number
           year_of_study?: number | null
         }
@@ -562,6 +595,9 @@ export type Database = {
           id: string
           name: string
           rating: number
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
           university: string | null
           user_id: string | null
         }
@@ -572,6 +608,9 @@ export type Database = {
           id?: string
           name: string
           rating?: number
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
           university?: string | null
           user_id?: string | null
         }
@@ -582,6 +621,9 @@ export type Database = {
           id?: string
           name?: string
           rating?: number
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
           university?: string | null
           user_id?: string | null
         }
@@ -872,6 +914,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      expire_premium_accounts: { Args: never; Returns: number }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -886,6 +929,14 @@ export type Database = {
       is_group_owner: {
         Args: { _group_id: string; _user_id: string }
         Returns: boolean
+      }
+      touch_streak: {
+        Args: never
+        Returns: {
+          level: number
+          streak_days: number
+          xp: number
+        }[]
       }
     }
     Enums: {

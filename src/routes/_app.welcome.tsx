@@ -14,6 +14,7 @@ import { initialsOf, useProfileSummary } from "@/hooks/use-profile";
 import { useSubscription } from "@/hooks/use-subscription";
 import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
+import { NotificationService } from "@/services/notification.service";
 import { ReviewService, type ReviewRow } from "@/services/review.service";
 import { SubscriptionService, TRIAL_DURATION_DAYS } from "@/services/subscription.service";
 
@@ -110,7 +111,7 @@ function Welcome() {
       });
     },
     onSuccess: async () => {
-      toast.success("Thanks for sharing your StudyHub story!");
+      toast.success("Thanks! Your review is with our team and appears once approved.");
       setComment("");
       await queryClient.invalidateQueries({ queryKey: ["reviews"] });
     },
@@ -118,7 +119,19 @@ function Welcome() {
   });
 
   const continueToDashboard = useMutation({
-    mutationFn: () => SubscriptionService.markOnboarded(user!.id),
+    mutationFn: async () => {
+      await SubscriptionService.markOnboarded(user!.id);
+      // In-app welcome + thank-you; email delivery follows once a sender domain is set up.
+      await NotificationService.push({
+        userId: user!.id,
+        title: "Welcome to StudyHub 🎓",
+        body: "Your 30-day premium trial is live — unlimited AI tutoring, quizzes, flashcards and downloads. Thanks for joining us!",
+        type: "welcome",
+        link: "/dashboard",
+      }).catch(() => {
+        /* a missing welcome note must never block onboarding */
+      });
+    },
     onSettled: async () => {
       await queryClient.invalidateQueries({ queryKey: ["subscription", user?.id] });
       navigate({ to: "/dashboard", replace: true });

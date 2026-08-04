@@ -19,6 +19,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { useAuth } from "@/lib/auth";
 import { useSubscription } from "@/hooks/use-subscription";
+import { useStreakHeartbeat } from "@/hooks/use-streak";
 import { useTheme } from "@/lib/theme";
 import { cn } from "@/lib/utils";
 
@@ -43,6 +44,9 @@ function AppLayout() {
   const { theme, toggle } = useTheme();
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const { data: subscription, isSuccess: subscriptionLoaded } = useSubscription();
+
+  // Keeps the daily streak (and its XP reward) live for whoever is signed in.
+  useStreakHeartbeat();
 
   useEffect(() => {
     if (!loading && !session) navigate({ to: "/auth", replace: true });
