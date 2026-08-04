@@ -221,6 +221,24 @@ function ProfilePage() {
               />
             </div>
             <div>
+              <Label htmlFor="p-username">Username</Label>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">@</span>
+                <Input
+                  id="p-username"
+                  maxLength={24}
+                  placeholder="janedoe"
+                  value={username}
+                  onChange={(event) =>
+                    setUsername(event.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""))
+                  }
+                />
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Letters, numbers and underscores. Shown to classmates instead of your email.
+              </p>
+            </div>
+            <div>
               <Label htmlFor="p-inst">Institution</Label>
               <Input
                 id="p-inst"
