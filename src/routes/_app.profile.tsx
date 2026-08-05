@@ -79,7 +79,10 @@ function ProfilePage() {
 
   const save = useMutation({
     mutationFn: async () => {
-      const cleaned = username.trim().toLowerCase().replace(/[^a-z0-9_]/g, "");
+      const cleaned = username
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9_]/g, "");
       if (cleaned.length < 3) throw new Error("Username needs at least 3 letters or numbers.");
       const free = await UserService.isUsernameAvailable(cleaned, user!.id);
       if (!free) throw new Error("That username is already taken.");

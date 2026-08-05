@@ -46,9 +46,7 @@ export const AuthService = {
       options: {
         redirectTo:
           redirectTo ??
-          (typeof window !== "undefined"
-            ? `${window.location.origin}/auth/callback`
-            : undefined),
+          (typeof window !== "undefined" ? `${window.location.origin}/auth/callback` : undefined),
       },
     });
     if (error) throw error;

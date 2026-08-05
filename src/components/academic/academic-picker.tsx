@@ -93,7 +93,10 @@ export function AcademicPicker({
       id: "unit",
       label: "Unit",
       current: value.unitId,
-      options: (units.data ?? []).map((row) => ({ id: row.id, label: `${row.code} — ${row.name}` })),
+      options: (units.data ?? []).map((row) => ({
+        id: row.id,
+        label: `${row.code} — ${row.name}`,
+      })),
       disabled: !value.programmeId,
       apply: (id: string | null) => ({ ...value, unitId: id }),
     },
@@ -113,7 +116,9 @@ export function AcademicPicker({
               <SelectValue placeholder={level.label} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value={ANY}>{compact ? `Any ${level.label}` : "Not specified"}</SelectItem>
+              <SelectItem value={ANY}>
+                {compact ? `Any ${level.label}` : "Not specified"}
+              </SelectItem>
               {level.options.map((option) => (
                 <SelectItem key={option.id} value={option.id}>
                   {option.label}

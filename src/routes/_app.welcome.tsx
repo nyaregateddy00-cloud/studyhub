@@ -150,10 +150,8 @@ function Welcome() {
         </h1>
         <p className="mt-3 max-w-2xl text-muted-foreground">
           Here's how other students revise with StudyHub. Your{" "}
-          <strong className="text-foreground">
-            {TRIAL_DURATION_DAYS}-day premium trial
-          </strong>{" "}
-          is already active
+          <strong className="text-foreground">{TRIAL_DURATION_DAYS}-day premium trial</strong> is
+          already active
           {status.trialDaysLeft ? ` — ${status.trialDaysLeft} days remaining` : ""}.
         </p>
         <div className="mt-6 flex flex-wrap gap-2">

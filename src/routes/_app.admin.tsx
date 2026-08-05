@@ -289,18 +289,14 @@ function Admin() {
                     <div className="flex gap-2">
                       <Button
                         size="sm"
-                        onClick={() =>
-                          moderateReview.mutate({ id: review.id, status: "approved" })
-                        }
+                        onClick={() => moderateReview.mutate({ id: review.id, status: "approved" })}
                       >
                         <Check className="mr-1 size-4" /> Approve
                       </Button>
                       <Button
                         size="sm"
                         variant="ghost"
-                        onClick={() =>
-                          moderateReview.mutate({ id: review.id, status: "rejected" })
-                        }
+                        onClick={() => moderateReview.mutate({ id: review.id, status: "rejected" })}
                       >
                         <X className="mr-1 size-4" /> Reject
                       </Button>

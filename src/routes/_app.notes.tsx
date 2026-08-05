@@ -236,7 +236,15 @@ function NotesPage() {
   const notes = (notesQuery.data ?? [])
     .filter((note) =>
       term
-        ? [note.title, note.course, note.unit, note.institution, note.topic, note.unit_code, note.lecturer]
+        ? [
+            note.title,
+            note.course,
+            note.unit,
+            note.institution,
+            note.topic,
+            note.unit_code,
+            note.lecturer,
+          ]
             .filter(Boolean)
             .some((value) => String(value).toLowerCase().includes(term))
         : true,
