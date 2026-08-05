@@ -314,6 +314,82 @@ function NotesPage() {
                     </div>
                   ))}
                 </div>
+
+                <div className="space-y-3 rounded-lg border border-border p-3">
+                  <p className="text-sm font-medium">Course details (optional)</p>
+                  <div className="space-y-1.5">
+                    <Label>Resource type</Label>
+                    <Select
+                      value={form.resourceType}
+                      onValueChange={(value) => setForm({ ...form, resourceType: value })}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {RESOURCE_TYPES.map((type) => (
+                          <SelectItem key={type.value} value={type.value}>
+                            {type.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <AcademicPicker value={academic} onChange={setAcademic} />
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="yearOfStudy">Year of study</Label>
+                      <Input
+                        id="yearOfStudy"
+                        type="number"
+                        min={1}
+                        max={6}
+                        value={form.yearOfStudy}
+                        onChange={(event) => setForm({ ...form, yearOfStudy: event.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="semester">Semester</Label>
+                      <Input
+                        id="semester"
+                        type="number"
+                        min={1}
+                        max={3}
+                        value={form.semester}
+                        onChange={(event) => setForm({ ...form, semester: event.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="unitCode">Unit code</Label>
+                      <Input
+                        id="unitCode"
+                        maxLength={30}
+                        placeholder="ICS 2101"
+                        value={form.unitCode}
+                        onChange={(event) => setForm({ ...form, unitCode: event.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="lecturer">Lecturer</Label>
+                      <Input
+                        id="lecturer"
+                        maxLength={120}
+                        value={form.lecturer}
+                        onChange={(event) => setForm({ ...form, lecturer: event.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-1.5 sm:col-span-2">
+                      <Label htmlFor="academicYear">Academic year</Label>
+                      <Input
+                        id="academicYear"
+                        maxLength={20}
+                        placeholder="2025/2026"
+                        value={form.academicYear}
+                        onChange={(event) => setForm({ ...form, academicYear: event.target.value })}
+                      />
+                    </div>
+                  </div>
+                </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="content">Note content</Label>
                   <Textarea
@@ -359,7 +435,7 @@ function NotesPage() {
           <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             className="pl-9"
-            placeholder="Search by title, course or unit"
+            placeholder="Search by title, unit code or lecturer"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
           />
@@ -372,6 +448,23 @@ function NotesPage() {
             <TabsTrigger value="saved">Saved ({counts.saved})</TabsTrigger>
           </TabsList>
         </Tabs>
+      </div>
+
+      <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
+        <AcademicPicker value={filterAcademic} onChange={setFilterAcademic} compact />
+        <Select value={filterType} onValueChange={setFilterType}>
+          <SelectTrigger className="w-full sm:w-48">
+            <SelectValue placeholder="Any resource type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Any resource type</SelectItem>
+            {RESOURCE_TYPES.map((type) => (
+              <SelectItem key={type.value} value={type.value}>
+                {type.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {notesQuery.isLoading ? (
@@ -414,7 +507,9 @@ function NotesPage() {
                 )}
               </div>
               <p className="mt-1 text-xs text-muted-foreground">
-                {[note.course, note.unit].filter(Boolean).join(" · ") || "Uncategorised"}
+                {[resourceTypeLabel(note.resource_type), note.unit_code, note.course, note.unit]
+                  .filter(Boolean)
+                  .join(" · ")}
               </p>
               {note.content && (
                 <p className="mt-3 line-clamp-3 text-sm text-muted-foreground">{note.content}</p>
