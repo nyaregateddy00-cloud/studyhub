@@ -22,7 +22,10 @@ export const Route = createFileRoute("/_app/admin_/payments")({
         content: "Approve or reject M-Pesa premium payment requests from StudyHub students.",
       },
       { property: "og:title", content: "Payment verification — StudyHub Admin" },
-      { property: "og:description", content: "Premium payment approval queue for StudyHub admins." },
+      {
+        property: "og:description",
+        content: "Premium payment approval queue for StudyHub admins.",
+      },
     ],
   }),
   component: AdminPayments,

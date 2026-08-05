@@ -56,7 +56,11 @@ export const Route = createFileRoute("/_app/premium")({
 });
 
 const benefits = [
-  { icon: Download, title: "Unlimited downloads", body: "Save every note and past paper you need." },
+  {
+    icon: Download,
+    title: "Unlimited downloads",
+    body: "Save every note and past paper you need.",
+  },
   { icon: Bot, title: "Unlimited AI tutor", body: "Ask as many questions as your revision needs." },
   { icon: FileStack, title: "Unlimited quizzes", body: "Generate quizzes from any PDF, any time." },
   { icon: Crown, title: "Premium resources", body: "Priority access to premium notes and packs." },
