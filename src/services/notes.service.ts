@@ -4,7 +4,8 @@ import type { Insert, Row } from "@/services/types";
 
 const NOTES_BUCKET = "notes";
 const NOTE_COLUMNS =
-  "id,user_id,title,content,institution,course,unit,topic,file_url,file_name,file_type,is_public,like_count,created_at";
+  "id,user_id,title,content,institution,course,unit,topic,file_url,file_name,file_type,is_public,like_count,created_at," +
+  "university_id,faculty_id,programme_id,unit_id,year_of_study,semester,unit_code,lecturer,academic_year,resource_type";
 
 export type NoteRow = Row<"notes">;
 export type NewNoteInput = Omit<
