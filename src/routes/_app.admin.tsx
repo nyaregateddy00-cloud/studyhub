@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AcademicManager } from "@/components/admin/academic-manager";
 import { useAuth } from "@/lib/auth";
 import { runPremiumExpirySweep } from "@/lib/premium-expiry.functions";
 import { AdminService } from "@/services/admin.service";
@@ -215,8 +216,17 @@ function Admin() {
               )}
             </TabsTrigger>
             <TabsTrigger value="community">Community</TabsTrigger>
+            <TabsTrigger value="academic">Academic</TabsTrigger>
             <TabsTrigger value="audit">Audit log</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="academic" className="surface-card mt-6 p-6">
+            <h2 className="text-lg font-semibold">Academic structure</h2>
+            <p className="mt-1 mb-5 text-sm text-muted-foreground">
+              Universities, schools, programmes and units used to categorise the library.
+            </p>
+            <AcademicManager />
+          </TabsContent>
 
           <TabsContent value="reports" className="surface-card mt-6 p-6">
             <h2 className="text-lg font-semibold">Reported notes</h2>

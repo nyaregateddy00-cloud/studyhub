@@ -85,6 +85,41 @@ export type Database = {
           },
         ]
       }
+      faculties: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          short_name: string | null
+          university_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          short_name?: string | null
+          university_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          short_name?: string | null
+          university_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "faculties_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "universities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       flashcard_decks: {
         Row: {
           created_at: string
@@ -242,60 +277,119 @@ export type Database = {
       }
       notes: {
         Row: {
+          academic_year: string | null
           content: string | null
           course: string | null
           created_at: string
+          faculty_id: string | null
           file_name: string | null
           file_type: string | null
           file_url: string | null
           id: string
           institution: string | null
           is_public: boolean
+          lecturer: string | null
           like_count: number
+          programme_id: string | null
+          resource_type: string
+          semester: number | null
           title: string
           topic: string | null
           unit: string | null
+          unit_code: string | null
+          unit_id: string | null
+          university_id: string | null
           updated_at: string
           user_id: string
           view_count: number
+          year_of_study: number | null
         }
         Insert: {
+          academic_year?: string | null
           content?: string | null
           course?: string | null
           created_at?: string
+          faculty_id?: string | null
           file_name?: string | null
           file_type?: string | null
           file_url?: string | null
           id?: string
           institution?: string | null
           is_public?: boolean
+          lecturer?: string | null
           like_count?: number
+          programme_id?: string | null
+          resource_type?: string
+          semester?: number | null
           title: string
           topic?: string | null
           unit?: string | null
+          unit_code?: string | null
+          unit_id?: string | null
+          university_id?: string | null
           updated_at?: string
           user_id: string
           view_count?: number
+          year_of_study?: number | null
         }
         Update: {
+          academic_year?: string | null
           content?: string | null
           course?: string | null
           created_at?: string
+          faculty_id?: string | null
           file_name?: string | null
           file_type?: string | null
           file_url?: string | null
           id?: string
           institution?: string | null
           is_public?: boolean
+          lecturer?: string | null
           like_count?: number
+          programme_id?: string | null
+          resource_type?: string
+          semester?: number | null
           title?: string
           topic?: string | null
           unit?: string | null
+          unit_code?: string | null
+          unit_id?: string | null
+          university_id?: string | null
           updated_at?: string
           user_id?: string
           view_count?: number
+          year_of_study?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "notes_faculty_id_fkey"
+            columns: ["faculty_id"]
+            isOneToOne: false
+            referencedRelation: "faculties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notes_programme_id_fkey"
+            columns: ["programme_id"]
+            isOneToOne: false
+            referencedRelation: "programmes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notes_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "units"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notes_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "universities"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       notifications: {
         Row: {
@@ -470,6 +564,47 @@ export type Database = {
           year_of_study?: number | null
         }
         Relationships: []
+      }
+      programmes: {
+        Row: {
+          code: string | null
+          created_at: string
+          duration_years: number
+          faculty_id: string
+          id: string
+          level: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          code?: string | null
+          created_at?: string
+          duration_years?: number
+          faculty_id: string
+          id?: string
+          level?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string | null
+          created_at?: string
+          duration_years?: number
+          faculty_id?: string
+          id?: string
+          level?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "programmes_faculty_id_fkey"
+            columns: ["faculty_id"]
+            isOneToOne: false
+            referencedRelation: "faculties"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       questions: {
         Row: {
@@ -846,6 +981,77 @@ export type Database = {
           title?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      units: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          name: string
+          programme_id: string
+          semester: number | null
+          updated_at: string
+          year_of_study: number | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          name: string
+          programme_id: string
+          semester?: number | null
+          updated_at?: string
+          year_of_study?: number | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          name?: string
+          programme_id?: string
+          semester?: number | null
+          updated_at?: string
+          year_of_study?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "units_programme_id_fkey"
+            columns: ["programme_id"]
+            isOneToOne: false
+            referencedRelation: "programmes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      universities: {
+        Row: {
+          county: string | null
+          created_at: string
+          id: string
+          is_other: boolean
+          name: string
+          short_name: string | null
+          updated_at: string
+        }
+        Insert: {
+          county?: string | null
+          created_at?: string
+          id?: string
+          is_other?: boolean
+          name: string
+          short_name?: string | null
+          updated_at?: string
+        }
+        Update: {
+          county?: string | null
+          created_at?: string
+          id?: string
+          is_other?: boolean
+          name?: string
+          short_name?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
