@@ -9,3 +9,4 @@ export * from "@/services/quiz.service";
 export * from "@/services/storage.service";
 export * from "@/services/types";
 export * from "@/services/user.service";
+export * from "@/services/academic.service";
