@@ -71,14 +71,16 @@ function AuthPage() {
 
   async function handleGoogle() {
     setBusy(true);
-    const result = await AuthService.signInWithGoogle(window.location.origin);
-    if (result.error) {
+    try {
+      // Supabase redirects the browser to Google; the /auth/callback route
+      // finishes the session and forwards to the dashboard.
+      await AuthService.signInWithGoogle(`${window.location.origin}/auth/callback`);
+    } catch (error) {
       setBusy(false);
-      toast.error("Google sign-in failed. Please try again.");
-      return;
+      toast.error(
+        error instanceof Error ? error.message : "Google sign-in failed. Please try again.",
+      );
     }
-    if (result.redirected) return;
-    navigate({ to: "/dashboard", replace: true });
   }
 
   return (

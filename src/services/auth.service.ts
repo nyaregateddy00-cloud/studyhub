@@ -1,6 +1,5 @@
 import type { AuthChangeEvent, Session } from "@supabase/supabase-js";
 
-import { lovable } from "@/integrations/lovable/index";
 import { supabase } from "@/integrations/supabase/client";
 
 export type SignUpInput = { email: string; password: string; fullName: string };
@@ -41,8 +40,18 @@ export const AuthService = {
     if (error) throw error;
   },
 
-  async signInWithGoogle(redirectUri?: string) {
-    return lovable.auth.signInWithOAuth("google", { redirect_uri: redirectUri });
+  async signInWithGoogle(redirectTo?: string) {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo:
+          redirectTo ??
+          (typeof window !== "undefined"
+            ? `${window.location.origin}/auth/callback`
+            : undefined),
+      },
+    });
+    if (error) throw error;
   },
 
   async signOut(): Promise<void> {
