@@ -31,11 +31,24 @@ import { useUsageGate } from "@/hooks/use-subscription";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { PageHeader } from "@/components/page-header";
 import { NoteViewerDialog } from "@/components/notes/note-viewer-dialog";
+import {
+  AcademicPicker,
+  emptyAcademicSelection,
+  type AcademicSelection,
+} from "@/components/academic/academic-picker";
 import { useAuth } from "@/lib/auth";
 import { NotesService } from "@/services/notes.service";
+import { RESOURCE_TYPES, resourceTypeLabel } from "@/services/academic.service";
 
 export const Route = createFileRoute("/_app/notes")({
   head: () => ({
@@ -67,6 +80,9 @@ function NotesPage() {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<"all" | "mine" | "shared" | "saved">("all");
+  const [academic, setAcademic] = useState<AcademicSelection>(emptyAcademicSelection);
+  const [filterAcademic, setFilterAcademic] = useState<AcademicSelection>(emptyAcademicSelection);
+  const [filterType, setFilterType] = useState<string>("all");
   const [form, setForm] = useState({
     title: "",
     institution: "",
@@ -74,6 +90,12 @@ function NotesPage() {
     unit: "",
     content: "",
     isPublic: false,
+    resourceType: "lecture_notes",
+    yearOfStudy: "",
+    semester: "",
+    unitCode: "",
+    lecturer: "",
+    academicYear: "",
   });
   const [file, setFile] = useState<File | null>(null);
   const [reportNoteId, setReportNoteId] = useState<string | null>(null);
@@ -109,6 +131,16 @@ function NotesPage() {
         course: parsed.course || null,
         unit: parsed.unit || null,
         is_public: form.isPublic,
+        university_id: academic.universityId,
+        faculty_id: academic.facultyId,
+        programme_id: academic.programmeId,
+        unit_id: academic.unitId,
+        resource_type: form.resourceType,
+        year_of_study: form.yearOfStudy ? Number(form.yearOfStudy) : null,
+        semester: form.semester ? Number(form.semester) : null,
+        unit_code: form.unitCode.trim() || null,
+        lecturer: form.lecturer.trim().slice(0, 120) || null,
+        academic_year: form.academicYear.trim().slice(0, 20) || null,
         file,
       });
     },
@@ -116,7 +148,21 @@ function NotesPage() {
       toast.success("Note saved");
       setOpen(false);
       setFile(null);
-      setForm({ title: "", institution: "", course: "", unit: "", content: "", isPublic: false });
+      setAcademic(emptyAcademicSelection);
+      setForm({
+        title: "",
+        institution: "",
+        course: "",
+        unit: "",
+        content: "",
+        isPublic: false,
+        resourceType: "lecture_notes",
+        yearOfStudy: "",
+        semester: "",
+        unitCode: "",
+        lecturer: "",
+        academicYear: "",
+      });
       queryClient.invalidateQueries({ queryKey: ["notes"] });
     },
     onError: (error) =>
@@ -190,11 +236,21 @@ function NotesPage() {
   const notes = (notesQuery.data ?? [])
     .filter((note) =>
       term
-        ? [note.title, note.course, note.unit, note.institution, note.topic]
+        ? [note.title, note.course, note.unit, note.institution, note.topic, note.unit_code, note.lecturer]
             .filter(Boolean)
             .some((value) => String(value).toLowerCase().includes(term))
         : true,
     )
+    .filter((note) => (filterType === "all" ? true : note.resource_type === filterType))
+    .filter((note) => {
+      if (filterAcademic.universityId && note.university_id !== filterAcademic.universityId)
+        return false;
+      if (filterAcademic.facultyId && note.faculty_id !== filterAcademic.facultyId) return false;
+      if (filterAcademic.programmeId && note.programme_id !== filterAcademic.programmeId)
+        return false;
+      if (filterAcademic.unitId && note.unit_id !== filterAcademic.unitId) return false;
+      return true;
+    })
     .filter((note) => {
       if (filter === "mine") return note.user_id === user?.id;
       if (filter === "shared") return note.is_public;
