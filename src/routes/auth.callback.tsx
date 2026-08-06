@@ -28,7 +28,9 @@ function AuthCallback() {
       const url = new URL(window.location.href);
       const oauthError = url.searchParams.get("error_description") ?? url.searchParams.get("error");
       if (oauthError) {
-        if (active) setError(oauthError);
+        if (!active) return;
+        setError(oauthError);
+        navigate({ to: "/auth", search: { error: oauthError }, replace: true });
         return;
       }
 
@@ -38,7 +40,9 @@ function AuthCallback() {
       if (code) {
         const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
         if (exchangeError) {
-          if (active) setError(exchangeError.message);
+          if (!active) return;
+          setError(exchangeError.message);
+          navigate({ to: "/auth", search: { error: exchangeError.message }, replace: true });
           return;
         }
       }
@@ -46,10 +50,20 @@ function AuthCallback() {
       const { data } = await supabase.auth.getSession();
       if (!active) return;
       if (data.session) navigate({ to: "/dashboard", replace: true });
-      else navigate({ to: "/auth", replace: true });
+      else
+        navigate({
+          to: "/auth",
+          search: { error: "We could not complete your sign-in. Please try again." },
+          replace: true,
+        });
     }
 
-    void complete();
+    void complete().catch((cause: unknown) => {
+      if (!active) return;
+      const message = cause instanceof Error ? cause.message : "Sign-in failed. Please try again.";
+      setError(message);
+      navigate({ to: "/auth", search: { error: message }, replace: true });
+    });
     return () => {
       active = false;
     };
