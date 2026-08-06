@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { generateText, Output } from "ai";
 import { z } from "zod";
 
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { getActiveProvider } from "./ai/provider.server";
 
 const GenerateInput = z.object({
@@ -56,6 +57,7 @@ function chatModel() {
 }
 
 export const generateQuiz = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => GenerateInput.parse(input))
   .handler(async ({ data }) => {
     const { output } = await generateText({
@@ -71,6 +73,7 @@ export const generateQuiz = createServerFn({ method: "POST" })
   });
 
 export const generateFlashcards = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => GenerateInput.parse(input))
   .handler(async ({ data }) => {
     const { output } = await generateText({
@@ -86,6 +89,7 @@ export const generateFlashcards = createServerFn({ method: "POST" })
   });
 
 export const generateRevisionPlan = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => PlanInput.parse(input))
   .handler(async ({ data }) => {
     const { output } = await generateText({
