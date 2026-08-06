@@ -99,7 +99,14 @@ function Assistant() {
   const gate = useUsageGate("ai_message");
 
   const { messages, sendMessage, status, setMessages } = useChat({
-    transport: new DefaultChatTransport({ api: "/api/chat" }),
+    transport: new DefaultChatTransport({
+      api: "/api/chat",
+      // The endpoint requires a signed-in user, so attach the current token.
+      headers: async () => {
+        const token = (await AuthService.getSession())?.access_token;
+        return token ? { Authorization: `Bearer ${token}` } : {};
+      },
+    }),
     onError: () => toast.error("The tutor couldn't respond. Please try again."),
   });
 
