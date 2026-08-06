@@ -12,8 +12,12 @@ import { AuthService } from "@/services/auth.service";
 type Mode = "signin" | "signup" | "forgot";
 
 export const Route = createFileRoute("/auth")({
-  validateSearch: (search: Record<string, unknown>): { mode?: "signup" } =>
-    search.mode === "signup" ? { mode: "signup" } : {},
+  validateSearch: (search: Record<string, unknown>): { mode?: "signup"; error?: string } => ({
+    ...(search.mode === "signup" ? { mode: "signup" as const } : {}),
+    ...(typeof search.error === "string" && search.error
+      ? { error: search.error.slice(0, 300) }
+      : {}),
+  }),
   head: () => ({
     meta: [
       { title: "Sign in — StudyHub" },
@@ -30,7 +34,7 @@ export const Route = createFileRoute("/auth")({
 });
 
 function AuthPage() {
-  const { mode: modeParam } = Route.useSearch();
+  const { mode: modeParam, error: authError } = Route.useSearch();
   const { session, loading } = useAuth();
   const navigate = useNavigate();
   const [mode, setMode] = useState<Mode>(modeParam === "signup" ? "signup" : "signin");
@@ -42,6 +46,10 @@ function AuthPage() {
   useEffect(() => {
     if (!loading && session) navigate({ to: "/dashboard", replace: true });
   }, [loading, session, navigate]);
+
+  useEffect(() => {
+    if (authError) toast.error(authError);
+  }, [authError]);
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -71,14 +79,16 @@ function AuthPage() {
 
   async function handleGoogle() {
     setBusy(true);
-    const result = await AuthService.signInWithGoogle(window.location.origin);
-    if (result.error) {
+    try {
+      // Supabase redirects the browser to Google; the /auth/callback route
+      // finishes the session and forwards to the dashboard.
+      await AuthService.signInWithGoogle(`${window.location.origin}/auth/callback`);
+    } catch (error) {
       setBusy(false);
-      toast.error("Google sign-in failed. Please try again.");
-      return;
+      toast.error(
+        error instanceof Error ? error.message : "Google sign-in failed. Please try again.",
+      );
     }
-    if (result.redirected) return;
-    navigate({ to: "/dashboard", replace: true });
   }
 
   return (
@@ -100,6 +110,12 @@ function AuthPage() {
             ? "We'll email you a link to set a new password."
             : "Learn smarter. Revise faster. Succeed together."}
         </p>
+
+        {authError && (
+          <p className="mt-4 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+            {authError}
+          </p>
+        )}
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           {mode === "signup" && (

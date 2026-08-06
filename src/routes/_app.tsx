@@ -18,6 +18,8 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { useAuth } from "@/lib/auth";
+import { useSubscription } from "@/hooks/use-subscription";
+import { useStreakHeartbeat } from "@/hooks/use-streak";
 import { useTheme } from "@/lib/theme";
 import { cn } from "@/lib/utils";
 
@@ -41,10 +43,22 @@ function AppLayout() {
   const navigate = useNavigate();
   const { theme, toggle } = useTheme();
   const pathname = useRouterState({ select: (state) => state.location.pathname });
+  const { data: subscription, isSuccess: subscriptionLoaded } = useSubscription();
+
+  // Keeps the daily streak (and its XP reward) live for whoever is signed in.
+  useStreakHeartbeat();
 
   useEffect(() => {
     if (!loading && !session) navigate({ to: "/auth", replace: true });
   }, [loading, session, navigate]);
+
+  // First-time users land on the welcome/reviews screen before the dashboard.
+  useEffect(() => {
+    if (!subscriptionLoaded || !subscription) return;
+    if (subscription.onboarded_at) return;
+    if (pathname === "/welcome") return;
+    navigate({ to: "/welcome", replace: true });
+  }, [subscriptionLoaded, subscription, pathname, navigate]);
 
   if (loading || !session) {
     return (

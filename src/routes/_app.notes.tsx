@@ -10,6 +10,7 @@ import {
   Paperclip,
   Plus,
   Search,
+  Eye,
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -26,13 +27,28 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useUsageGate } from "@/hooks/use-subscription";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { PageHeader } from "@/components/page-header";
+import { NoteViewerDialog } from "@/components/notes/note-viewer-dialog";
+import {
+  AcademicPicker,
+  emptyAcademicSelection,
+  type AcademicSelection,
+} from "@/components/academic/academic-picker";
 import { useAuth } from "@/lib/auth";
 import { NotesService } from "@/services/notes.service";
+import { RESOURCE_TYPES, resourceTypeLabel } from "@/services/academic.service";
 
 export const Route = createFileRoute("/_app/notes")({
   head: () => ({
@@ -60,9 +76,13 @@ const noteSchema = z.object({
 function NotesPage() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const downloadGate = useUsageGate("download");
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<"all" | "mine" | "shared" | "saved">("all");
+  const [academic, setAcademic] = useState<AcademicSelection>(emptyAcademicSelection);
+  const [filterAcademic, setFilterAcademic] = useState<AcademicSelection>(emptyAcademicSelection);
+  const [filterType, setFilterType] = useState<string>("all");
   const [form, setForm] = useState({
     title: "",
     institution: "",
@@ -70,10 +90,17 @@ function NotesPage() {
     unit: "",
     content: "",
     isPublic: false,
+    resourceType: "lecture_notes",
+    yearOfStudy: "",
+    semester: "",
+    unitCode: "",
+    lecturer: "",
+    academicYear: "",
   });
   const [file, setFile] = useState<File | null>(null);
   const [reportNoteId, setReportNoteId] = useState<string | null>(null);
   const [reportReason, setReportReason] = useState("");
+  const [viewNoteId, setViewNoteId] = useState<string | null>(null);
 
   const notesQuery = useQuery({
     queryKey: ["notes", user?.id],
@@ -104,6 +131,16 @@ function NotesPage() {
         course: parsed.course || null,
         unit: parsed.unit || null,
         is_public: form.isPublic,
+        university_id: academic.universityId,
+        faculty_id: academic.facultyId,
+        programme_id: academic.programmeId,
+        unit_id: academic.unitId,
+        resource_type: form.resourceType,
+        year_of_study: form.yearOfStudy ? Number(form.yearOfStudy) : null,
+        semester: form.semester ? Number(form.semester) : null,
+        unit_code: form.unitCode.trim() || null,
+        lecturer: form.lecturer.trim().slice(0, 120) || null,
+        academic_year: form.academicYear.trim().slice(0, 20) || null,
         file,
       });
     },
@@ -111,7 +148,21 @@ function NotesPage() {
       toast.success("Note saved");
       setOpen(false);
       setFile(null);
-      setForm({ title: "", institution: "", course: "", unit: "", content: "", isPublic: false });
+      setAcademic(emptyAcademicSelection);
+      setForm({
+        title: "",
+        institution: "",
+        course: "",
+        unit: "",
+        content: "",
+        isPublic: false,
+        resourceType: "lecture_notes",
+        yearOfStudy: "",
+        semester: "",
+        unitCode: "",
+        lecturer: "",
+        academicYear: "",
+      });
       queryClient.invalidateQueries({ queryKey: ["notes"] });
     },
     onError: (error) =>
@@ -146,6 +197,12 @@ function NotesPage() {
   });
 
   async function download(path: string, name: string) {
+    if (!downloadGate.allowed) {
+      toast.error(
+        `Free plan limit reached (${downloadGate.limit} downloads a day). Upgrade to Premium for unlimited downloads.`,
+      );
+      return;
+    }
     let signedUrl: string;
     try {
       signedUrl = await NotesService.getAttachmentUrl(path, 60);
@@ -157,6 +214,7 @@ function NotesPage() {
     link.href = signedUrl;
     link.download = name;
     link.click();
+    await downloadGate.consume();
   }
 
   const submitReport = useMutation({
@@ -178,11 +236,21 @@ function NotesPage() {
   const notes = (notesQuery.data ?? [])
     .filter((note) =>
       term
-        ? [note.title, note.course, note.unit, note.institution, note.topic]
+        ? [note.title, note.course, note.unit, note.institution, note.topic, note.unit_code, note.lecturer]
             .filter(Boolean)
             .some((value) => String(value).toLowerCase().includes(term))
         : true,
     )
+    .filter((note) => (filterType === "all" ? true : note.resource_type === filterType))
+    .filter((note) => {
+      if (filterAcademic.universityId && note.university_id !== filterAcademic.universityId)
+        return false;
+      if (filterAcademic.facultyId && note.faculty_id !== filterAcademic.facultyId) return false;
+      if (filterAcademic.programmeId && note.programme_id !== filterAcademic.programmeId)
+        return false;
+      if (filterAcademic.unitId && note.unit_id !== filterAcademic.unitId) return false;
+      return true;
+    })
     .filter((note) => {
       if (filter === "mine") return note.user_id === user?.id;
       if (filter === "shared") return note.is_public;
@@ -246,6 +314,82 @@ function NotesPage() {
                     </div>
                   ))}
                 </div>
+
+                <div className="space-y-3 rounded-lg border border-border p-3">
+                  <p className="text-sm font-medium">Course details (optional)</p>
+                  <div className="space-y-1.5">
+                    <Label>Resource type</Label>
+                    <Select
+                      value={form.resourceType}
+                      onValueChange={(value) => setForm({ ...form, resourceType: value })}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {RESOURCE_TYPES.map((type) => (
+                          <SelectItem key={type.value} value={type.value}>
+                            {type.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <AcademicPicker value={academic} onChange={setAcademic} />
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="yearOfStudy">Year of study</Label>
+                      <Input
+                        id="yearOfStudy"
+                        type="number"
+                        min={1}
+                        max={6}
+                        value={form.yearOfStudy}
+                        onChange={(event) => setForm({ ...form, yearOfStudy: event.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="semester">Semester</Label>
+                      <Input
+                        id="semester"
+                        type="number"
+                        min={1}
+                        max={3}
+                        value={form.semester}
+                        onChange={(event) => setForm({ ...form, semester: event.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="unitCode">Unit code</Label>
+                      <Input
+                        id="unitCode"
+                        maxLength={30}
+                        placeholder="ICS 2101"
+                        value={form.unitCode}
+                        onChange={(event) => setForm({ ...form, unitCode: event.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="lecturer">Lecturer</Label>
+                      <Input
+                        id="lecturer"
+                        maxLength={120}
+                        value={form.lecturer}
+                        onChange={(event) => setForm({ ...form, lecturer: event.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-1.5 sm:col-span-2">
+                      <Label htmlFor="academicYear">Academic year</Label>
+                      <Input
+                        id="academicYear"
+                        maxLength={20}
+                        placeholder="2025/2026"
+                        value={form.academicYear}
+                        onChange={(event) => setForm({ ...form, academicYear: event.target.value })}
+                      />
+                    </div>
+                  </div>
+                </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="content">Note content</Label>
                   <Textarea
@@ -291,7 +435,7 @@ function NotesPage() {
           <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             className="pl-9"
-            placeholder="Search by title, course or unit"
+            placeholder="Search by title, unit code or lecturer"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
           />
@@ -304,6 +448,23 @@ function NotesPage() {
             <TabsTrigger value="saved">Saved ({counts.saved})</TabsTrigger>
           </TabsList>
         </Tabs>
+      </div>
+
+      <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
+        <AcademicPicker value={filterAcademic} onChange={setFilterAcademic} compact />
+        <Select value={filterType} onValueChange={setFilterType}>
+          <SelectTrigger className="w-full sm:w-48">
+            <SelectValue placeholder="Any resource type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Any resource type</SelectItem>
+            {RESOURCE_TYPES.map((type) => (
+              <SelectItem key={type.value} value={type.value}>
+                {type.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {notesQuery.isLoading ? (
@@ -332,7 +493,13 @@ function NotesPage() {
           {notes.map((note) => (
             <article key={note.id} className="surface-card lift flex flex-col p-5">
               <div className="flex items-start justify-between gap-2">
-                <h2 className="font-semibold leading-snug">{note.title}</h2>
+                <button
+                  type="button"
+                  className="text-left font-semibold leading-snug hover:underline"
+                  onClick={() => setViewNoteId(note.id)}
+                >
+                  {note.title}
+                </button>
                 {note.is_public && (
                   <Badge variant="secondary" className="shrink-0 gap-1">
                     <Globe className="size-3" /> Shared
@@ -340,7 +507,9 @@ function NotesPage() {
                 )}
               </div>
               <p className="mt-1 text-xs text-muted-foreground">
-                {[note.course, note.unit].filter(Boolean).join(" · ") || "Uncategorised"}
+                {[resourceTypeLabel(note.resource_type), note.unit_code, note.course, note.unit]
+                  .filter(Boolean)
+                  .join(" · ")}
               </p>
               {note.content && (
                 <p className="mt-3 line-clamp-3 text-sm text-muted-foreground">{note.content}</p>
@@ -352,6 +521,10 @@ function NotesPage() {
                 </p>
               )}
               <div className="mt-auto flex items-center gap-1 border-t border-border pt-3">
+                <Button variant="ghost" size="sm" onClick={() => setViewNoteId(note.id)}>
+                  <Eye className="size-4" />
+                  View
+                </Button>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -411,6 +584,14 @@ function NotesPage() {
           ))}
         </div>
       )}
+
+      <NoteViewerDialog
+        note={(notesQuery.data ?? []).find((item) => item.id === viewNoteId) ?? null}
+        onOpenChange={(next) => {
+          if (!next) setViewNoteId(null);
+        }}
+        onDownload={download}
+      />
 
       <Dialog
         open={reportNoteId !== null}

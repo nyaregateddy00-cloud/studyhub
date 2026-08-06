@@ -36,6 +36,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { initialsOf, levelProgress, useProfileSummary } from "@/hooks/use-profile";
+import { useSubscription } from "@/hooks/use-subscription";
 import { useSignOut } from "@/lib/auth";
 import { useNotifications } from "@/lib/notifications";
 import { cn } from "@/lib/utils";
@@ -73,6 +74,7 @@ const sections: { label: string; items: NavItem[] }[] = [
     label: "Account",
     items: [
       { to: "/profile", label: "Profile", icon: User },
+      { to: "/premium", label: "Premium", icon: Crown },
       { to: "/settings", label: "Settings", icon: SettingsIcon },
       { to: "/admin", label: "Admin", icon: Shield },
     ],
@@ -85,6 +87,7 @@ export function AppSidebar() {
   const pathname = useRouterState({ select: (router) => router.location.pathname });
   const { data: profile } = useProfileSummary();
   const { data: notifications } = useNotifications();
+  const { status: subscriptionStatus } = useSubscription();
   const signOut = useSignOut();
 
   const unread = (notifications ?? []).filter((item) => !item.is_read).length;
@@ -158,16 +161,16 @@ export function AppSidebar() {
           </SidebarGroup>
         ))}
 
-        {!collapsed && (
+        {!collapsed && !subscriptionStatus.isPremium && (
           <div className="mx-2 mb-2 rounded-2xl border border-primary/25 bg-primary/5 p-3">
             <p className="flex items-center gap-1.5 text-sm font-semibold">
               <Crown className="size-4 text-warning" /> StudyHub Pro
             </p>
             <p className="mt-1 text-xs text-muted-foreground">
-              Unlimited AI generations, deep analytics and priority tutoring.
+              Unlimited AI tutoring, downloads and quizzes for KSh 49 / 7 days.
             </p>
             <Link
-              to="/settings"
+              to="/premium"
               onClick={() => setOpenMobile(false)}
               className="mt-2.5 inline-flex h-8 w-full items-center justify-center gap-1.5 rounded-lg bg-primary text-xs font-semibold text-primary-foreground transition-opacity hover:opacity-90"
             >

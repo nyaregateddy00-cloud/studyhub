@@ -20,6 +20,8 @@ import {
   ConversationScrollButton,
 } from "@/components/ai-elements/conversation";
 import { Message, MessageContent } from "@/components/ai-elements/message";
+import { useUsageGate } from "@/hooks/use-subscription";
+import { useAuth } from "@/lib/auth";
 import {
   PromptInput,
   PromptInputFooter,
@@ -95,9 +97,20 @@ function CopyButton({ text }: { text: string }) {
 function Assistant() {
   const [input, setInput] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const gate = useUsageGate("ai_message");
+  const { session } = useAuth();
+  const tokenRef = useRef<string | undefined>(undefined);
+  tokenRef.current = session?.access_token;
 
   const { messages, sendMessage, status, setMessages } = useChat({
-    transport: new DefaultChatTransport({ api: "/api/chat" }),
+    transport: new DefaultChatTransport({
+      api: "/api/chat",
+      // The endpoint requires a signed-in user, so attach the current token.
+      headers: () =>
+        tokenRef.current
+          ? ({ Authorization: `Bearer ${tokenRef.current}` } as Record<string, string>)
+          : ({} as Record<string, string>),
+    }),
     onError: () => toast.error("The tutor couldn't respond. Please try again."),
   });
 
@@ -109,8 +122,15 @@ function Assistant() {
 
   async function send(text: string) {
     if (!text.trim() || busy) return;
+    if (!gate.allowed) {
+      toast.error(
+        `Free plan limit reached (${gate.limit} tutor messages a day). Upgrade to Premium for unlimited chats.`,
+      );
+      return;
+    }
     setInput("");
     await sendMessage({ text: text.trim() });
+    await gate.consume();
   }
 
   return (

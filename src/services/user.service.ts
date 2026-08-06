@@ -15,6 +15,7 @@ export type ExtendedProfile = Pick<
   Row<"profiles">,
   | "id"
   | "display_name"
+  | "username"
   | "avatar_url"
   | "bio"
   | "institution"
@@ -26,9 +27,31 @@ export type ExtendedProfile = Pick<
 >;
 
 const EXTENDED_PROFILE_COLUMNS =
-  "id,display_name,avatar_url,bio,institution,course,year_of_study,xp,level,streak_days";
+  "id,display_name,username,avatar_url,bio,institution,course,year_of_study,xp,level,streak_days";
 
 export const UserService = {
+  /**
+   * Records today's activity: extends the streak on consecutive days, resets
+   * after a gap, and awards daily XP. Safe to call repeatedly — the database
+   * routine is a no-op once the day is already counted.
+   */
+  async touchStreak(): Promise<{ streak_days: number; xp: number; level: number } | null> {
+    const { data, error } = await supabase.rpc("touch_streak");
+    if (error) throw error;
+    return (data?.[0] ?? null) as { streak_days: number; xp: number; level: number } | null;
+  },
+
+  /** Usernames are unique, lowercase and URL-safe. */
+  async isUsernameAvailable(username: string, currentUserId: string): Promise<boolean> {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("id")
+      .ilike("username", username)
+      .maybeSingle();
+    if (error) throw error;
+    return !data || data.id === currentUserId;
+  },
+
   async getProfileSummary(userId: string): Promise<ProfileSummary | null> {
     const { data, error } = await supabase
       .from("profiles")

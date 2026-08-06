@@ -66,14 +66,14 @@ export const AuthService = {
       provider: "google",
       options: {
         redirectTo:
-          redirectUri ||
-          `${window.location.origin}/auth/callback`,
+          redirectUri ??
+          (typeof window !== "undefined"
+            ? `${window.location.origin}/auth/callback`
+            : undefined),
       },
     });
 
-    if (error) {
-      throw error;
-    }
+    if (error) throw error;
 
     return data;
   },
