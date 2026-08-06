@@ -188,13 +188,12 @@ function AuthPage() {
               >
                 Forgot your password?
               </button>
-              <button
-                type="button"
+              <Link
+                to="/register"
                 className="text-left hover:text-foreground"
-                onClick={() => setMode("signup")}
               >
                 New here? Create an account
-              </button>
+              </Link>
             </>
           )}
           {mode !== "signin" && (
