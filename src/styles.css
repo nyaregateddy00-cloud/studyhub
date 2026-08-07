@@ -124,7 +124,7 @@
     ),
     radial-gradient(
       55% 55% at 90% 5%,
-      color-mix(in oklab, var(--accent) 14%, transparent),
+      color-mix(in oklab, var(--success) 14%, transparent),
       transparent
     );
   --shadow-soft: 0 1px 2px oklch(0.208 0.042 265.755 / 6%), 0 8px 24px -12px oklch(0.208 0.042 265.755 / 18%);
