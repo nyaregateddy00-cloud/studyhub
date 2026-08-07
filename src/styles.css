@@ -245,3 +245,27 @@
   box-shadow: var(--shadow-soft);
   backdrop-filter: blur(18px) saturate(140%);
 }
+
+/* Blue-tinted headline treatment used on marketing and hero surfaces. */
+@utility gradient-text {
+  background-image: var(--gradient-brand);
+  background-clip: text;
+  color: transparent;
+}
+
+/* Soft brand wash behind stat tiles and premium callouts. */
+@utility brand-tint {
+  background-image: linear-gradient(
+    135deg,
+    color-mix(in oklab, var(--primary) 10%, transparent),
+    color-mix(in oklab, var(--primary) 2%, transparent)
+  );
+}
+
+@utility success-tint {
+  background-image: linear-gradient(
+    135deg,
+    color-mix(in oklab, var(--success) 16%, transparent),
+    color-mix(in oklab, var(--success) 4%, transparent)
+  );
+}
