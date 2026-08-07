@@ -226,7 +226,7 @@ function Community() {
                   <div className="flex flex-wrap items-center gap-2">
                     <h2 className="font-semibold">{question.title}</h2>
                     {question.is_resolved && (
-                      <Badge className="bg-accent/15 text-accent" variant="secondary">
+                      <Badge className="bg-success/15 text-success" variant="secondary">
                         <CheckCircle2 className="mr-1 size-3" /> Resolved
                       </Badge>
                     )}
@@ -370,7 +370,7 @@ function AnswerThread({
                 <ArrowBigUp className="mr-1 size-4" /> {answer.vote_count}
               </Button>
               {answer.is_accepted ? (
-                <Badge className="bg-accent/15 text-accent" variant="secondary">
+                <Badge className="bg-success/15 text-success" variant="secondary">
                   Accepted
                 </Badge>
               ) : (

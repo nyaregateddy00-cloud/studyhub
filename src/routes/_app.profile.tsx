@@ -173,7 +173,7 @@ function ProfilePage() {
                 <p className="mt-3 font-semibold">{badge.label}</p>
                 <p className="text-xs text-muted-foreground">{badge.hint}</p>
                 {has && (
-                  <Badge className="mt-3 bg-accent/15 text-accent" variant="secondary">
+                  <Badge className="mt-3 bg-success/15 text-success" variant="secondary">
                     Earned
                   </Badge>
                 )}

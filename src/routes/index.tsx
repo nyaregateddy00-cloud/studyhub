@@ -164,7 +164,7 @@ function Landing() {
           <div className="surface-card mt-6 grid gap-5 p-6 sm:grid-cols-2 lg:grid-cols-4">
             {highlights.map((item) => (
               <div key={item.title} className="flex items-center gap-3">
-                <span className="success-tint flex size-10 shrink-0 items-center justify-center rounded-xl text-accent">
+                <span className="success-tint flex size-10 shrink-0 items-center justify-center rounded-xl text-success">
                   <item.icon className="size-4" />
                 </span>
                 <div className="min-w-0">

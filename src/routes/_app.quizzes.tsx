@@ -333,7 +333,7 @@ function QuizRunner({ quiz, onExit }: { quiz: ActiveQuiz; onExit: () => void }) 
               {submitted && (
                 <div className="mt-3 flex gap-2 rounded-lg bg-secondary p-3 text-sm">
                   {correct ? (
-                    <CheckCircle2 className="size-4 shrink-0 text-accent" />
+                    <CheckCircle2 className="size-4 shrink-0 text-success" />
                   ) : (
                     <XCircle className="size-4 shrink-0 text-destructive" />
                   )}

@@ -238,7 +238,7 @@ function DeckReview({ deck, onExit }: { deck: { id: string; title: string }; onE
         <Skeleton className="h-64" />
       ) : done ? (
         <div className="surface-card p-12 text-center">
-          <PartyPopper className="mx-auto size-8 text-accent" />
+          <PartyPopper className="mx-auto size-8 text-success" />
           <p className="mt-3 font-display text-lg font-semibold">Session complete</p>
           <p className="mt-1 text-sm text-muted-foreground">
             You reviewed all {cards.length} cards in this deck.

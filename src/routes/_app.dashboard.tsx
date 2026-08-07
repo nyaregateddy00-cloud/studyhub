@@ -319,7 +319,7 @@ function Dashboard() {
           label="Studied this fortnight"
           value={`${Math.round((derived.weekMinutes / 60) * 10) / 10} h`}
           icon={LineChart}
-          tone="success-tint text-accent"
+          tone="success-tint text-success"
           delay={120}
         />
         <StatTile

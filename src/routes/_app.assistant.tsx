@@ -89,7 +89,7 @@ function CopyButton({ text }: { text: string }) {
         window.setTimeout(() => setCopied(false), 1500);
       }}
     >
-      {copied ? <Check className="size-3.5 text-accent" /> : <Copy className="size-3.5" />}
+      {copied ? <Check className="size-3.5 text-success" /> : <Copy className="size-3.5" />}
     </Button>
   );
 }

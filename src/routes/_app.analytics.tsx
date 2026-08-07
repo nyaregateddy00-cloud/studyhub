@@ -244,7 +244,7 @@ function Analytics() {
           <p className="mt-2 text-3xl font-bold">{view.currentMinutes}</p>
           <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
             <TrendIcon
-              className={view.change >= 0 ? "size-3.5 text-accent" : "size-3.5 text-destructive"}
+              className={view.change >= 0 ? "size-3.5 text-success" : "size-3.5 text-destructive"}
             />
             {view.change}% vs previous {range} days
           </p>

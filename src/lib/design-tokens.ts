@@ -11,7 +11,7 @@ export type Priority = "low" | "medium" | "high";
 export const PRIORITY_CLASSES: Record<Priority, string> = {
   high: "bg-destructive/10 text-destructive",
   medium: "bg-warning/10 text-warning",
-  low: "bg-accent/10 text-accent",
+  low: "bg-success/10 text-success",
 };
 
 export type Status = "success" | "warning" | "danger" | "info" | "neutral";
@@ -20,6 +20,6 @@ export const STATUS_CLASSES: Record<Status, string> = {
   success: "bg-primary/10 text-primary",
   warning: "bg-warning/10 text-warning",
   danger: "bg-destructive/10 text-destructive",
-  info: "bg-accent/10 text-accent",
+  info: "bg-success/10 text-success",
   neutral: "bg-secondary text-muted-foreground",
 };
