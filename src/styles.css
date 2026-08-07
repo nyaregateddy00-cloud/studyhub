@@ -90,9 +90,10 @@
   --secondary-foreground: oklch(0.26 0.05 265);
   --muted: oklch(0.965 0.012 250);
   --muted-foreground: oklch(0.53 0.035 257);
+  /* Neutral interaction surface used by menus, ghost buttons, hovers */
+  --accent: oklch(0.958 0.02 254);
+  --accent-foreground: oklch(0.26 0.05 265);
   /* Success green #22C55E — reserved for XP, streaks, badges, positive states */
-  --accent: oklch(0.7227 0.192 149.58);
-  --accent-foreground: oklch(0.22 0.05 152);
   --success: oklch(0.7227 0.192 149.58);
   --success-foreground: oklch(0.22 0.05 152);
   --warning: oklch(0.75 0.16 70);
