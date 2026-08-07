@@ -47,7 +47,7 @@ export function StatTile({
   value,
   hint,
   icon: Icon,
-  tone = "text-primary",
+  tone = "brand-tint text-primary",
   delay = 0,
 }: {
   label: string;
@@ -63,15 +63,13 @@ export function StatTile({
       style={{ animationDelay: `${delay}ms`, animationFillMode: "backwards" }}
     >
       <div className="flex items-center justify-between gap-2">
-        <span
-          className={cn("grid size-9 shrink-0 place-items-center rounded-xl bg-secondary", tone)}
-        >
+        <span className={cn("grid size-9 shrink-0 place-items-center rounded-xl", tone)}>
           <Icon className="size-4" />
         </span>
       </div>
-      <p className="mt-3 text-2xl font-bold sm:text-3xl">{value}</p>
+      <p className="mt-3 text-2xl font-bold tabular-nums sm:text-3xl">{value}</p>
       <p className="text-sm text-muted-foreground">{label}</p>
-      {hint && <p className="mt-1 text-xs text-muted-foreground">{hint}</p>}
+      {hint && <p className="mt-1 text-xs font-medium text-accent">{hint}</p>}
     </div>
   );
 }

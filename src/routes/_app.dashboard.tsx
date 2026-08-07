@@ -304,7 +304,7 @@ function Dashboard() {
           value={data.profile?.streak_days ?? 0}
           hint="Keep it alive today"
           icon={Flame}
-          tone="text-warning"
+          tone="success-tint text-warning"
           delay={0}
         />
         <StatTile
@@ -312,14 +312,14 @@ function Dashboard() {
           value={xp}
           hint={`${xpInLevel} / 500 to level ${level + 1}`}
           icon={Trophy}
-          tone="text-primary"
+          tone="brand-tint text-primary"
           delay={60}
         />
         <StatTile
           label="Studied this fortnight"
           value={`${Math.round((derived.weekMinutes / 60) * 10) / 10} h`}
           icon={LineChart}
-          tone="text-accent"
+          tone="success-tint text-success"
           delay={120}
         />
         <StatTile
@@ -327,7 +327,7 @@ function Dashboard() {
           value={derived.dueCards}
           hint={`${data.deckCount} decks`}
           icon={Layers}
-          tone="text-chart-5"
+          tone="brand-tint text-chart-5"
           delay={180}
         />
       </div>

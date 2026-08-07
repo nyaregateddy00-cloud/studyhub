@@ -27,7 +27,7 @@ function UsageRow({
           className={cn(
             "ml-auto tabular-nums",
             gate.unlimited
-              ? "text-accent"
+              ? "text-success"
               : gate.remaining === 0
                 ? "text-destructive"
                 : "text-muted-foreground",
@@ -44,7 +44,7 @@ function UsageRow({
       </div>
       <Progress
         value={gate.unlimited ? 100 : Math.min(100, percent)}
-        className={cn("mt-2 h-1.5", gate.unlimited && "[&>div]:bg-accent")}
+        className={cn("mt-2 h-1.5", gate.unlimited && "[&>div]:bg-success")}
       />
     </div>
   );

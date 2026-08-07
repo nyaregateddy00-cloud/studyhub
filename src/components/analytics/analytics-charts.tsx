@@ -66,7 +66,7 @@ export function SubjectMinutesChart({ data }: { data: { subject: string; minutes
         <XAxis dataKey="subject" fontSize={11} />
         <YAxis fontSize={11} />
         <Tooltip contentStyle={tooltipStyle} />
-        <Bar dataKey="minutes" name="Minutes" fill="var(--color-accent)" radius={6} />
+        <Bar dataKey="minutes" name="Minutes" fill="var(--color-success)" radius={6} />
       </BarChart>
     </ResponsiveContainer>
   );
