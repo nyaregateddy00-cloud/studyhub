@@ -92,12 +92,13 @@ export const UserService = {
     return data ?? [];
   },
 
+  /** Badges are validated and recorded server-side by the award_badge RPC. */
   async awardBadges(userId: string, badgeKeys: string[]): Promise<void> {
-    if (badgeKeys.length === 0) return;
-    const { error } = await supabase
-      .from("user_badges")
-      .insert(badgeKeys.map((badge_key) => ({ user_id: userId, badge_key })));
-    if (error) throw error;
+    void userId; // the RPC always awards to the signed-in caller
+    for (const badgeKey of badgeKeys) {
+      const { error } = await supabase.rpc("award_badge", { _badge_key: badgeKey });
+      if (error) throw error;
+    }
   },
 
   /** Lightweight counts used on the profile page (notes authored, quizzes taken). */
