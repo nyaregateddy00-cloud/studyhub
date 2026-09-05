@@ -146,20 +146,15 @@ function Groups() {
   const joinByCode = useMutation({
     mutationFn: async () => {
       const code = joinCode.trim().toUpperCase();
-      const { data: group, error } = await supabase
-        .from("study_groups")
-        .select("id")
-        .eq("join_code", code)
-        .maybeSingle();
-      if (error) throw error;
-      if (!group) throw new Error("No group found with that code");
-      const { error: joinError } = await supabase.from("study_group_members").insert({
-        group_id: group.id,
-        user_id: user!.id,
-        display_name: user!.user_metadata?.display_name ?? user!.email?.split("@")[0] ?? "Member",
+      const displayName =
+        user!.user_metadata?.display_name ?? user!.email?.split("@")[0] ?? "Member";
+      const { data: groupId, error } = await supabase.rpc("join_group_by_code", {
+        _code: code,
+        _display_name: displayName,
       });
-      if (joinError) throw joinError;
-      return group.id;
+      if (error) throw error;
+      if (!groupId) throw new Error("No group found with that code");
+      return groupId as string;
     },
     onSuccess: (groupId) => {
       toast.success("Joined via invite code");
