@@ -100,6 +100,18 @@ export const AcademicService = {
     if (error) throw error;
   },
 
+  async update(
+    table: "universities" | "faculties" | "programmes" | "units",
+    id: string,
+    patch: Record<string, unknown>,
+  ) {
+    const { error } = await supabase
+      .from(table)
+      .update(patch as never)
+      .eq("id", id);
+    if (error) throw error;
+  },
+
   async remove(table: "universities" | "faculties" | "programmes" | "units", id: string) {
     const { error } = await supabase.from(table).delete().eq("id", id);
     if (error) throw error;
