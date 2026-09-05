@@ -1120,6 +1120,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      award_badge: { Args: { _badge_key: string }; Returns: boolean }
       expire_premium_accounts: { Args: never; Returns: number }
       has_role: {
         Args: {
@@ -1135,6 +1136,10 @@ export type Database = {
       is_group_owner: {
         Args: { _group_id: string; _user_id: string }
         Returns: boolean
+      }
+      join_group_by_code: {
+        Args: { _code: string; _display_name?: string }
+        Returns: string
       }
       touch_streak: {
         Args: never
