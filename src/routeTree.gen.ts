@@ -15,6 +15,7 @@ import { Route as RegisterRouteImport } from './routes/register'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as FeaturesQuizGeneratorFromPdfRouteImport } from './routes/features/quiz-generator-from-pdf'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AppWelcomeRouteImport } from './routes/_app.welcome'
@@ -62,6 +63,12 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FeaturesQuizGeneratorFromPdfRoute =
+  FeaturesQuizGeneratorFromPdfRouteImport.update({
+    id: '/features/quiz-generator-from-pdf',
+    path: '/features/quiz-generator-from-pdf',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthCallbackRoute = AuthCallbackRouteImport.update({
   id: '/callback',
   path: '/callback',
@@ -170,6 +177,7 @@ export interface FileRoutesByFullPath {
   '/welcome': typeof AppWelcomeRoute
   '/api/chat': typeof ApiChatRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/features/quiz-generator-from-pdf': typeof FeaturesQuizGeneratorFromPdfRoute
   '/admin/payments': typeof AppAdminPaymentsRoute
 }
 export interface FileRoutesByTo {
@@ -194,6 +202,7 @@ export interface FileRoutesByTo {
   '/welcome': typeof AppWelcomeRoute
   '/api/chat': typeof ApiChatRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/features/quiz-generator-from-pdf': typeof FeaturesQuizGeneratorFromPdfRoute
   '/admin/payments': typeof AppAdminPaymentsRoute
 }
 export interface FileRoutesById {
@@ -220,6 +229,7 @@ export interface FileRoutesById {
   '/_app/welcome': typeof AppWelcomeRoute
   '/api/chat': typeof ApiChatRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/features/quiz-generator-from-pdf': typeof FeaturesQuizGeneratorFromPdfRoute
   '/_app/admin_/payments': typeof AppAdminPaymentsRoute
 }
 export interface FileRouteTypes {
@@ -246,6 +256,7 @@ export interface FileRouteTypes {
     | '/welcome'
     | '/api/chat'
     | '/auth/callback'
+    | '/features/quiz-generator-from-pdf'
     | '/admin/payments'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -270,6 +281,7 @@ export interface FileRouteTypes {
     | '/welcome'
     | '/api/chat'
     | '/auth/callback'
+    | '/features/quiz-generator-from-pdf'
     | '/admin/payments'
   id:
     | '__root__'
@@ -295,6 +307,7 @@ export interface FileRouteTypes {
     | '/_app/welcome'
     | '/api/chat'
     | '/auth/callback'
+    | '/features/quiz-generator-from-pdf'
     | '/_app/admin_/payments'
   fileRoutesById: FileRoutesById
 }
@@ -306,6 +319,7 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   ApiChatRoute: typeof ApiChatRoute
+  FeaturesQuizGeneratorFromPdfRoute: typeof FeaturesQuizGeneratorFromPdfRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -350,6 +364,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/features/quiz-generator-from-pdf': {
+      id: '/features/quiz-generator-from-pdf'
+      path: '/features/quiz-generator-from-pdf'
+      fullPath: '/features/quiz-generator-from-pdf'
+      preLoaderRoute: typeof FeaturesQuizGeneratorFromPdfRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth/callback': {
@@ -530,6 +551,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   ApiChatRoute: ApiChatRoute,
+  FeaturesQuizGeneratorFromPdfRoute: FeaturesQuizGeneratorFromPdfRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
