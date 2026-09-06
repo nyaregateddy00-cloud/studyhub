@@ -140,10 +140,11 @@ function Landing() {
             Powered by AI · Built for students
           </span>
           <h1 className="mt-6 max-w-3xl text-balance text-4xl leading-[1.05] font-bold sm:text-6xl">
-            Learn Smarter.{" "}
-            <span className="gradient-text">Revise Faster.</span>{" "}
-            Succeed Together.
+            StudyHub — the{" "}
+            <span className="gradient-text">AI study workspace</span>{" "}
+            for students
           </h1>
+
           <p className="mt-5 max-w-xl text-base text-muted-foreground sm:text-lg">
             The all-in-one study platform for university and high school. Notes, AI tutor, quizzes,
             flashcards and a planner — everything you need to ace exams, in one place.
