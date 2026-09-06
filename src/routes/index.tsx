@@ -22,22 +22,55 @@ import { useTheme } from "@/lib/theme";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "StudyHub — Learn Smarter. Revise Faster. Succeed Together." },
+      { title: "StudyHub — AI study workspace for students" },
       {
         name: "description",
         content:
           "Share and search course notes, generate quizzes from any PDF, drill flashcards and ask an AI tutor — all in one student workspace.",
       },
-      { property: "og:title", content: "StudyHub — Learn Smarter. Revise Faster. Succeed Together." },
+      { property: "og:title", content: "StudyHub — AI study workspace for students" },
       {
         property: "og:description",
         content:
           "Share and search course notes, generate quizzes from any PDF, drill flashcards and ask an AI tutor — all in one student workspace.",
       },
+      { property: "og:url", content: "https://studyhubke-site.lovable.app/" },
+      { name: "twitter:title", content: "StudyHub — AI study workspace for students" },
+      {
+        name: "twitter:description",
+        content:
+          "Share and search course notes, generate quizzes from any PDF, drill flashcards and ask an AI tutor — all in one student workspace.",
+      },
+    ],
+    links: [{ rel: "canonical", href: "https://studyhubke-site.lovable.app/" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "Organization",
+              name: "StudyHub",
+              url: "https://studyhubke-site.lovable.app/",
+              description:
+                "AI-powered study workspace with shared course notes, quiz generation, flashcards and an AI tutor.",
+            },
+            {
+              "@type": "WebSite",
+              name: "StudyHub",
+              url: "https://studyhubke-site.lovable.app/",
+              description:
+                "Share and search course notes, generate quizzes from any PDF, drill flashcards and ask an AI tutor.",
+            },
+          ],
+        }),
+      },
     ],
   }),
   component: Landing,
 });
+
 
 const features = [
   {
@@ -107,10 +140,11 @@ function Landing() {
             Powered by AI · Built for students
           </span>
           <h1 className="mt-6 max-w-3xl text-balance text-4xl leading-[1.05] font-bold sm:text-6xl">
-            Learn Smarter.{" "}
-            <span className="gradient-text">Revise Faster.</span>{" "}
-            Succeed Together.
+            StudyHub — the{" "}
+            <span className="gradient-text">AI study workspace</span>{" "}
+            for students
           </h1>
+
           <p className="mt-5 max-w-xl text-base text-muted-foreground sm:text-lg">
             The all-in-one study platform for university and high school. Notes, AI tutor, quizzes,
             flashcards and a planner — everything you need to ace exams, in one place.
