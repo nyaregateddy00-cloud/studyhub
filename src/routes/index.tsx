@@ -212,6 +212,12 @@ function Landing() {
       </main>
 
       <footer className="border-t border-border py-8 text-center text-sm text-muted-foreground">
+        <Link
+          to="/features/quiz-generator-from-pdf"
+          className="mr-4 hover:text-foreground hover:underline"
+        >
+          Quiz Generator from PDF
+        </Link>
         StudyHub — Learn Smarter. Revise Faster. Succeed Together.
       </footer>
     </div>
