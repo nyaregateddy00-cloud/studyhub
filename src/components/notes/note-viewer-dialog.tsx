@@ -242,7 +242,7 @@ export function NoteViewerDialog({
             <div className="flex justify-center">
               <img
                 src={url}
-                alt={note?.file_name ?? "Note attachment"}
+                alt={`Study note preview: ${note?.title ?? note?.file_name ?? "shared course document"}`}
                 style={{ width: `${zoom * 100}%` }}
                 className="max-w-none rounded-xl border border-border bg-background object-contain shadow-sm"
               />
