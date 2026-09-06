@@ -80,25 +80,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "StudyHub — Learn Smarter. Revise Faster. Succeed Together." },
-      {
-        name: "description",
-        content:
-          "Share and search course notes, generate quizzes from any PDF, drill flashcards and ask an AI tutor — all in one student workspace.",
-      },
-      { property: "og:title", content: "StudyHub — Learn Smarter. Revise Faster. Succeed Together." },
-      {
-        property: "og:description",
-        content:
-          "Share and search course notes, generate quizzes from any PDF, drill flashcards and ask an AI tutor — all in one student workspace.",
-      },
+      { property: "og:site_name", content: "StudyHub" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "StudyHub — Learn Smarter. Revise Faster. Succeed Together." },
-      { name: "twitter:description", content: "Share and search course notes, generate quizzes from any PDF, drill flashcards and ask an AI tutor — all in one student workspace." },
       { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/4ea70f21-e2e7-4347-8453-7e1722fd9a1c/id-preview-60f5921c--c616baae-6b92-4df1-951c-4185c2525469.lovable.app-1785657085640.png" },
       { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/4ea70f21-e2e7-4347-8453-7e1722fd9a1c/id-preview-60f5921c--c616baae-6b92-4df1-951c-4185c2525469.lovable.app-1785657085640.png" },
     ],
+
     links: [
       {
         rel: "stylesheet",
