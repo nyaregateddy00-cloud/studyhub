@@ -214,6 +214,35 @@ export type Database = {
           },
         ]
       }
+      note_downloads: {
+        Row: {
+          created_at: string
+          id: string
+          note_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          note_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          note_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "note_downloads_note_id_fkey"
+            columns: ["note_id"]
+            isOneToOne: false
+            referencedRelation: "notes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       note_likes: {
         Row: {
           created_at: string
@@ -281,6 +310,7 @@ export type Database = {
           content: string | null
           course: string | null
           created_at: string
+          download_count: number
           faculty_id: string | null
           file_name: string | null
           file_type: string | null
@@ -309,6 +339,7 @@ export type Database = {
           content?: string | null
           course?: string | null
           created_at?: string
+          download_count?: number
           faculty_id?: string | null
           file_name?: string | null
           file_type?: string | null
@@ -337,6 +368,7 @@ export type Database = {
           content?: string | null
           course?: string | null
           created_at?: string
+          download_count?: number
           faculty_id?: string | null
           file_name?: string | null
           file_type?: string | null
@@ -500,18 +532,22 @@ export type Database = {
           course: string | null
           created_at: string
           display_name: string | null
+          faculty_id: string | null
           id: string
           institution: string | null
           last_active_date: string | null
           level: number
           onboarded_at: string | null
           plan: string
+          points: number
           premium_end_date: string | null
           premium_start_date: string | null
           premium_status: boolean
+          programme_id: string | null
           streak_days: number
           trial_end_date: string
           trial_start_date: string
+          university_id: string | null
           updated_at: string
           username: string | null
           xp: number
@@ -523,18 +559,22 @@ export type Database = {
           course?: string | null
           created_at?: string
           display_name?: string | null
+          faculty_id?: string | null
           id: string
           institution?: string | null
           last_active_date?: string | null
           level?: number
           onboarded_at?: string | null
           plan?: string
+          points?: number
           premium_end_date?: string | null
           premium_start_date?: string | null
           premium_status?: boolean
+          programme_id?: string | null
           streak_days?: number
           trial_end_date?: string
           trial_start_date?: string
+          university_id?: string | null
           updated_at?: string
           username?: string | null
           xp?: number
@@ -546,24 +586,50 @@ export type Database = {
           course?: string | null
           created_at?: string
           display_name?: string | null
+          faculty_id?: string | null
           id?: string
           institution?: string | null
           last_active_date?: string | null
           level?: number
           onboarded_at?: string | null
           plan?: string
+          points?: number
           premium_end_date?: string | null
           premium_start_date?: string | null
           premium_status?: boolean
+          programme_id?: string | null
           streak_days?: number
           trial_end_date?: string
           trial_start_date?: string
+          university_id?: string | null
           updated_at?: string
           username?: string | null
           xp?: number
           year_of_study?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_faculty_id_fkey"
+            columns: ["faculty_id"]
+            isOneToOne: false
+            referencedRelation: "faculties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_programme_id_fkey"
+            columns: ["programme_id"]
+            isOneToOne: false
+            referencedRelation: "programmes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "universities"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       programmes: {
         Row: {
@@ -1097,6 +1163,33 @@ export type Database = {
         }
         Relationships: []
       }
+      user_points: {
+        Row: {
+          activity_type: string
+          created_at: string
+          id: string
+          points: number
+          reference_id: string | null
+          user_id: string
+        }
+        Insert: {
+          activity_type: string
+          created_at?: string
+          id?: string
+          points: number
+          reference_id?: string | null
+          user_id: string
+        }
+        Update: {
+          activity_type?: string
+          created_at?: string
+          id?: string
+          points?: number
+          reference_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
@@ -1121,6 +1214,15 @@ export type Database = {
     }
     Functions: {
       award_badge: { Args: { _badge_key: string }; Returns: boolean }
+      award_points: {
+        Args: {
+          _activity_type: string
+          _points: number
+          _reference_id: string
+          _user_id: string
+        }
+        Returns: boolean
+      }
       expire_premium_accounts: { Args: never; Returns: number }
       has_role: {
         Args: {
@@ -1140,6 +1242,58 @@ export type Database = {
       join_group_by_code: {
         Args: { _code: string; _display_name?: string }
         Returns: string
+      }
+      leaderboard: {
+        Args: { _limit?: number; _scope?: string }
+        Returns: {
+          avatar_url: string
+          display_name: string
+          level: number
+          points: number
+          programme: string
+          rank: number
+          streak_days: number
+          university: string
+          user_id: string
+          username: string
+        }[]
+      }
+      my_leaderboard_rank: {
+        Args: { _scope?: string }
+        Returns: {
+          avatar_url: string
+          display_name: string
+          level: number
+          points: number
+          programme: string
+          rank: number
+          streak_days: number
+          total_users: number
+          university: string
+          user_id: string
+          username: string
+        }[]
+      }
+      public_profile: {
+        Args: { _user_id: string }
+        Returns: {
+          avatar_url: string
+          bio: string
+          display_name: string
+          faculty: string
+          id: string
+          joined_at: string
+          level: number
+          notes_count: number
+          points: number
+          programme: string
+          quizzes_completed: number
+          streak_days: number
+          university: string
+          username: string
+          xp: number
+          year_of_study: number
+        }[]
       }
       touch_streak: {
         Args: never
