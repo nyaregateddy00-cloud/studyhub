@@ -25,6 +25,7 @@ import { Route as AppProfileRouteImport } from './routes/_app.profile'
 import { Route as AppPremiumRouteImport } from './routes/_app.premium'
 import { Route as AppPlannerRouteImport } from './routes/_app.planner'
 import { Route as AppNotesRouteImport } from './routes/_app.notes'
+import { Route as AppLeaderboardRouteImport } from './routes/_app.leaderboard'
 import { Route as AppGroupsRouteImport } from './routes/_app.groups'
 import { Route as AppFlashcardsRouteImport } from './routes/_app.flashcards'
 import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
@@ -114,6 +115,11 @@ const AppNotesRoute = AppNotesRouteImport.update({
   path: '/notes',
   getParentRoute: () => AppRoute,
 } as any)
+const AppLeaderboardRoute = AppLeaderboardRouteImport.update({
+  id: '/leaderboard',
+  path: '/leaderboard',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppGroupsRoute = AppGroupsRouteImport.update({
   id: '/groups',
   path: '/groups',
@@ -168,6 +174,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AppDashboardRoute
   '/flashcards': typeof AppFlashcardsRoute
   '/groups': typeof AppGroupsRoute
+  '/leaderboard': typeof AppLeaderboardRoute
   '/notes': typeof AppNotesRoute
   '/planner': typeof AppPlannerRoute
   '/premium': typeof AppPremiumRoute
@@ -193,6 +200,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AppDashboardRoute
   '/flashcards': typeof AppFlashcardsRoute
   '/groups': typeof AppGroupsRoute
+  '/leaderboard': typeof AppLeaderboardRoute
   '/notes': typeof AppNotesRoute
   '/planner': typeof AppPlannerRoute
   '/premium': typeof AppPremiumRoute
@@ -220,6 +228,7 @@ export interface FileRoutesById {
   '/_app/dashboard': typeof AppDashboardRoute
   '/_app/flashcards': typeof AppFlashcardsRoute
   '/_app/groups': typeof AppGroupsRoute
+  '/_app/leaderboard': typeof AppLeaderboardRoute
   '/_app/notes': typeof AppNotesRoute
   '/_app/planner': typeof AppPlannerRoute
   '/_app/premium': typeof AppPremiumRoute
@@ -247,6 +256,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/flashcards'
     | '/groups'
+    | '/leaderboard'
     | '/notes'
     | '/planner'
     | '/premium'
@@ -272,6 +282,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/flashcards'
     | '/groups'
+    | '/leaderboard'
     | '/notes'
     | '/planner'
     | '/premium'
@@ -298,6 +309,7 @@ export interface FileRouteTypes {
     | '/_app/dashboard'
     | '/_app/flashcards'
     | '/_app/groups'
+    | '/_app/leaderboard'
     | '/_app/notes'
     | '/_app/planner'
     | '/_app/premium'
@@ -436,6 +448,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppNotesRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/leaderboard': {
+      id: '/_app/leaderboard'
+      path: '/leaderboard'
+      fullPath: '/leaderboard'
+      preLoaderRoute: typeof AppLeaderboardRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/groups': {
       id: '/_app/groups'
       path: '/groups'
@@ -503,6 +522,7 @@ interface AppRouteChildren {
   AppDashboardRoute: typeof AppDashboardRoute
   AppFlashcardsRoute: typeof AppFlashcardsRoute
   AppGroupsRoute: typeof AppGroupsRoute
+  AppLeaderboardRoute: typeof AppLeaderboardRoute
   AppNotesRoute: typeof AppNotesRoute
   AppPlannerRoute: typeof AppPlannerRoute
   AppPremiumRoute: typeof AppPremiumRoute
@@ -521,6 +541,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppDashboardRoute: AppDashboardRoute,
   AppFlashcardsRoute: AppFlashcardsRoute,
   AppGroupsRoute: AppGroupsRoute,
+  AppLeaderboardRoute: AppLeaderboardRoute,
   AppNotesRoute: AppNotesRoute,
   AppPlannerRoute: AppPlannerRoute,
   AppPremiumRoute: AppPremiumRoute,
