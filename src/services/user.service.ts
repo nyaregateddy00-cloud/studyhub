@@ -8,8 +8,9 @@ export type ProfileSummary = Pick<
 >;
 
 const PROFILE_SUMMARY_COLUMNS = "id,display_name,avatar_url,xp,level,streak_days";
-/** Not wired into any route yet — create this bucket in Supabase Storage before using uploadAvatar. */
+/** Private bucket; avatars are shared as long-lived signed URLs. */
 const AVATAR_BUCKET = "avatars";
+const AVATAR_URL_TTL_SECONDS = 60 * 60 * 24 * 365 * 5;
 
 export type ExtendedProfile = Pick<
   Row<"profiles">,
@@ -23,11 +24,12 @@ export type ExtendedProfile = Pick<
   | "year_of_study"
   | "xp"
   | "level"
+  | "points"
   | "streak_days"
 >;
 
 const EXTENDED_PROFILE_COLUMNS =
-  "id,display_name,username,avatar_url,bio,institution,course,year_of_study,xp,level,streak_days";
+  "id,display_name,username,avatar_url,bio,institution,course,year_of_study,xp,level,points,streak_days";
 
 export const UserService = {
   /**
