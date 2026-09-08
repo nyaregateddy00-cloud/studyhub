@@ -82,7 +82,7 @@ export const UserService = {
   async uploadAvatar(userId: string, file: File): Promise<string> {
     const path = StorageService.buildUserPath(userId, file.name);
     await StorageService.replace(AVATAR_BUCKET, path, file);
-    return StorageService.getPublicUrl(AVATAR_BUCKET, path);
+    return StorageService.getSignedUrl(AVATAR_BUCKET, path, AVATAR_URL_TTL_SECONDS);
   },
 
   async getBadges(userId: string) {
