@@ -67,7 +67,7 @@ const sections: { label: string; items: NavItem[] }[] = [
     items: [
       { to: "/community", label: "Q&A", icon: Users },
       { to: "/groups", label: "Study groups", icon: UsersRound },
-      { to: "/profile", label: "Leaderboard", icon: Trophy },
+      { to: "/leaderboard", label: "Leaderboard", icon: Trophy },
     ],
   },
   {
