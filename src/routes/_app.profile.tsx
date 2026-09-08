@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
-import { Award, Flame, Medal, Save, Trophy } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Link, createFileRoute } from "@tanstack/react-router";
+import { Award, Camera, Flame, Save, Sparkles, Trophy } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -14,9 +14,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/lib/auth";
-import { getLeaderboard } from "@/lib/leaderboard.functions";
 import { cn } from "@/lib/utils";
-import { levelProgress, UserService } from "@/services/user.service";
+import { LeaderboardService, activityLabels } from "@/services/leaderboard.service";
+import { initialsOf, levelProgress, UserService } from "@/services/user.service";
 
 export const Route = createFileRoute("/_app/profile")({
   head: () => ({
@@ -24,13 +24,15 @@ export const Route = createFileRoute("/_app/profile")({
       { title: "Profile & Badges — StudyHub" },
       {
         name: "description",
-        content: "Your study stats, XP level, earned badges and the StudyHub leaderboard.",
+        content: "Your study stats, points, XP level, earned badges and profile details.",
       },
       { property: "og:title", content: "Profile & Badges — StudyHub" },
       {
         property: "og:description",
-        content: "Track XP, badges and how you rank against other students.",
+        content: "Track points, XP, badges and how you rank against other students.",
       },
+      { property: "og:type", content: "profile" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: ProfilePage,
@@ -48,6 +50,7 @@ const badgeCatalog = [
 function ProfilePage() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const fileInput = useRef<HTMLInputElement>(null);
   const [displayName, setDisplayName] = useState("");
   const [username, setUsername] = useState("");
   const [institution, setInstitution] = useState("");
@@ -58,13 +61,14 @@ function ProfilePage() {
     queryKey: ["profile-page", user?.id],
     enabled: Boolean(user?.id),
     queryFn: async () => {
-      const [profile, badges, leaderboard, counts] = await Promise.all([
+      const [profile, badges, rank, points, counts] = await Promise.all([
         UserService.getExtendedProfile(user!.id),
         UserService.getBadges(user!.id),
-        getLeaderboard(),
+        LeaderboardService.myRank("global"),
+        LeaderboardService.pointsHistory(user!.id),
         UserService.getActivityCounts(user!.id),
       ]);
-      return { profile, badges, leaderboard, ...counts };
+      return { profile, badges, rank, points, ...counts };
     },
   });
 
@@ -76,6 +80,11 @@ function ProfilePage() {
     setCourse(data.profile.course ?? "");
     setBio(data.profile.bio ?? "");
   }, [data?.profile]);
+
+  const refresh = async () => {
+    await queryClient.invalidateQueries({ queryKey: ["profile-page", user?.id] });
+    await queryClient.invalidateQueries({ queryKey: ["profile-summary", user?.id] });
+  };
 
   const save = useMutation({
     mutationFn: async () => {
@@ -94,10 +103,23 @@ function ProfilePage() {
     },
     onSuccess: async () => {
       toast.success("Profile updated");
-      await queryClient.invalidateQueries({ queryKey: ["profile-page", user?.id] });
-      await queryClient.invalidateQueries({ queryKey: ["profile-summary", user?.id] });
+      await refresh();
     },
     onError: (error: Error) => toast.error(error.message),
+  });
+
+  const uploadAvatar = useMutation({
+    mutationFn: async (file: File) => {
+      if (!file.type.startsWith("image/")) throw new Error("Please choose an image file.");
+      if (file.size > 5 * 1024 * 1024) throw new Error("Images must be under 5 MB.");
+      const url = await UserService.uploadAvatar(user!.id, file);
+      await UserService.updateProfile(user!.id, { avatar_url: url });
+    },
+    onSuccess: async () => {
+      toast.success("Profile picture updated");
+      await refresh();
+    },
+    onError: (error: Error) => toast.error(error.message || "Could not upload that picture."),
   });
 
   // Award badges the student has clearly earned.
@@ -129,38 +151,71 @@ function ProfilePage() {
 
   const xp = data.profile?.xp ?? 0;
   const level = data.profile?.level ?? 1;
+  const points = data.profile?.points ?? 0;
   const earned = new Set(data.badges.map((badge) => badge.badge_key));
 
   return (
     <div className="space-y-8">
       <div className="surface-card flex flex-wrap items-center gap-5 p-6">
-        <Avatar className="size-16">
-          <AvatarImage src={data.profile?.avatar_url ?? undefined} alt="" />
-          <AvatarFallback>{(displayName || "S").slice(0, 2).toUpperCase()}</AvatarFallback>
-        </Avatar>
+        <div className="relative">
+          <Avatar className="size-16">
+            <AvatarImage src={data.profile?.avatar_url ?? undefined} alt="" />
+            <AvatarFallback>{initialsOf(displayName)}</AvatarFallback>
+          </Avatar>
+          <button
+            type="button"
+            aria-label="Change profile picture"
+            disabled={uploadAvatar.isPending}
+            onClick={() => fileInput.current?.click()}
+            className="absolute -bottom-1 -right-1 rounded-full border border-border bg-background p-1.5 shadow-sm transition hover:bg-accent"
+          >
+            <Camera className="size-3.5" />
+          </button>
+          <input
+            ref={fileInput}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(event) => {
+              const file = event.target.files?.[0];
+              event.target.value = "";
+              if (file) uploadAvatar.mutate(file);
+            }}
+          />
+        </div>
         <div className="min-w-0 flex-1">
           <h1 className="text-2xl font-bold">{displayName || "Student"}</h1>
           {username && <p className="text-sm font-medium text-primary">@{username}</p>}
           <p className="text-sm text-muted-foreground">
             {course || "Course not set"} · {institution || "Institution not set"}
           </p>
-          <div className="mt-3 flex items-center gap-3">
+          <div className="mt-3 flex flex-wrap items-center gap-2">
             <Badge variant="secondary">
               <Trophy className="mr-1 size-3" /> Level {level}
             </Badge>
             <Badge variant="secondary">
               <Flame className="mr-1 size-3" /> {data.profile?.streak_days ?? 0} day streak
             </Badge>
+            <Badge variant="secondary">{points} points</Badge>
             <Badge variant="secondary">{xp} XP</Badge>
+            {data.rank && (
+              <Badge variant="secondary">
+                <Sparkles className="mr-1 size-3" /> Rank #{data.rank.rank} of{" "}
+                {data.rank.total_users}
+              </Badge>
+            )}
           </div>
           <Progress value={levelProgress(xp, level).percent} className="mt-3 max-w-sm" />
         </div>
+        <Button variant="outline" asChild>
+          <Link to="/leaderboard">View leaderboard</Link>
+        </Button>
       </div>
 
       <Tabs defaultValue="badges">
         <TabsList>
           <TabsTrigger value="badges">Badges</TabsTrigger>
-          <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
+          <TabsTrigger value="points">Points</TabsTrigger>
           <TabsTrigger value="edit">Edit profile</TabsTrigger>
         </TabsList>
 
@@ -182,31 +237,30 @@ function ProfilePage() {
           })}
         </TabsContent>
 
-        <TabsContent value="leaderboard" className="mt-6">
-          <ul className="surface-card divide-y divide-border">
-            {data.leaderboard.map((row, index) => (
-              <li key={row.id} className="flex items-center gap-3 p-4">
-                <span className="w-6 text-sm font-semibold text-muted-foreground">{index + 1}</span>
-                {index < 3 && <Medal className="size-4 text-warning" />}
-                <Avatar className="size-8">
-                  <AvatarImage src={row.avatar_url ?? undefined} alt="" />
-                  <AvatarFallback>
-                    {(row.display_name ?? "S").slice(0, 2).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <span
-                  className={cn(
-                    "flex-1 truncate text-sm",
-                    row.id === user?.id && "font-semibold text-primary",
-                  )}
-                >
-                  {row.display_name ?? "Student"}
-                </span>
-                <span className="text-xs text-muted-foreground">Lv {row.level}</span>
-                <span className="text-sm font-semibold">{row.xp} XP</span>
-              </li>
-            ))}
-          </ul>
+        <TabsContent value="points" className="mt-6">
+          {data.points.length === 0 ? (
+            <div className="surface-card p-8 text-center">
+              <Trophy className="mx-auto size-7 text-muted-foreground" />
+              <p className="mt-3 font-semibold">No points yet</p>
+              <p className="text-sm text-muted-foreground">
+                Upload a note (25), complete a quiz (20), pass it (30) or tick off a study task (5).
+              </p>
+            </div>
+          ) : (
+            <ul className="surface-card divide-y divide-border">
+              {data.points.map((entry) => (
+                <li key={entry.id} className="flex items-center gap-3 p-4">
+                  <span className="min-w-0 flex-1 truncate text-sm">
+                    {activityLabels[entry.activity_type] ?? entry.activity_type}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {new Date(entry.created_at).toLocaleDateString()}
+                  </span>
+                  <span className="text-sm font-semibold text-success">+{entry.points}</span>
+                </li>
+              ))}
+            </ul>
+          )}
         </TabsContent>
 
         <TabsContent value="edit" className="mt-6">
