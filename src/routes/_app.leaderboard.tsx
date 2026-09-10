@@ -74,9 +74,9 @@ function LeaderboardPage() {
       />
 
       <Tabs value={scope} onValueChange={(value) => setScope(value as LeaderboardScope)}>
-        <TabsList>
+        <TabsList className="grid w-full grid-cols-3 sm:w-auto">
           {scopes.map((item) => (
-            <TabsTrigger key={item.value} value={item.value}>
+            <TabsTrigger key={item.value} value={item.value} className="truncate px-2">
               {item.label}
             </TabsTrigger>
           ))}
@@ -129,7 +129,7 @@ function LeaderboardPage() {
       )}
 
       {podium.length > 0 && (
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid grid-cols-3 items-end gap-2 sm:gap-4">
           {podium.map((row, index) => (
             <PodiumCard key={row.user_id} row={row} place={index + 1} isMe={row.user_id === user?.id} />
           ))}
