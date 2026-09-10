@@ -177,6 +177,8 @@ function LeaderboardPage() {
   );
 }
 
+const medals = ["🥇", "🥈", "🥉"] as const;
+
 function PodiumCard({
   row,
   place,
@@ -186,32 +188,33 @@ function PodiumCard({
   place: number;
   isMe: boolean;
 }) {
-  const tone =
-    place === 1 ? "text-warning" : place === 2 ? "text-muted-foreground" : "text-primary";
+  const order = place === 1 ? "order-2" : place === 2 ? "order-1" : "order-3";
   return (
     <Link
       to="/u/$userId"
       params={{ userId: row.user_id }}
       className={cn(
-        "surface-card flex flex-col items-center p-6 text-center transition hover:-translate-y-0.5",
+        "surface-card flex min-w-0 flex-col items-center p-3 text-center transition hover:-translate-y-0.5 sm:p-6",
+        order,
+        place === 1 && "sm:-translate-y-2",
         isMe && "ring-2 ring-primary/40",
       )}
     >
-      {place === 1 ? (
-        <Crown className={cn("size-6", tone)} />
-      ) : (
-        <Medal className={cn("size-6", tone)} />
-      )}
-      <Avatar className="mt-3 size-14">
+      <span className="text-xl sm:text-2xl" aria-hidden>
+        {medals[place - 1]}
+      </span>
+      <Avatar className={cn("mt-2", place === 1 ? "size-12 sm:size-16" : "size-10 sm:size-14")}>
         <AvatarImage src={row.avatar_url ?? undefined} alt="" />
         <AvatarFallback>{initialsOf(row.display_name)}</AvatarFallback>
       </Avatar>
-      <p className="mt-3 truncate text-sm font-semibold">
+      <p className="mt-2 w-full truncate text-xs font-semibold sm:text-sm">
         {row.display_name ?? row.username ?? "Student"}
       </p>
-      <p className="truncate text-xs text-muted-foreground">{row.university ?? "StudyHub"}</p>
-      <p className="mt-2 text-lg font-bold">{row.points} pts</p>
-      <Badge className="mt-2" variant="secondary">
+      <p className="hidden w-full truncate text-xs text-muted-foreground sm:block">
+        {row.university ?? "StudyHub"}
+      </p>
+      <p className="mt-1 text-sm font-bold sm:text-lg">{row.points} pts</p>
+      <Badge className="mt-1 hidden sm:inline-flex" variant="secondary">
         Level {row.level}
       </Badge>
     </Link>
