@@ -196,7 +196,7 @@ function NotesPage() {
     onError: () => toast.error("Could not update the bookmark."),
   });
 
-  async function download(path: string, name: string) {
+  async function download(path: string, name: string, noteId?: string) {
     if (!downloadGate.allowed) {
       toast.error(
         `Free plan limit reached (${downloadGate.limit} downloads a day). Upgrade to Premium for unlimited downloads.`,
@@ -214,6 +214,14 @@ function NotesPage() {
     link.href = signedUrl;
     link.download = name;
     link.click();
+    if (noteId && user) {
+      try {
+        await NotesService.recordDownload(noteId, user.id);
+        void queryClient.invalidateQueries({ queryKey: ["notes"] });
+      } catch {
+        // Download already succeeded; a missing record only affects points.
+      }
+    }
     await downloadGate.consume();
   }
 
@@ -561,7 +569,7 @@ function NotesPage() {
                     variant="ghost"
                     size="icon-sm"
                     className="ml-auto"
-                    onClick={() => download(note.file_url!, note.file_name ?? "note")}
+                    onClick={() => download(note.file_url!, note.file_name ?? "note", note.id)}
                     aria-label="Download attachment"
                   >
                     <Download className="size-4" />
