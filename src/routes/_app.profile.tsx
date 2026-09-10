@@ -4,12 +4,20 @@ import { Award, Camera, Flame, Save, Sparkles, Trophy } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
+import { AcademicPicker, emptyAcademicSelection, type AcademicSelection } from "@/components/academic/academic-picker";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
@@ -56,19 +64,22 @@ function ProfilePage() {
   const [institution, setInstitution] = useState("");
   const [course, setCourse] = useState("");
   const [bio, setBio] = useState("");
+  const [yearOfStudy, setYearOfStudy] = useState<string>("none");
+  const [academic, setAcademic] = useState<AcademicSelection>(emptyAcademicSelection);
 
   const { data, isLoading } = useQuery({
     queryKey: ["profile-page", user?.id],
     enabled: Boolean(user?.id),
     queryFn: async () => {
-      const [profile, badges, rank, points, counts] = await Promise.all([
+      const [profile, badges, rank, points, counts, stats] = await Promise.all([
         UserService.getExtendedProfile(user!.id),
         UserService.getBadges(user!.id),
         LeaderboardService.myRank("global"),
         LeaderboardService.pointsHistory(user!.id),
         UserService.getActivityCounts(user!.id),
+        UserService.getProfileStats(user!.id),
       ]);
-      return { profile, badges, rank, points, ...counts };
+      return { profile, badges, rank, points, stats, ...counts };
     },
   });
 
@@ -79,6 +90,13 @@ function ProfilePage() {
     setInstitution(data.profile.institution ?? "");
     setCourse(data.profile.course ?? "");
     setBio(data.profile.bio ?? "");
+    setYearOfStudy(data.profile.year_of_study ? String(data.profile.year_of_study) : "none");
+    setAcademic({
+      universityId: data.profile.university_id ?? null,
+      facultyId: data.profile.faculty_id ?? null,
+      programmeId: data.profile.programme_id ?? null,
+      unitId: null,
+    });
   }, [data?.profile]);
 
   const refresh = async () => {
@@ -99,6 +117,10 @@ function ProfilePage() {
         institution: institution.trim().slice(0, 120) || null,
         course: course.trim().slice(0, 120) || null,
         bio: bio.trim().slice(0, 500) || null,
+        university_id: academic.universityId,
+        faculty_id: academic.facultyId,
+        programme_id: academic.programmeId,
+        year_of_study: yearOfStudy === "none" ? null : Number(yearOfStudy),
       });
     },
     onSuccess: async () => {
@@ -189,6 +211,11 @@ function ProfilePage() {
           <p className="text-sm text-muted-foreground">
             {course || "Course not set"} · {institution || "Institution not set"}
           </p>
+          <p className="text-xs text-muted-foreground">
+            {user?.email}
+            {data.profile?.created_at &&
+              ` · Joined ${new Date(data.profile.created_at).toLocaleDateString(undefined, { month: "long", year: "numeric" })}`}
+          </p>
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <Badge variant="secondary">
               <Trophy className="mr-1 size-3" /> Level {level}
@@ -210,6 +237,22 @@ function ProfilePage() {
         <Button variant="outline" asChild>
           <Link to="/leaderboard">View leaderboard</Link>
         </Button>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+        {[
+          { label: "Points", value: points },
+          { label: "Quizzes completed", value: data.stats.quizzesCompleted },
+          { label: "Quizzes passed", value: data.stats.quizzesPassed },
+          { label: "Materials uploaded", value: data.stats.materialsUploaded },
+          { label: "Downloads received", value: data.stats.downloadsReceived },
+          { label: "Bookmarks", value: data.stats.bookmarks },
+        ].map((stat) => (
+          <div key={stat.label} className="surface-card p-4">
+            <p className="text-2xl font-bold">{stat.value}</p>
+            <p className="text-xs text-muted-foreground">{stat.label}</p>
+          </div>
+        ))}
       </div>
 
       <Tabs defaultValue="badges">
@@ -309,6 +352,29 @@ function ProfilePage() {
                 value={course}
                 onChange={(event) => setCourse(event.target.value)}
               />
+            </div>
+            <div className="md:col-span-2">
+              <Label className="mb-2 block">University, school and programme</Label>
+              <AcademicPicker
+                value={academic}
+                onChange={(next) => setAcademic({ ...next, unitId: null })}
+              />
+            </div>
+            <div>
+              <Label htmlFor="p-year">Year of study</Label>
+              <Select value={yearOfStudy} onValueChange={setYearOfStudy}>
+                <SelectTrigger id="p-year" className="w-full">
+                  <SelectValue placeholder="Not specified" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Not specified</SelectItem>
+                  {[1, 2, 3, 4, 5, 6].map((year) => (
+                    <SelectItem key={year} value={String(year)}>
+                      Year {year}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="md:col-span-2">
               <Label htmlFor="p-bio">Bio</Label>
