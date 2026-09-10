@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { Crown, Flame, Medal, Trophy } from "lucide-react";
+import { Flame, Trophy } from "lucide-react";
 import { useState } from "react";
 
 import { PageHeader } from "@/components/page-header";
@@ -67,7 +67,7 @@ function LeaderboardPage() {
   const me = rankQuery.data;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-5 sm:space-y-8">
       <PageHeader
         title="Leaderboard"
         description="Points come from uploading notes, helping classmates, finishing quizzes and completing study tasks."
@@ -142,7 +142,7 @@ function LeaderboardPage() {
             <li
               key={row.user_id}
               className={cn(
-                "flex items-center gap-3 p-4",
+                "flex items-center gap-3 p-3 sm:p-4",
                 row.user_id === user?.id && "bg-primary/5",
               )}
             >
