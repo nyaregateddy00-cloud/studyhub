@@ -76,6 +76,18 @@ export const NotesService = {
     if (error) throw error;
   },
 
+  /**
+   * Records a download so the uploader earns download points. The table has a
+   * unique (note_id, user_id) constraint, so repeat downloads never re-award.
+   */
+  async recordDownload(noteId: string, userId: string): Promise<void> {
+    const { error } = await supabase
+      .from("note_downloads")
+      .insert({ note_id: noteId, user_id: userId });
+    // Duplicate download by the same student is expected — ignore it.
+    if (error && error.code !== "23505") throw error;
+  },
+
   async report(noteId: string, userId: string, reason: string): Promise<void> {
     const { error } = await supabase
       .from("note_reports")
