@@ -26,10 +26,14 @@ export type ExtendedProfile = Pick<
   | "level"
   | "points"
   | "streak_days"
+  | "university_id"
+  | "faculty_id"
+  | "programme_id"
+  | "created_at"
 >;
 
 const EXTENDED_PROFILE_COLUMNS =
-  "id,display_name,username,avatar_url,bio,institution,course,year_of_study,xp,level,points,streak_days";
+  "id,display_name,username,avatar_url,bio,institution,course,year_of_study,xp,level,points,streak_days,university_id,faculty_id,programme_id,created_at";
 
 export const UserService = {
   /**
