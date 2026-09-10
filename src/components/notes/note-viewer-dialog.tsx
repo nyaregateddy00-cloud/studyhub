@@ -57,7 +57,7 @@ export function NoteViewerDialog({
 }: {
   note: ViewerNote | null;
   onOpenChange: (open: boolean) => void;
-  onDownload: (path: string, name: string) => void;
+  onDownload: (path: string, name: string, noteId?: string) => void;
 }) {
   const [url, setUrl] = useState<string | null>(null);
   const [textBody, setTextBody] = useState<string | null>(null);
@@ -202,7 +202,7 @@ export function NoteViewerDialog({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => onDownload(note.file_url!, note.file_name ?? "note")}
+                onClick={() => onDownload(note.file_url!, note.file_name ?? "note", note.id)}
               >
                 <Download className="size-4" /> Download
               </Button>

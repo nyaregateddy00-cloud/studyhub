@@ -26,10 +26,14 @@ export type ExtendedProfile = Pick<
   | "level"
   | "points"
   | "streak_days"
+  | "university_id"
+  | "faculty_id"
+  | "programme_id"
+  | "created_at"
 >;
 
 const EXTENDED_PROFILE_COLUMNS =
-  "id,display_name,username,avatar_url,bio,institution,course,year_of_study,xp,level,points,streak_days";
+  "id,display_name,username,avatar_url,bio,institution,course,year_of_study,xp,level,points,streak_days,university_id,faculty_id,programme_id,created_at";
 
 export const UserService = {
   /**
@@ -134,6 +138,29 @@ export const UserService = {
       attemptCount: attempts.count ?? 0,
       completedTasks: completedTasks.count ?? 0,
       answerCount: answers.count ?? 0,
+    };
+  },
+
+  /** Real profile statistics, all derived from stored records. */
+  async getProfileStats(userId: string) {
+    const [attempts, notes, bookmarks] = await Promise.all([
+      supabase.from("quiz_attempts").select("score,total").eq("user_id", userId),
+      supabase.from("notes").select("download_count").eq("user_id", userId),
+      supabase
+        .from("note_bookmarks")
+        .select("note_id", { count: "exact", head: true })
+        .eq("user_id", userId),
+    ]);
+    if (attempts.error) throw attempts.error;
+    if (notes.error) throw notes.error;
+    if (bookmarks.error) throw bookmarks.error;
+    const rows = attempts.data ?? [];
+    return {
+      quizzesCompleted: rows.length,
+      quizzesPassed: rows.filter((row) => row.total > 0 && row.score / row.total >= 0.5).length,
+      materialsUploaded: (notes.data ?? []).length,
+      downloadsReceived: (notes.data ?? []).reduce((sum, row) => sum + (row.download_count ?? 0), 0),
+      bookmarks: bookmarks.count ?? 0,
     };
   },
 };
