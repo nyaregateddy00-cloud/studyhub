@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { Crown, Flame, Medal, Trophy } from "lucide-react";
+import { Flame, Trophy } from "lucide-react";
 import { useState } from "react";
 
 import { PageHeader } from "@/components/page-header";
@@ -67,16 +67,16 @@ function LeaderboardPage() {
   const me = rankQuery.data;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-5 sm:space-y-8">
       <PageHeader
         title="Leaderboard"
         description="Points come from uploading notes, helping classmates, finishing quizzes and completing study tasks."
       />
 
       <Tabs value={scope} onValueChange={(value) => setScope(value as LeaderboardScope)}>
-        <TabsList>
+        <TabsList className="grid w-full grid-cols-3 sm:w-auto">
           {scopes.map((item) => (
-            <TabsTrigger key={item.value} value={item.value}>
+            <TabsTrigger key={item.value} value={item.value} className="truncate px-2">
               {item.label}
             </TabsTrigger>
           ))}
@@ -129,7 +129,7 @@ function LeaderboardPage() {
       )}
 
       {podium.length > 0 && (
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid grid-cols-3 items-end gap-2 sm:gap-4">
           {podium.map((row, index) => (
             <PodiumCard key={row.user_id} row={row} place={index + 1} isMe={row.user_id === user?.id} />
           ))}
@@ -142,7 +142,7 @@ function LeaderboardPage() {
             <li
               key={row.user_id}
               className={cn(
-                "flex items-center gap-3 p-4",
+                "flex items-center gap-3 p-3 sm:p-4",
                 row.user_id === user?.id && "bg-primary/5",
               )}
             >
@@ -177,6 +177,8 @@ function LeaderboardPage() {
   );
 }
 
+const medals = ["🥇", "🥈", "🥉"] as const;
+
 function PodiumCard({
   row,
   place,
@@ -186,32 +188,33 @@ function PodiumCard({
   place: number;
   isMe: boolean;
 }) {
-  const tone =
-    place === 1 ? "text-warning" : place === 2 ? "text-muted-foreground" : "text-primary";
+  const order = place === 1 ? "order-2" : place === 2 ? "order-1" : "order-3";
   return (
     <Link
       to="/u/$userId"
       params={{ userId: row.user_id }}
       className={cn(
-        "surface-card flex flex-col items-center p-6 text-center transition hover:-translate-y-0.5",
+        "surface-card flex min-w-0 flex-col items-center p-3 text-center transition hover:-translate-y-0.5 sm:p-6",
+        order,
+        place === 1 && "sm:-translate-y-2",
         isMe && "ring-2 ring-primary/40",
       )}
     >
-      {place === 1 ? (
-        <Crown className={cn("size-6", tone)} />
-      ) : (
-        <Medal className={cn("size-6", tone)} />
-      )}
-      <Avatar className="mt-3 size-14">
+      <span className="text-xl sm:text-2xl" aria-hidden>
+        {medals[place - 1]}
+      </span>
+      <Avatar className={cn("mt-2", place === 1 ? "size-12 sm:size-16" : "size-10 sm:size-14")}>
         <AvatarImage src={row.avatar_url ?? undefined} alt="" />
         <AvatarFallback>{initialsOf(row.display_name)}</AvatarFallback>
       </Avatar>
-      <p className="mt-3 truncate text-sm font-semibold">
+      <p className="mt-2 w-full truncate text-xs font-semibold sm:text-sm">
         {row.display_name ?? row.username ?? "Student"}
       </p>
-      <p className="truncate text-xs text-muted-foreground">{row.university ?? "StudyHub"}</p>
-      <p className="mt-2 text-lg font-bold">{row.points} pts</p>
-      <Badge className="mt-2" variant="secondary">
+      <p className="hidden w-full truncate text-xs text-muted-foreground sm:block">
+        {row.university ?? "StudyHub"}
+      </p>
+      <p className="mt-1 text-sm font-bold sm:text-lg">{row.points} pts</p>
+      <Badge className="mt-1 hidden sm:inline-flex" variant="secondary">
         Level {row.level}
       </Badge>
     </Link>

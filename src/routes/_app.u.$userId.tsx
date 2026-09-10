@@ -71,25 +71,27 @@ function PublicProfilePage() {
   const progress = levelProgress(data.xp, data.level);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <Button variant="ghost" size="sm" asChild className="-ml-2">
         <Link to="/leaderboard">
           <ArrowLeft className="mr-1 size-4" /> Leaderboard
         </Link>
       </Button>
 
-      <div className="surface-card flex flex-wrap items-center gap-5 p-6">
-        <Avatar className="size-16">
+      <div className="surface-card flex flex-col items-center gap-4 p-5 text-center sm:flex-row sm:items-center sm:gap-5 sm:p-6 sm:text-left">
+        <Avatar className="size-20 shrink-0 sm:size-16">
           <AvatarImage src={data.avatar_url ?? undefined} alt="" />
           <AvatarFallback>{initialsOf(data.display_name)}</AvatarFallback>
         </Avatar>
-        <div className="min-w-0 flex-1">
-          <h1 className="text-2xl font-bold">{data.display_name ?? "Student"}</h1>
-          {data.username && <p className="text-sm font-medium text-primary">@{data.username}</p>}
-          <p className="text-sm text-muted-foreground">
+        <div className="w-full min-w-0 flex-1">
+          <h1 className="truncate text-xl font-bold sm:text-2xl">{data.display_name ?? "Student"}</h1>
+          {data.username && (
+            <p className="truncate text-sm font-medium text-primary">@{data.username}</p>
+          )}
+          <p className="mt-1 text-sm text-muted-foreground">
             {data.programme ?? "Programme not set"} · {data.university ?? "University not set"}
           </p>
-          <div className="mt-3 flex flex-wrap items-center gap-2">
+          <div className="mt-3 flex flex-wrap items-center justify-center gap-2 sm:justify-start">
             <Badge variant="secondary">
               <Trophy className="mr-1 size-3" /> Level {data.level}
             </Badge>
@@ -98,15 +100,15 @@ function PublicProfilePage() {
             </Badge>
             <Badge variant="secondary">{data.points} points</Badge>
           </div>
-          <Progress value={progress.percent} className="mt-3 max-w-sm" />
+          <Progress value={progress.percent} className="mt-3 w-full sm:max-w-sm" />
         </div>
       </div>
 
-      {data.bio && <p className="surface-card p-6 text-sm leading-relaxed">{data.bio}</p>}
+      {data.bio && <p className="surface-card p-5 text-sm leading-relaxed sm:p-6">{data.bio}</p>}
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-3 gap-2 sm:gap-4">
         <Stat icon={BookOpen} label="Notes shared" value={data.notes_count} />
-        <Stat icon={ListChecks} label="Quizzes completed" value={data.quizzes_completed} />
+        <Stat icon={ListChecks} label="Quizzes done" value={data.quizzes_completed} />
         <Stat
           icon={Trophy}
           label="Joined"
@@ -130,10 +132,10 @@ function Stat({
   value: string | number;
 }) {
   return (
-    <div className="surface-card p-5">
-      <Icon className="size-5 text-muted-foreground" />
-      <p className="mt-3 text-xl font-bold">{value}</p>
-      <p className="text-xs text-muted-foreground">{label}</p>
+    <div className="surface-card p-3 sm:p-5">
+      <Icon className="size-4 text-muted-foreground sm:size-5" />
+      <p className="mt-2 truncate text-lg font-bold sm:mt-3 sm:text-xl">{value}</p>
+      <p className="truncate text-[11px] text-muted-foreground sm:text-xs">{label}</p>
     </div>
   );
 }
