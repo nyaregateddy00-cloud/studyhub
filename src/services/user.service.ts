@@ -140,6 +140,29 @@ export const UserService = {
       answerCount: answers.count ?? 0,
     };
   },
+
+  /** Real profile statistics, all derived from stored records. */
+  async getProfileStats(userId: string) {
+    const [attempts, notes, bookmarks] = await Promise.all([
+      supabase.from("quiz_attempts").select("score,total").eq("user_id", userId),
+      supabase.from("notes").select("download_count").eq("user_id", userId),
+      supabase
+        .from("note_bookmarks")
+        .select("note_id", { count: "exact", head: true })
+        .eq("user_id", userId),
+    ]);
+    if (attempts.error) throw attempts.error;
+    if (notes.error) throw notes.error;
+    if (bookmarks.error) throw bookmarks.error;
+    const rows = attempts.data ?? [];
+    return {
+      quizzesCompleted: rows.length,
+      quizzesPassed: rows.filter((row) => row.total > 0 && row.score / row.total >= 0.5).length,
+      materialsUploaded: (notes.data ?? []).length,
+      downloadsReceived: (notes.data ?? []).reduce((sum, row) => sum + (row.download_count ?? 0), 0),
+      bookmarks: bookmarks.count ?? 0,
+    };
+  },
 };
 
 /** Same 500-XP-per-level curve used across the dashboard, profile and sidebar. */
