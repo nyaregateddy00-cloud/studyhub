@@ -177,7 +177,11 @@ function LeaderboardPage() {
   );
 }
 
-const medals = ["🥇", "🥈", "🥉"] as const;
+const medalStyles = [
+  "border-amber-400/60 bg-amber-400/15 text-amber-600 dark:text-amber-400",
+  "border-slate-400/60 bg-slate-400/15 text-slate-500 dark:text-slate-300",
+  "border-orange-400/60 bg-orange-400/15 text-orange-600 dark:text-orange-400",
+] as const;
 
 function PodiumCard({
   row,
@@ -200,8 +204,14 @@ function PodiumCard({
         isMe && "ring-2 ring-primary/40",
       )}
     >
-      <span className="text-xl sm:text-2xl" aria-hidden>
-        {medals[place - 1]}
+      <span
+        className={cn(
+          "grid size-7 place-items-center rounded-full border text-sm font-bold sm:size-8",
+          medalStyles[place - 1],
+        )}
+        aria-label={`Rank ${place}`}
+      >
+        {place}
       </span>
       <Avatar className={cn("mt-2", place === 1 ? "size-12 sm:size-16" : "size-10 sm:size-14")}>
         <AvatarImage src={row.avatar_url ?? undefined} alt="" />
