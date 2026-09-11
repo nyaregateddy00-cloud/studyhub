@@ -222,6 +222,14 @@ function Admin() {
             <TabsTrigger value="audit">Audit log</TabsTrigger>
           </TabsList>
 
+          <TabsContent value="overview" className="surface-card mt-6 p-6">
+            <h2 className="text-lg font-semibold">Platform overview</h2>
+            <p className="mt-1 mb-5 text-sm text-muted-foreground">
+              Live counts from the database, filterable by university and programme.
+            </p>
+            <OverviewStats />
+          </TabsContent>
+
           <TabsContent value="academic" className="surface-card mt-6 p-6">
             <h2 className="text-lg font-semibold">Academic structure</h2>
             <p className="mt-1 mb-5 text-sm text-muted-foreground">
