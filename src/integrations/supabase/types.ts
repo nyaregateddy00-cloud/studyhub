@@ -1213,6 +1213,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_stats: {
+        Args: { _programme_id?: string; _university_id?: string }
+        Returns: Json
+      }
       award_badge: { Args: { _badge_key: string }; Returns: boolean }
       award_points: {
         Args: {
