@@ -205,7 +205,7 @@ function Admin() {
       {isLoading || !data ? (
         <Skeleton className="h-64" />
       ) : (
-        <Tabs defaultValue="reports">
+        <Tabs defaultValue="overview">
           <TabsList>
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="reports">Reported notes</TabsTrigger>
