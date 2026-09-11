@@ -65,8 +65,8 @@ export function OverviewStats() {
     queryKey: ["admin-stats", universityId, programmeId],
     queryFn: async () => {
       const { data, error } = await supabase.rpc("admin_stats", {
-        _university_id: universityId === ALL ? null : universityId,
-        _programme_id: programmeId === ALL ? null : programmeId,
+        _university_id: universityId === ALL ? undefined : universityId,
+        _programme_id: programmeId === ALL ? undefined : programmeId,
       });
       if (error) throw error;
       return data as unknown as AdminStats;
