@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AcademicManager } from "@/components/admin/academic-manager";
+import { OverviewStats } from "@/components/admin/overview-stats";
 import { useAuth } from "@/lib/auth";
 import { runPremiumExpirySweep } from "@/lib/premium-expiry.functions";
 import { AdminService } from "@/services/admin.service";
@@ -204,8 +205,9 @@ function Admin() {
       {isLoading || !data ? (
         <Skeleton className="h-64" />
       ) : (
-        <Tabs defaultValue="reports">
+        <Tabs defaultValue="overview">
           <TabsList>
+            <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="reports">Reported notes</TabsTrigger>
             <TabsTrigger value="reviews">
               Reviews
@@ -219,6 +221,14 @@ function Admin() {
             <TabsTrigger value="academic">Academic</TabsTrigger>
             <TabsTrigger value="audit">Audit log</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="overview" className="surface-card mt-6 p-6">
+            <h2 className="text-lg font-semibold">Platform overview</h2>
+            <p className="mt-1 mb-5 text-sm text-muted-foreground">
+              Live counts from the database, filterable by university and programme.
+            </p>
+            <OverviewStats />
+          </TabsContent>
 
           <TabsContent value="academic" className="surface-card mt-6 p-6">
             <h2 className="text-lg font-semibold">Academic structure</h2>
