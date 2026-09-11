@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AcademicManager } from "@/components/admin/academic-manager";
+import { OverviewStats } from "@/components/admin/overview-stats";
 import { useAuth } from "@/lib/auth";
 import { runPremiumExpirySweep } from "@/lib/premium-expiry.functions";
 import { AdminService } from "@/services/admin.service";
@@ -206,6 +207,7 @@ function Admin() {
       ) : (
         <Tabs defaultValue="reports">
           <TabsList>
+            <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="reports">Reported notes</TabsTrigger>
             <TabsTrigger value="reviews">
               Reviews
