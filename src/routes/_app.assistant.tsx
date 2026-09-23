@@ -33,7 +33,6 @@ import {
   ConversationScrollButton,
 } from "@/components/ai-elements/conversation";
 import { Message, MessageContent } from "@/components/ai-elements/message";
-import { useUsageGate } from "@/hooks/use-subscription";
 import { useAuth } from "@/lib/auth";
 import {
   PromptInput,
@@ -115,7 +114,6 @@ function Assistant() {
   const [input, setInput] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const gate = useUsageGate("ai_message");
   const { session } = useAuth();
   const tokenRef = useRef<string | undefined>(undefined);
   tokenRef.current = session?.access_token;
@@ -193,12 +191,6 @@ function Assistant() {
 
   async function send(text: string) {
     if (!text.trim() || busy) return;
-    if (!gate.allowed) {
-      toast.error(
-        `Free plan limit reached (${gate.limit} tutor messages a day). Upgrade to Premium for unlimited chats.`,
-      );
-      return;
-    }
     let messageToSend = text.trim();
     if (attachedDoc) {
       messageToSend = `[Attached Material from "${attachedDoc.name}"]:\n"""\n${attachedDoc.content}\n"""\n\nStudent question: ${messageToSend}`;
@@ -206,7 +198,6 @@ function Assistant() {
     }
     setInput("");
     await sendMessage({ text: messageToSend });
-    await gate.consume();
   }
 
   return (

@@ -1,8 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 
-import { SubscriptionBanner } from "@/components/premium/subscription-banner";
-import { UsageMeter } from "@/components/premium/usage-meter";
+
 import {
   BarChart3,
   BellRing,
@@ -245,8 +244,6 @@ function Dashboard() {
 
   return (
     <div className="space-y-6">
-      <SubscriptionBanner />
-      <UsageMeter />
       <DashboardCard className="aurora-bg rounded-3xl border border-primary/25 p-6 shadow-sm">
         <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 sm:flex sm:flex-wrap sm:justify-between">
           <div className="flex min-w-0 items-center gap-4">

@@ -1,293 +1,150 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import {
-  BadgeCheck,
+  ArrowRight,
+  BookOpen,
   Bot,
-  Check,
-  Crown,
-  Download,
+  CheckCircle2,
   FileStack,
-  Smartphone,
-  TimerReset,
+  Layers,
+  Sparkles,
+  Users,
 } from "lucide-react";
-import { useState } from "react";
-import { toast } from "sonner";
 
 import { PageHeader } from "@/components/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useSubscription } from "@/hooks/use-subscription";
-import { useAuth } from "@/lib/auth";
-import {
-  FREE_LIMITS,
-  PREMIUM_DURATION_DAYS,
-  PREMIUM_PRICE_KES,
-  SubscriptionService,
-} from "@/services/subscription.service";
 
 export const Route = createFileRoute("/_app/premium")({
   head: () => ({
     meta: [
-      { title: "StudyHub Premium — KSh 49 for 7 days" },
+      { title: "Free Access — StudyHub" },
       {
         name: "description",
         content:
-          "Unlock unlimited AI tutor chats, downloads, quizzes and premium notes on StudyHub for KSh 49 per week.",
+          "StudyHub is completely free for all students. Enjoy unlimited AI tutoring, notes downloads, quizzes, and revision tools.",
       },
-      { property: "og:title", content: "StudyHub Premium — KSh 49 for 7 days" },
+      { property: "og:title", content: "100% Free Access — StudyHub" },
       {
         property: "og:description",
-        content: "Unlimited AI tutoring, downloads and quizzes for KSh 49 a week.",
+        content: "Unlimited AI tutoring, downloads, and quizzes — completely free for all students.",
       },
     ],
   }),
-  component: Premium,
+  component: FreeAccessPage,
 });
 
-const benefits = [
-  { icon: Download, title: "Unlimited downloads", body: "Save every note and past paper you need." },
-  { icon: Bot, title: "Unlimited AI tutor", body: "Ask as many questions as your revision needs." },
-  { icon: FileStack, title: "Unlimited quizzes", body: "Generate quizzes from any PDF, any time." },
-  { icon: Crown, title: "Premium resources", body: "Priority access to premium notes and packs." },
+const features = [
+  {
+    icon: Bot,
+    title: "Unlimited AI Tutor",
+    description: "Ask detailed questions, summarize lecture slides, and get step-by-step solutions without any message limits.",
+    link: "/assistant",
+    cta: "Chat with AI",
+  },
+  {
+    icon: BookOpen,
+    title: "Unlimited Document Downloads",
+    description: "Download verified lecture notes, revision booklets, and past papers instantly with zero restrictions.",
+    link: "/notes",
+    cta: "Explore Notes",
+  },
+  {
+    icon: FileStack,
+    title: "Unlimited Quizzes & Tests",
+    description: "Generate tailored quizzes from any course material to test your knowledge ahead of exams.",
+    link: "/quizzes",
+    cta: "Take a Quiz",
+  },
+  {
+    icon: Layers,
+    title: "Smart Flashcards & Spaced Repetition",
+    description: "Master difficult definitions and concepts with interactive flashcards and study decks.",
+    link: "/flashcards",
+    cta: "View Flashcards",
+  },
+  {
+    icon: Users,
+    title: "Collaborative Study Groups",
+    description: "Join university study groups, ask questions in the community forum, and share knowledge with peers.",
+    link: "/community",
+    cta: "Join Community",
+  },
+  {
+    icon: Sparkles,
+    title: "Academic Revision Planner",
+    description: "Organize upcoming exam deadlines, revision sessions, and keep track of your daily learning streak.",
+    link: "/planner",
+    cta: "Open Planner",
+  },
 ];
 
-function Premium() {
-  const { user } = useAuth();
-  const queryClient = useQueryClient();
-  const { status, isLoading } = useSubscription();
-  const [open, setOpen] = useState(false);
-  const [transactionCode, setTransactionCode] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [email, setEmail] = useState(user?.email ?? "");
-
-  const paymentsQuery = useQuery({
-    queryKey: ["my-payments", user?.id],
-    enabled: Boolean(user?.id),
-    queryFn: () => SubscriptionService.myPayments(user!.id),
-  });
-
-  const submit = useMutation({
-    mutationFn: async () => {
-      if (transactionCode.trim().length < 6) throw new Error("Enter your M-Pesa transaction code.");
-      if (phoneNumber.trim().length < 9) throw new Error("Enter the phone number you paid with.");
-      await SubscriptionService.submitPayment({
-        userId: user!.id,
-        transactionCode,
-        phoneNumber,
-        email: email || user?.email || "",
-      });
-    },
-    onSuccess: async () => {
-      toast.success("Payment submitted — we'll activate premium once it's verified.");
-      setOpen(false);
-      setTransactionCode("");
-      await queryClient.invalidateQueries({ queryKey: ["my-payments", user?.id] });
-    },
-    onError: (error: Error) => toast.error(error.message),
-  });
-
-  const statusLabel =
-    status.plan === "premium"
-      ? `Premium active · ${status.premiumDaysLeft} day${status.premiumDaysLeft === 1 ? "" : "s"} left`
-      : status.plan === "trial"
-        ? `Free trial · ${status.trialDaysLeft} day${status.trialDaysLeft === 1 ? "" : "s"} left`
-        : "Free plan";
-
+function FreeAccessPage() {
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 max-w-5xl mx-auto">
       <PageHeader
-        title="StudyHub Premium"
-        description="Everything unlocked, for less than a matatu fare."
+        title="100% Free for Every Student"
+        description="No subscriptions, no fees, no paywalls. Everything on StudyHub is open and unrestricted."
       />
 
-      {isLoading ? (
-        <Skeleton className="h-24 rounded-2xl" />
-      ) : (
-        <div className="surface-card animate-in fade-in flex flex-wrap items-center gap-4 p-6 duration-500">
-          <span className="rounded-2xl bg-primary/10 p-3 text-primary">
-            {status.plan === "premium" ? (
-              <Crown className="size-6" />
-            ) : (
-              <TimerReset className="size-6" />
-            )}
-          </span>
-          <div className="min-w-0 flex-1">
-            <p className="text-sm text-muted-foreground">Current subscription</p>
-            <p className="font-display text-lg font-semibold">{statusLabel}</p>
-            {status.plan === "free" && (
-              <p className="mt-1 text-xs text-muted-foreground">
-                Free plan: {FREE_LIMITS.ai_message} AI tutor messages and {FREE_LIMITS.download}{" "}
-                downloads per day.
-              </p>
-            )}
-          </div>
-          <Badge variant={status.isPremium ? "default" : "secondary"}>
-            {status.plan.toUpperCase()}
+      <div className="relative overflow-hidden rounded-3xl border border-primary/20 bg-gradient-to-br from-primary/10 via-background to-secondary/30 p-8 shadow-sm">
+        <div className="pointer-events-none absolute -right-20 -top-20 size-64 rounded-full bg-primary/15 blur-3xl" />
+        <div className="relative z-10 max-w-2xl space-y-4">
+          <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 gap-1.5 px-3 py-1 font-semibold text-xs">
+            <CheckCircle2 className="size-3.5" /> All Features Unlocked
           </Badge>
-        </div>
-      )}
-
-      <section className="grid gap-4 sm:grid-cols-2">
-        {benefits.map((benefit, index) => (
-          <div
-            key={benefit.title}
-            className="surface-card lift animate-in fade-in slide-in-from-bottom-2 flex gap-3 p-5 duration-500"
-            style={{ animationDelay: `${index * 60}ms`, animationFillMode: "backwards" }}
-          >
-            <span className="h-fit rounded-xl bg-primary/10 p-2 text-primary">
-              <benefit.icon className="size-5" />
-            </span>
-            <div>
-              <p className="font-semibold">{benefit.title}</p>
-              <p className="text-sm text-muted-foreground">{benefit.body}</p>
-            </div>
+          <h2 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+            Study without limits. We believe high-quality learning tools should be accessible to all students.
+          </h2>
+          <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
+            Every account on StudyHub comes with unlimited access to the AI tutor, comprehensive course notes, past exams, quiz generators, and study tools at zero cost.
+          </p>
+          <div className="pt-2 flex flex-wrap gap-3">
+            <Button asChild size="lg" className="rounded-xl shadow-xs">
+              <Link to="/dashboard">
+                Go to Dashboard <ArrowRight className="size-4 ml-1.5" />
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="lg" className="rounded-xl">
+              <Link to="/assistant">Start AI Tutoring</Link>
+            </Button>
           </div>
-        ))}
-      </section>
+        </div>
+      </div>
 
-      <section className="grid gap-6 lg:grid-cols-[minmax(0,360px)_1fr]">
-        <div className="glass-panel rounded-3xl border border-primary/25 p-6">
-          <p className="flex items-center gap-2 text-sm font-semibold text-primary">
-            <Crown className="size-4" /> StudyHub Premium
-          </p>
-          <p className="font-display mt-3 text-4xl font-bold">
-            KSh {PREMIUM_PRICE_KES}
-            <span className="text-base font-medium text-muted-foreground">
-              {" "}
-              / {PREMIUM_DURATION_DAYS} days
-            </span>
-          </p>
-          <ul className="mt-4 space-y-2 text-sm">
-            {[
-              "Unlimited downloads",
-              "Unlimited AI tutor usage",
-              "Unlimited quizzes",
-              "Premium notes & resources",
-              "Full StudyHub experience",
-            ].map((item) => (
-              <li key={item} className="flex items-center gap-2">
-                <Check className="size-4 text-success" /> {item}
-              </li>
-            ))}
-          </ul>
-          <Button className="mt-6 w-full" size="lg" onClick={() => setOpen(true)}>
-            Upgrade to Premium
-          </Button>
-          <p className="mt-2 text-center text-xs text-muted-foreground">
-            Pay with M-Pesa · activated after verification
+      <section className="space-y-4">
+        <div>
+          <h3 className="font-display text-xl font-bold tracking-tight">Included Features</h3>
+          <p className="text-sm text-muted-foreground">
+            Everything you need to excel in your academic journey.
           </p>
         </div>
 
-        <div className="surface-card space-y-4 p-6">
-          <h2 className="font-display text-lg font-semibold">Your payment requests</h2>
-          {paymentsQuery.isLoading ? (
-            <Skeleton className="h-20" />
-          ) : (paymentsQuery.data ?? []).length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              No payments yet. Upgrade above and your request will appear here.
-            </p>
-          ) : (
-            <ul className="divide-y divide-border">
-              {(paymentsQuery.data ?? []).map((payment) => (
-                <li key={payment.id} className="flex items-center gap-3 py-3">
-                  <BadgeCheck className="size-4 shrink-0 text-muted-foreground" />
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium">{payment.transaction_code}</p>
-                    <p className="text-xs text-muted-foreground">
-                      KSh {Number(payment.amount)} ·{" "}
-                      {new Date(payment.created_at).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <Badge
-                    variant={
-                      payment.status === "approved"
-                        ? "default"
-                        : payment.status === "rejected"
-                          ? "destructive"
-                          : "secondary"
-                    }
-                  >
-                    {payment.status}
-                  </Badge>
-                </li>
-              ))}
-            </ul>
-          )}
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {features.map((feature) => (
+            <div
+              key={feature.title}
+              className="group rounded-2xl border border-border/80 bg-card p-5 shadow-xs transition-all hover:border-primary/40 hover:shadow-md flex flex-col justify-between"
+            >
+              <div>
+                <div className="size-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary mb-3.5 group-hover:scale-105 transition-transform">
+                  <feature.icon className="size-5" />
+                </div>
+                <h4 className="font-semibold text-base tracking-tight mb-1.5">{feature.title}</h4>
+                <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                  {feature.description}
+                </p>
+              </div>
+              <div className="pt-4 mt-auto">
+                <Button asChild variant="ghost" size="sm" className="p-0 h-auto text-primary hover:text-primary/80 font-medium text-xs">
+                  <Link to={feature.link} className="flex items-center gap-1">
+                    {feature.cta} <ArrowRight className="size-3" />
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          ))}
         </div>
       </section>
-
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Smartphone className="size-4" /> Pay KSh {PREMIUM_PRICE_KES} with M-Pesa
-            </DialogTitle>
-            <DialogDescription>
-              Send KSh {PREMIUM_PRICE_KES} to the StudyHub M-Pesa till, then submit the confirmation
-              details below. Premium is activated as soon as an admin verifies the payment.
-            </DialogDescription>
-          </DialogHeader>
-
-          <ol className="list-decimal space-y-1 rounded-xl bg-muted/50 p-4 pl-8 text-sm text-muted-foreground">
-            <li>Open M-Pesa → Lipa na M-Pesa → Buy Goods and Services.</li>
-            <li>Enter the StudyHub till number and amount KSh {PREMIUM_PRICE_KES}.</li>
-            <li>Copy the confirmation (transaction) code from the SMS.</li>
-          </ol>
-
-          <div className="space-y-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="tx-code">M-Pesa transaction code</Label>
-              <Input
-                id="tx-code"
-                value={transactionCode}
-                placeholder="e.g. SFA1B2C3D4"
-                maxLength={20}
-                onChange={(event) => setTransactionCode(event.target.value)}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="tx-phone">Phone number</Label>
-              <Input
-                id="tx-phone"
-                value={phoneNumber}
-                placeholder="07XX XXX XXX"
-                maxLength={20}
-                onChange={(event) => setPhoneNumber(event.target.value)}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="tx-email">Account email</Label>
-              <Input
-                id="tx-email"
-                type="email"
-                value={email}
-                maxLength={255}
-                onChange={(event) => setEmail(event.target.value)}
-              />
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={() => submit.mutate()} disabled={submit.isPending}>
-              Submit payment
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

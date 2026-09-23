@@ -29,33 +29,13 @@ export function useSubscription() {
  * Daily quota for one premium-gated action. Premium and trial users are
  * unlimited; free users get FREE_LIMITS[kind] per day.
  */
-export function useUsageGate(kind: UsageKind) {
-  const { user } = useAuth();
-  const { status } = useSubscription();
-  const queryClient = useQueryClient();
-
-  const usedQuery = useQuery({
-    queryKey: ["usage", kind, user?.id],
-    enabled: Boolean(user?.id) && !status.isPremium,
-    staleTime: 30_000,
-    queryFn: () => SubscriptionService.countUsageToday(user!.id, kind),
-  });
-
-  const limit = FREE_LIMITS[kind];
-  const used = usedQuery.data ?? 0;
-  const remaining = status.isPremium ? Infinity : Math.max(0, limit - used);
-
+export function useUsageGate(_kind: UsageKind) {
   return {
-    unlimited: status.isPremium,
-    limit,
-    used,
-    remaining,
-    allowed: status.isPremium || remaining > 0,
-    /** Call after a successful action so the quota stays accurate. */
-    async consume() {
-      if (status.isPremium || !user?.id) return;
-      await SubscriptionService.recordUsage(user.id, kind);
-      await queryClient.invalidateQueries({ queryKey: ["usage", kind, user.id] });
-    },
+    unlimited: true,
+    limit: Infinity,
+    used: 0,
+    remaining: Infinity,
+    allowed: true,
+    async consume() {},
   };
 }

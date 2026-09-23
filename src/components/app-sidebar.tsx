@@ -4,14 +4,12 @@ import {
   BookOpen,
   Bot,
   CalendarDays,
-  Crown,
   Flame,
   LayoutDashboard,
   Layers,
   ListChecks,
   LogOut,
   Settings as SettingsIcon,
-  Sparkles,
   Trophy,
   User,
   Users,
@@ -35,7 +33,6 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { initialsOf, levelProgress, useProfileSummary } from "@/hooks/use-profile";
-import { useSubscription } from "@/hooks/use-subscription";
 import { useSignOut } from "@/lib/auth";
 import { useNotifications } from "@/lib/notifications";
 import { cn } from "@/lib/utils";
@@ -73,7 +70,6 @@ const sections: { label: string; items: NavItem[] }[] = [
     label: "Account",
     items: [
       { to: "/profile", label: "Profile", icon: User },
-      { to: "/premium", label: "Premium", icon: Crown },
       { to: "/settings", label: "Settings", icon: SettingsIcon },
     ],
   },
@@ -85,7 +81,6 @@ export function AppSidebar() {
   const pathname = useRouterState({ select: (router) => router.location.pathname });
   const { data: profile } = useProfileSummary();
   const { data: notifications } = useNotifications();
-  const { status: subscriptionStatus } = useSubscription();
   const signOut = useSignOut();
 
   const unread = (notifications ?? []).filter((item) => !item.is_read).length;
@@ -208,27 +203,6 @@ export function AppSidebar() {
             </SidebarGroupContent>
           </SidebarGroup>
         ))}
-
-        {!collapsed && !subscriptionStatus.isPremium && (
-          <div className="mx-2 my-3 rounded-2xl border border-primary/25 bg-gradient-to-br from-primary/10 via-indigo-500/5 to-transparent p-3.5 shadow-xs">
-            <div className="flex items-center gap-2">
-              <span className="grid size-6 place-items-center rounded-lg bg-warning/15 text-warning shadow-2xs">
-                <Crown className="size-3.5" />
-              </span>
-              <span className="text-xs font-bold tracking-tight">StudyHub Pro</span>
-            </div>
-            <p className="mt-1.5 text-[11px] leading-relaxed text-muted-foreground">
-              Unlimited AI tutoring, document uploads, and smart exam quiz generators.
-            </p>
-            <Link
-              to="/premium"
-              onClick={() => setOpenMobile(false)}
-              className="mt-3 inline-flex h-8 w-full items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-primary to-indigo-600 text-xs font-semibold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:opacity-95 active:scale-[0.98]"
-            >
-              <Sparkles className="size-3.5" /> Upgrade now
-            </Link>
-          </div>
-        )}
       </SidebarContent>
 
       <SidebarFooter>

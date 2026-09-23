@@ -63,24 +63,17 @@ function daysBetween(from: Date, to: Date) {
   return Math.max(0, Math.ceil((to.getTime() - from.getTime()) / 86_400_000));
 }
 
-/** Pure derivation so the UI, guards and limits all agree on one truth. */
-export function deriveStatus(row: SubscriptionRow | null): SubscriptionStatus {
-  const now = new Date();
-  const trialEndsAt = row?.trial_end_date ? new Date(row.trial_end_date) : null;
-  const premiumEndsAt = row?.premium_end_date ? new Date(row.premium_end_date) : null;
-
-  const premiumActive = Boolean(premiumEndsAt && premiumEndsAt > now);
-  const trialActive = !premiumActive && Boolean(trialEndsAt && trialEndsAt > now);
-
+/** Pure derivation so the UI, guards and limits all agree on one truth — 100% free for all students. */
+export function deriveStatus(_row: SubscriptionRow | null): SubscriptionStatus {
   return {
-    plan: premiumActive ? "premium" : trialActive ? "trial" : "free",
-    isPremium: premiumActive || trialActive,
-    isTrial: trialActive,
-    trialDaysLeft: trialEndsAt ? daysBetween(now, trialEndsAt) : 0,
-    premiumDaysLeft: premiumEndsAt ? daysBetween(now, premiumEndsAt) : 0,
-    trialEndsAt,
-    premiumEndsAt,
-    onboarded: Boolean(row?.onboarded_at),
+    plan: "premium",
+    isPremium: true,
+    isTrial: false,
+    trialDaysLeft: 0,
+    premiumDaysLeft: 9999,
+    trialEndsAt: null,
+    premiumEndsAt: null,
+    onboarded: true,
   };
 }
 

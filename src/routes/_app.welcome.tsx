@@ -16,7 +16,7 @@ import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 import { NotificationService } from "@/services/notification.service";
 import { ReviewService, type ReviewRow } from "@/services/review.service";
-import { SubscriptionService, TRIAL_DURATION_DAYS } from "@/services/subscription.service";
+import { SubscriptionService } from "@/services/subscription.service";
 
 export const Route = createFileRoute("/_app/welcome")({
   head: () => ({
@@ -25,12 +25,12 @@ export const Route = createFileRoute("/_app/welcome")({
       {
         name: "description",
         content:
-          "See how students use StudyHub notes, quizzes and the AI tutor to revise faster — then start your 30-day premium trial.",
+          "See how students use StudyHub notes, quizzes and the AI tutor to revise faster — 100% free with all features unlocked.",
       },
       { property: "og:title", content: "Welcome to StudyHub — Student stories" },
       {
         property: "og:description",
-        content: "Real student reviews of StudyHub, plus your free 30-day premium trial.",
+        content: "Real student reviews of StudyHub — 100% free access for all students.",
       },
     ],
   }),
@@ -125,7 +125,7 @@ function Welcome() {
       await NotificationService.push({
         userId: user!.id,
         title: "Welcome to StudyHub 🎓",
-        body: "Your 30-day premium trial is live — unlimited AI tutoring, quizzes, flashcards and downloads. Thanks for joining us!",
+        body: "Welcome to StudyHub! All features are unlocked and 100% free — unlimited AI tutoring, quizzes, flashcards and downloads. Thanks for joining us!",
         type: "welcome",
         link: "/dashboard",
       }).catch(() => {
@@ -149,12 +149,11 @@ function Welcome() {
           Hi {profile?.display_name?.split(" ")[0] ?? "there"} — you're in good company.
         </h1>
         <p className="mt-3 max-w-2xl text-muted-foreground">
-          Here's how other students revise with StudyHub. Your{" "}
+          Here's how other students revise with StudyHub. All features are{" "}
           <strong className="text-foreground">
-            {TRIAL_DURATION_DAYS}-day premium trial
+            100% free and unlimited
           </strong>{" "}
-          is already active
-          {status.trialDaysLeft ? ` — ${status.trialDaysLeft} days remaining` : ""}.
+          for every student.
         </p>
         <div className="mt-6 flex flex-wrap gap-2">
           <Button

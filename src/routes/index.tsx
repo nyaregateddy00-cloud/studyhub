@@ -353,7 +353,7 @@ function Landing() {
               AI Tutor
             </Link>
             <Link to="/premium" className="hover:text-foreground transition-colors">
-              Pricing
+              Free Access
             </Link>
           </div>
           <p className="text-xs text-muted-foreground">
