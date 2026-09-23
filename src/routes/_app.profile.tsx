@@ -178,18 +178,20 @@ function ProfilePage() {
 
   return (
     <div className="space-y-8">
-      <div className="surface-card flex flex-wrap items-center gap-5 p-6">
+      <div className="surface-card flex flex-wrap items-center gap-6 p-6 sm:p-8 rounded-3xl border-border/80 shadow-xs">
         <div className="relative">
-          <Avatar className="size-16">
+          <Avatar className="size-20 ring-4 ring-primary/20 ring-offset-2 ring-offset-background shadow-xs">
             <AvatarImage src={data.profile?.avatar_url ?? undefined} alt="" />
-            <AvatarFallback>{initialsOf(displayName)}</AvatarFallback>
+            <AvatarFallback className="bg-primary/10 text-primary text-xl font-bold">
+              {initialsOf(displayName)}
+            </AvatarFallback>
           </Avatar>
           <button
             type="button"
             aria-label="Change profile picture"
             disabled={uploadAvatar.isPending}
             onClick={() => fileInput.current?.click()}
-            className="absolute -bottom-1 -right-1 rounded-full border border-border bg-background p-1.5 shadow-sm transition hover:bg-accent"
+            className="absolute -bottom-1 -right-1 rounded-full border-2 border-background bg-primary p-2 text-primary-foreground shadow-sm transition-transform hover:scale-105 active:scale-95"
           >
             <Camera className="size-3.5" />
           </button>
@@ -206,75 +208,107 @@ function ProfilePage() {
           />
         </div>
         <div className="min-w-0 flex-1">
-          <h1 className="text-2xl font-bold">{displayName || "Student"}</h1>
-          {username && <p className="text-sm font-medium text-primary">@{username}</p>}
-          <p className="text-sm text-muted-foreground">
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="font-display text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+              {displayName || "Student"}
+            </h1>
+            {username && (
+              <span className="rounded-lg bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
+                @{username}
+              </span>
+            )}
+          </div>
+          <p className="mt-1 text-sm text-muted-foreground font-medium">
             {course || "Course not set"} · {institution || "Institution not set"}
           </p>
-          <p className="text-xs text-muted-foreground">
+          <p className="mt-0.5 text-xs text-muted-foreground">
             {user?.email}
             {data.profile?.created_at &&
               ` · Joined ${new Date(data.profile.created_at).toLocaleDateString(undefined, { month: "long", year: "numeric" })}`}
           </p>
-          <div className="mt-3 flex flex-wrap items-center gap-2">
-            <Badge variant="secondary">
-              <Trophy className="mr-1 size-3" /> Level {level}
+          <div className="mt-3.5 flex flex-wrap items-center gap-2">
+            <Badge variant="secondary" className="px-2.5 py-1 bg-warning/10 text-warning border-warning/20 font-semibold gap-1">
+              <Trophy className="size-3.5" /> Level {level}
             </Badge>
-            <Badge variant="secondary">
-              <Flame className="mr-1 size-3" /> {data.profile?.streak_days ?? 0} day streak
+            <Badge variant="secondary" className="px-2.5 py-1 bg-amber-500/10 text-amber-500 border-amber-500/20 font-semibold gap-1">
+              <Flame className="size-3.5 fill-amber-500" /> {data.profile?.streak_days ?? 0} day streak
             </Badge>
-            <Badge variant="secondary">{points} points</Badge>
-            <Badge variant="secondary">{xp} XP</Badge>
+            <Badge variant="secondary" className="px-2.5 py-1 font-semibold">
+              {points} points
+            </Badge>
+            <Badge variant="secondary" className="px-2.5 py-1 font-semibold">
+              {xp} XP
+            </Badge>
             {data.rank && (
-              <Badge variant="secondary">
-                <Sparkles className="mr-1 size-3" /> Rank #{data.rank.rank} of{" "}
-                {data.rank.total_users}
+              <Badge variant="secondary" className="px-2.5 py-1 bg-primary/10 text-primary border-primary/20 font-semibold gap-1">
+                <Sparkles className="size-3.5" /> Rank #{data.rank.rank} of {data.rank.total_users}
               </Badge>
             )}
           </div>
-          <Progress value={levelProgress(xp, level).percent} className="mt-3 max-w-sm" />
+          <div className="mt-3 max-w-sm">
+            <Progress value={levelProgress(xp, level).percent} className="h-2 rounded-full" />
+            <p className="mt-1 text-[11px] text-muted-foreground">
+              {levelProgress(xp, level).into} / {levelProgress(xp, level).span} XP to Level {level + 1}
+            </p>
+          </div>
         </div>
-        <Button variant="outline" asChild>
+        <Button variant="outline" className="rounded-xl shadow-xs" asChild>
           <Link to="/leaderboard">View leaderboard</Link>
         </Button>
       </div>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
         {[
-          { label: "Points", value: points },
-          { label: "Quizzes completed", value: data.stats.quizzesCompleted },
-          { label: "Quizzes passed", value: data.stats.quizzesPassed },
-          { label: "Materials uploaded", value: data.stats.materialsUploaded },
-          { label: "Downloads received", value: data.stats.downloadsReceived },
-          { label: "Bookmarks", value: data.stats.bookmarks },
+          { label: "Total Points", value: points, tone: "text-primary" },
+          { label: "Quizzes Completed", value: data.stats.quizzesCompleted, tone: "text-foreground" },
+          { label: "Quizzes Passed", value: data.stats.quizzesPassed, tone: "text-success" },
+          { label: "Notes Uploaded", value: data.stats.materialsUploaded, tone: "text-foreground" },
+          { label: "Downloads Got", value: data.stats.downloadsReceived, tone: "text-foreground" },
+          { label: "Saved Notes", value: data.stats.bookmarks, tone: "text-foreground" },
         ].map((stat) => (
-          <div key={stat.label} className="surface-card p-4">
-            <p className="text-2xl font-bold">{stat.value}</p>
-            <p className="text-xs text-muted-foreground">{stat.label}</p>
+          <div key={stat.label} className="surface-card card-interactive p-4 rounded-2xl border-border/80 shadow-2xs">
+            <p className={`font-display text-2xl font-bold tracking-tight tabular-nums ${stat.tone}`}>
+              {stat.value}
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground font-medium">{stat.label}</p>
           </div>
         ))}
       </div>
 
       <Tabs defaultValue="badges">
-        <TabsList>
-          <TabsTrigger value="badges">Badges</TabsTrigger>
-          <TabsTrigger value="points">Points</TabsTrigger>
-          <TabsTrigger value="edit">Edit profile</TabsTrigger>
+        <TabsList className="rounded-xl">
+          <TabsTrigger value="badges" className="rounded-lg font-medium">Badges</TabsTrigger>
+          <TabsTrigger value="points" className="rounded-lg font-medium">Points History</TabsTrigger>
+          <TabsTrigger value="edit" className="rounded-lg font-medium">Edit Profile</TabsTrigger>
         </TabsList>
 
         <TabsContent value="badges" className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {badgeCatalog.map((badge) => {
             const has = earned.has(badge.key);
             return (
-              <div key={badge.key} className={cn("surface-card p-5", !has && "opacity-50")}>
-                <Award className={cn("size-6", has ? "text-warning" : "text-muted-foreground")} />
-                <p className="mt-3 font-semibold">{badge.label}</p>
-                <p className="text-xs text-muted-foreground">{badge.hint}</p>
-                {has && (
-                  <Badge className="mt-3 bg-success/15 text-success" variant="secondary">
-                    Earned
-                  </Badge>
+              <div
+                key={badge.key}
+                className={cn(
+                  "surface-card card-interactive p-5 rounded-2xl border-border/80 transition-all",
+                  has ? "border-amber-400/30 bg-amber-400/5 shadow-xs" : "opacity-50 grayscale",
                 )}
+              >
+                <div className="flex items-start justify-between">
+                  <span className={cn("grid size-11 place-items-center rounded-2xl", has ? "bg-amber-400/15 text-amber-500" : "bg-secondary text-muted-foreground")}>
+                    <Award className="size-6" />
+                  </span>
+                  {has ? (
+                    <Badge className="bg-success/15 text-success border-success/20 font-semibold" variant="secondary">
+                      Earned
+                    </Badge>
+                  ) : (
+                    <span className="text-[11px] font-medium text-muted-foreground">Locked</span>
+                  )}
+                </div>
+                <p className="mt-3.5 font-display font-semibold text-base text-foreground tracking-tight">
+                  {badge.label}
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground leading-relaxed">{badge.hint}</p>
               </div>
             );
           })}

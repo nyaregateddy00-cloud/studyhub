@@ -116,19 +116,40 @@
   --sidebar-accent-foreground: oklch(0.5462 0.2452 262.88);
   --sidebar-border: oklch(0.93 0.012 252);
   --sidebar-ring: oklch(0.5462 0.2452 262.88);
-  --gradient-brand: linear-gradient(135deg, var(--primary), var(--primary-glow));
+  --gradient-brand: linear-gradient(135deg, oklch(0.55 0.24 263), oklch(0.68 0.19 250));
   --gradient-mesh: radial-gradient(
-      60% 60% at 15% 10%,
-      color-mix(in oklab, var(--primary) 16%, transparent),
+      65% 65% at 10% 10%,
+      color-mix(in oklab, var(--primary) 14%, transparent),
       transparent
     ),
     radial-gradient(
-      55% 55% at 90% 5%,
-      color-mix(in oklab, var(--success) 14%, transparent),
+      60% 60% at 90% 12%,
+      color-mix(in oklab, var(--success) 10%, transparent),
+      transparent
+    ),
+    radial-gradient(
+      50% 50% at 50% 90%,
+      color-mix(in oklab, var(--primary) 8%, transparent),
       transparent
     );
-  --shadow-soft: 0 1px 2px oklch(0.208 0.042 265.755 / 6%), 0 8px 24px -12px oklch(0.208 0.042 265.755 / 18%);
-  --shadow-lift: 0 2px 4px oklch(0.208 0.042 265.755 / 5%), 0 18px 40px -18px oklch(0.488 0.217 264.4 / 30%);
+  --gradient-aurora: radial-gradient(
+      at 0% 0%,
+      color-mix(in oklab, var(--primary) 18%, transparent) 0px,
+      transparent 55%
+    ),
+    radial-gradient(
+      at 100% 0%,
+      color-mix(in oklab, oklch(0.65 0.2 300) 14%, transparent) 0px,
+      transparent 50%
+    ),
+    radial-gradient(
+      at 50% 50%,
+      color-mix(in oklab, var(--success) 10%, transparent) 0px,
+      transparent 55%
+    );
+  --shadow-soft: 0 1px 3px oklch(0.208 0.042 265.755 / 5%), 0 10px 28px -12px oklch(0.208 0.042 265.755 / 12%);
+  --shadow-lift: 0 4px 12px oklch(0.208 0.042 265.755 / 6%), 0 20px 40px -16px oklch(0.488 0.217 264.4 / 22%);
+  --shadow-glow: 0 0 24px -4px color-mix(in oklab, var(--primary) 30%, transparent);
 }
 
 .dark {
@@ -172,9 +193,40 @@
   --sidebar-accent-foreground: oklch(0.88 0.07 258);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.6231 0.188 259.8);
-  --gradient-brand: linear-gradient(135deg, var(--primary), var(--primary-glow));
-  --shadow-soft: 0 1px 2px oklch(0 0 0 / 40%), 0 8px 24px -12px oklch(0 0 0 / 60%);
-  --shadow-lift: 0 2px 4px oklch(0 0 0 / 40%), 0 18px 40px -18px oklch(0 0 0 / 70%);
+  --gradient-brand: linear-gradient(135deg, oklch(0.62 0.22 260), oklch(0.72 0.17 245));
+  --gradient-mesh: radial-gradient(
+      65% 65% at 10% 10%,
+      color-mix(in oklab, var(--primary) 22%, transparent),
+      transparent
+    ),
+    radial-gradient(
+      60% 60% at 90% 12%,
+      color-mix(in oklab, var(--success) 14%, transparent),
+      transparent
+    ),
+    radial-gradient(
+      50% 50% at 50% 90%,
+      color-mix(in oklab, var(--primary) 12%, transparent),
+      transparent
+    );
+  --gradient-aurora: radial-gradient(
+      at 0% 0%,
+      color-mix(in oklab, var(--primary) 24%, transparent) 0px,
+      transparent 55%
+    ),
+    radial-gradient(
+      at 100% 0%,
+      color-mix(in oklab, oklch(0.68 0.22 300) 18%, transparent) 0px,
+      transparent 50%
+    ),
+    radial-gradient(
+      at 50% 50%,
+      color-mix(in oklab, var(--success) 12%, transparent) 0px,
+      transparent 55%
+    );
+  --shadow-soft: 0 1px 3px oklch(0 0 0 / 45%), 0 12px 28px -12px oklch(0 0 0 / 65%);
+  --shadow-lift: 0 4px 12px oklch(0 0 0 / 50%), 0 22px 48px -16px oklch(0 0 0 / 75%);
+  --shadow-glow: 0 0 30px -4px color-mix(in oklab, var(--primary) 40%, transparent);
 }
 
 @layer base {
@@ -247,6 +299,43 @@
   backdrop-filter: blur(18px) saturate(140%);
 }
 
+@utility glass-panel-pro {
+  background-color: color-mix(in oklab, var(--surface) 80%, transparent);
+  border: 1px solid color-mix(in oklab, var(--border) 80%, transparent);
+  border-radius: var(--radius-2xl);
+  box-shadow: 0 4px 20px -2px oklch(0 0 0 / 5%), inset 0 1px 0 0 oklch(1 1 1 / 15%);
+  backdrop-filter: blur(20px) saturate(150%);
+}
+
+@utility aurora-bg {
+  background-image: var(--gradient-aurora);
+}
+
+@utility card-glow-hover {
+  transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 220ms ease, border-color 220ms ease;
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lift), var(--shadow-glow);
+    border-color: color-mix(in oklab, var(--primary) 50%, var(--border));
+  }
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+@utility glow-pill {
+  position: relative;
+  overflow: hidden;
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, oklch(1 0 0 / 15%), transparent);
+    transform: translateX(-100%);
+    animation: shimmer 3s infinite;
+  }
+}
+
 /* Blue-tinted headline treatment used on marketing and hero surfaces. */
 @utility gradient-text {
   background-image: var(--gradient-brand);
@@ -270,3 +359,101 @@
     color-mix(in oklab, var(--success) 4%, transparent)
   );
 }
+
+@utility warning-tint {
+  background-image: linear-gradient(
+    135deg,
+    color-mix(in oklab, var(--warning) 18%, transparent),
+    color-mix(in oklab, var(--warning) 4%, transparent)
+  );
+}
+
+@utility danger-tint {
+  background-image: linear-gradient(
+    135deg,
+    color-mix(in oklab, var(--destructive) 16%, transparent),
+    color-mix(in oklab, var(--destructive) 4%, transparent)
+  );
+}
+
+@utility glass-card {
+  background-color: color-mix(in oklab, var(--surface) 82%, transparent);
+  border: 1px solid color-mix(in oklab, var(--border) 80%, transparent);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(12px) saturate(130%);
+}
+
+@utility card-interactive {
+  transition:
+    transform 220ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 220ms cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 220ms ease;
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lift);
+    border-color: color-mix(in oklab, var(--primary) 40%, var(--border));
+  }
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+@utility podium-gold {
+  background: linear-gradient(
+    145deg,
+    oklch(0.96 0.08 85 / 75%),
+    oklch(0.92 0.12 75 / 40%)
+  );
+  border-color: oklch(0.78 0.16 80 / 60%);
+  box-shadow: 0 4px 20px -4px oklch(0.78 0.16 80 / 25%);
+}
+
+@utility podium-silver {
+  background: linear-gradient(
+    145deg,
+    oklch(0.95 0.02 250 / 80%),
+    oklch(0.9 0.03 250 / 40%)
+  );
+  border-color: oklch(0.75 0.04 250 / 60%);
+  box-shadow: 0 4px 16px -4px oklch(0.5 0.04 250 / 20%);
+}
+
+@utility podium-bronze {
+  background: linear-gradient(
+    145deg,
+    oklch(0.94 0.07 45 / 75%),
+    oklch(0.9 0.1 40 / 35%)
+  );
+  border-color: oklch(0.7 0.14 45 / 60%);
+  box-shadow: 0 4px 16px -4px oklch(0.7 0.14 45 / 20%);
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@utility custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in oklab, var(--border) 70%, transparent) transparent;
+  &::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: color-mix(in oklab, var(--border) 70%, transparent);
+    border-radius: 9999px;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background: var(--muted-foreground);
+  }
+}
+

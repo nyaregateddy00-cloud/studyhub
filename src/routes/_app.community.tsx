@@ -1,17 +1,36 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { ArrowBigUp, CheckCircle2, MessageSquare, Plus, Search, Trash2 } from "lucide-react";
-import { useState } from "react";
+import {
+  ArrowBigUp,
+  CheckCircle2,
+  FileText,
+  MessageSquare,
+  Plus,
+  RefreshCw,
+  Search,
+  Trash2,
+  Upload,
+  X,
+} from "lucide-react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
+import { extractText } from "unpdf";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import { NotesService } from "@/services/notes.service";
 
 export const Route = createFileRoute("/_app/community")({
   head: () => ({
@@ -53,6 +72,67 @@ function Community() {
   const [body, setBody] = useState("");
   const [subject, setSubject] = useState("");
   const [openId, setOpenId] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [extracting, setExtracting] = useState(false);
+  const [attachedFileName, setAttachedFileName] = useState<string | null>(null);
+  const [notesPickerOpen, setNotesPickerOpen] = useState(false);
+
+  const notesQuery = useQuery({
+    queryKey: ["notes-for-community", user?.id],
+    enabled: Boolean(user?.id),
+    queryFn: () => NotesService.list(),
+  });
+
+  async function handleFileUpload(file: File) {
+    const isPdf =
+      file.name.toLowerCase().endsWith(".pdf") || file.type === "application/pdf";
+    setExtracting(true);
+    const toastId = toast.loading(`Reading ${file.name}...`);
+    try {
+      let content = "";
+      if (isPdf) {
+        const arrayBuffer = await file.arrayBuffer();
+        const extracted = await extractText(arrayBuffer);
+        const pages = Array.isArray(extracted.text)
+          ? extracted.text.join("\n\n")
+          : String(extracted.text ?? "");
+        content = pages.trim();
+        if (!content) {
+          throw new Error("Could not extract readable text from this PDF.");
+        }
+        toast.success(
+          `Extracted question details from ${file.name} (${extracted.totalPages} pages)`,
+          { id: toastId }
+        );
+      } else {
+        content = await file.text();
+        toast.success(`Loaded ${file.name}`, { id: toastId });
+      }
+
+      setAsking(true);
+      setBody(content.slice(0, 4000));
+      setAttachedFileName(file.name);
+      if (!title.trim()) {
+        const cleanTitle = file.name
+          .replace(/\.[^/.]+$/, "")
+          .replace(/[-_]/g, " ")
+          .trim();
+        setTitle(`Question regarding ${cleanTitle}`.slice(0, 160));
+      }
+      if (!subject.trim()) {
+        const cleanSubject = file.name
+          .replace(/\.[^/.]+$/, "")
+          .split(/[-_\s]/)[0];
+        setSubject(cleanSubject.slice(0, 60));
+      }
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "Failed to read file.";
+      toast.error(message, { id: toastId });
+    } finally {
+      setExtracting(false);
+    }
+  }
 
   const { data, isLoading } = useQuery({
     queryKey: ["community", search],
@@ -139,13 +219,40 @@ function Community() {
             Ask, answer and upvote — study together instead of alone.
           </p>
         </div>
-        <Button onClick={() => setAsking((value) => !value)}>
-          <Plus className="mr-1 size-4" /> Ask a question
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={extracting}
+            className="gap-2 shadow-xs"
+          >
+            {extracting ? (
+              <RefreshCw className="size-4 animate-spin text-primary" />
+            ) : (
+              <Upload className="size-4 text-primary" />
+            )}
+            <span>Upload question / notes</span>
+          </Button>
+          <Button onClick={() => setAsking((value) => !value)}>
+            <Plus className="mr-1 size-4" /> Ask a question
+          </Button>
+        </div>
       </div>
 
+      <input
+        ref={fileInputRef}
+        type="file"
+        className="sr-only"
+        accept=".pdf,.txt,.md,.markdown,.text,.json,.rtf"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) handleFileUpload(file);
+          e.target.value = "";
+        }}
+      />
+
       {asking && (
-        <div className="surface-card space-y-3 p-5">
+        <div className="surface-card space-y-4 p-5 border-border/80 shadow-xs">
           <div>
             <Label htmlFor="q-title">Question</Label>
             <Input
@@ -154,17 +261,74 @@ function Community() {
               value={title}
               onChange={(event) => setTitle(event.target.value)}
               placeholder="Why does entropy increase in an irreversible process?"
+              className="rounded-xl"
             />
           </div>
-          <div>
-            <Label htmlFor="q-body">Details</Label>
-            <Textarea
-              id="q-body"
-              rows={4}
-              maxLength={4000}
-              value={body}
-              onChange={(event) => setBody(event.target.value)}
-            />
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="q-body">Details</Label>
+              <div className="flex items-center gap-2">
+                {(notesQuery.data ?? []).filter((n) => Boolean(n.content)).length > 0 && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 text-xs gap-1 text-muted-foreground hover:text-foreground"
+                    onClick={() => setNotesPickerOpen(true)}
+                  >
+                    <FileText className="size-3 text-primary" />
+                    From notes
+                  </Button>
+                )}
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 text-xs gap-1 text-muted-foreground hover:text-foreground"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={extracting}
+                >
+                  <Upload className="size-3 text-primary" />
+                  Upload file
+                </Button>
+              </div>
+            </div>
+
+            {attachedFileName && (
+              <div className="flex items-center justify-between rounded-lg bg-primary/10 px-3 py-1.5 text-xs text-primary border border-primary/20">
+                <span className="flex items-center gap-1.5 truncate">
+                  <FileText className="size-3.5 shrink-0" />
+                  <span>Loaded context from: <strong className="font-semibold">{attachedFileName}</strong></span>
+                </span>
+                <button
+                  type="button"
+                  className="hover:opacity-75"
+                  onClick={() => setAttachedFileName(null)}
+                >
+                  <X className="size-3.5" />
+                </button>
+              </div>
+            )}
+
+            <div
+              className="relative"
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={(e) => {
+                e.preventDefault();
+                const file = e.dataTransfer.files?.[0];
+                if (file) handleFileUpload(file);
+              }}
+            >
+              <Textarea
+                id="q-body"
+                rows={4}
+                maxLength={4000}
+                value={body}
+                onChange={(event) => setBody(event.target.value)}
+                placeholder="Describe your question in detail, paste a problem statement, or drop a document here."
+                className="rounded-xl leading-relaxed"
+              />
+            </div>
           </div>
           <div className="flex flex-wrap items-end gap-3">
             <div className="flex-1 min-w-40">
@@ -174,17 +338,69 @@ function Community() {
                 maxLength={60}
                 value={subject}
                 onChange={(event) => setSubject(event.target.value)}
+                className="rounded-xl"
               />
             </div>
             <Button
               disabled={title.trim().length < 8 || body.trim().length < 8 || ask.isPending}
               onClick={() => ask.mutate()}
+              className="rounded-xl shadow-xs"
             >
               Post question
             </Button>
           </div>
         </div>
       )}
+
+      <Dialog open={notesPickerOpen} onOpenChange={setNotesPickerOpen}>
+        <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="size-5 text-primary" />
+              Import Note into Question
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2 pt-2">
+            {(notesQuery.data ?? []).filter((n) => Boolean(n.content)).length === 0 ? (
+              <p className="text-sm text-muted-foreground py-4 text-center">
+                No saved notes with text content found.
+              </p>
+            ) : (
+              (notesQuery.data ?? [])
+                .filter((n) => Boolean(n.content))
+                .map((note) => (
+                  <div
+                    key={note.id}
+                    onClick={() => {
+                      setAsking(true);
+                      setBody((note.content ?? "").slice(0, 4000));
+                      setTitle(`Question about ${note.title}`.slice(0, 160));
+                      if (note.course || note.unit) {
+                        setSubject((note.course || note.unit || "").slice(0, 60));
+                      }
+                      setAttachedFileName(`Note: ${note.title}`);
+                      setNotesPickerOpen(false);
+                      toast.success(`Loaded "${note.title}" into question`);
+                    }}
+                    className="group flex flex-col gap-1 rounded-xl border border-border/80 p-3 hover:border-primary/40 hover:bg-muted/40 cursor-pointer transition-colors"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-semibold group-hover:text-primary transition-colors">
+                        {note.title}
+                      </span>
+                      <span className="text-[11px] text-muted-foreground">
+                        {(note.content ?? "").length} chars
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground line-clamp-2">
+                      {note.content}
+                    </p>
+                  </div>
+                ))
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <div className="relative">
         <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />

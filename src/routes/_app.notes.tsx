@@ -11,8 +11,10 @@ import {
   Plus,
   Search,
   Eye,
+  Upload,
+  X,
 } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -46,6 +48,8 @@ import {
   emptyAcademicSelection,
   type AcademicSelection,
 } from "@/components/academic/academic-picker";
+import { EmptyState } from "@/components/dashboard/primitives";
+import { RESOURCE_TYPE_CLASSES } from "@/lib/design-tokens";
 import { useAuth } from "@/lib/auth";
 import { NotesService } from "@/services/notes.service";
 import { RESOURCE_TYPES, resourceTypeLabel } from "@/services/academic.service";
@@ -101,6 +105,18 @@ function NotesPage() {
   const [reportNoteId, setReportNoteId] = useState<string | null>(null);
   const [reportReason, setReportReason] = useState("");
   const [viewNoteId, setViewNoteId] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  function handleFileSelect(selectedFile: File) {
+    setFile(selectedFile);
+    if (!form.title.trim()) {
+      const cleanName = selectedFile.name
+        .replace(/\.[^/.]+$/, "")
+        .replace(/[-_]/g, " ")
+        .trim();
+      setForm((prev) => ({ ...prev, title: cleanName.slice(0, 140) }));
+    }
+  }
 
   const notesQuery = useQuery({
     queryKey: ["notes", user?.id],
@@ -281,14 +297,17 @@ function NotesPage() {
         actions={
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Button>
-                <Plus className="size-4" />
-                <span className="hidden sm:inline">New note</span>
+              <Button className="gap-2 rounded-2xl shadow-sm bg-gradient-to-r from-primary to-indigo-600 hover:from-primary/95 hover:to-indigo-600/95 text-primary-foreground font-semibold active:scale-[0.98] transition-all">
+                <Upload className="size-4" />
+                <span>Upload note</span>
               </Button>
             </DialogTrigger>
             <DialogContent className="max-h-[90vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle>Add a note</DialogTitle>
+                <DialogTitle className="flex items-center gap-2">
+                  <Upload className="size-5 text-primary" />
+                  Upload & Add Note
+                </DialogTitle>
               </DialogHeader>
               <form
                 className="space-y-4"
@@ -409,13 +428,57 @@ function NotesPage() {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="file">Attach a file (PDF, DOCX, PPTX)</Label>
-                  <Input
-                    id="file"
-                    type="file"
-                    accept=".pdf,.doc,.docx,.ppt,.pptx,.txt,.md,image/*"
-                    onChange={(event) => setFile(event.target.files?.[0] ?? null)}
-                  />
+                  <Label>Attach file (PDF, DOCX, PPTX, slides, images)</Label>
+                  {file ? (
+                    <div className="flex items-center justify-between rounded-xl border border-primary/20 bg-primary/5 p-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                          <Paperclip className="size-4" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium truncate">{file.name}</p>
+                          <p className="text-xs text-muted-foreground">{(file.size / (1024 * 1024)).toFixed(2)} MB</p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 text-xs text-destructive hover:bg-destructive/10"
+                        onClick={() => setFile(null)}
+                      >
+                        <X className="size-3.5 mr-1" />
+                        Remove
+                      </Button>
+                    </div>
+                  ) : (
+                    <div
+                      className="relative flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-border/80 p-5 text-center hover:border-primary/50 hover:bg-muted/40 transition-colors cursor-pointer group"
+                      onClick={() => fileInputRef.current?.click()}
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        const dropped = e.dataTransfer.files?.[0];
+                        if (dropped) handleFileSelect(dropped);
+                      }}
+                    >
+                      <div className="size-9 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-1.5 group-hover:scale-105 transition-transform">
+                        <Upload className="size-4" />
+                      </div>
+                      <p className="text-xs font-medium">Click to browse or drag & drop</p>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">PDF, DOCX, PPTX, TXT, MD or images</p>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        className="sr-only"
+                        accept=".pdf,.doc,.docx,.ppt,.pptx,.txt,.md,image/*"
+                        onChange={(event) => {
+                          const selected = event.target.files?.[0];
+                          if (selected) handleFileSelect(selected);
+                        }}
+                      />
+                    </div>
+                  )}
                 </div>
                 <div className="flex items-center justify-between rounded-lg border border-border p-3">
                   <div>
@@ -477,119 +540,149 @@ function NotesPage() {
 
       {notesQuery.isLoading ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {[0, 1, 2].map((index) => (
-            <Skeleton key={index} className="h-44" />
+          {[0, 1, 2, 3, 4, 5].map((index) => (
+            <Skeleton key={index} className="h-48 rounded-2xl" />
           ))}
         </div>
       ) : notes.length === 0 ? (
-        <div className="surface-card p-12 text-center">
-          <FileText className="mx-auto size-8 text-muted-foreground" />
-          <p className="mt-3 text-sm text-muted-foreground">
-            {term || filter !== "all"
-              ? "No notes match this filter yet."
-              : "No notes here yet. Add your first one to get started."}
-          </p>
-          {!term && filter === "all" && (
-            <Button className="mt-4" onClick={() => setOpen(true)}>
-              <Plus className="size-4" />
-              Add your first note
-            </Button>
-          )}
-        </div>
+        <EmptyState
+          icon={FileText}
+          title={term || filter !== "all" ? "No notes found" : "No notes yet"}
+          description={
+            term || filter !== "all"
+              ? "Try adjusting your search query or academic filters."
+              : "Upload PDFs, lecture slides or write rich notes to build your library."
+          }
+          action={
+            !term && filter === "all" ? (
+              <Button className="rounded-xl shadow-xs gap-2" onClick={() => setOpen(true)}>
+                <Upload className="size-4" />
+                Upload your first note
+              </Button>
+            ) : undefined
+          }
+        />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {notes.map((note) => (
-            <article key={note.id} className="surface-card lift flex flex-col p-5">
-              <div className="flex items-start justify-between gap-2">
+          {notes.map((note) => {
+            const typeClass =
+              RESOURCE_TYPE_CLASSES[note.resource_type ?? "lecture_notes"] ??
+              "bg-primary/10 text-primary border-primary/20";
+            return (
+              <article
+                key={note.id}
+                className="group relative flex flex-col rounded-3xl border border-border/80 bg-gradient-to-b from-card to-card/60 p-5 shadow-xs transition-all duration-200 hover:-translate-y-1 hover:border-primary/40 hover:shadow-md"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <span
+                    className={`inline-flex items-center rounded-lg border px-2 py-0.5 text-[11px] font-semibold tracking-wide ${typeClass}`}
+                  >
+                    {resourceTypeLabel(note.resource_type)}
+                  </span>
+                  {note.is_public && (
+                    <Badge variant="secondary" className="shrink-0 gap-1 text-[11px] bg-secondary/80 font-medium">
+                      <Globe className="size-3 text-primary" /> Shared
+                    </Badge>
+                  )}
+                </div>
+
                 <button
                   type="button"
-                  className="text-left font-semibold leading-snug hover:underline"
+                  className="mt-3 text-left font-display font-semibold text-base leading-snug tracking-tight text-foreground transition-colors group-hover:text-primary"
                   onClick={() => setViewNoteId(note.id)}
                 >
                   {note.title}
                 </button>
-                {note.is_public && (
-                  <Badge variant="secondary" className="shrink-0 gap-1">
-                    <Globe className="size-3" /> Shared
-                  </Badge>
-                )}
-              </div>
-              <p className="mt-1 text-xs text-muted-foreground">
-                {[resourceTypeLabel(note.resource_type), note.unit_code, note.course, note.unit]
-                  .filter(Boolean)
-                  .join(" · ")}
-              </p>
-              {note.content && (
-                <p className="mt-3 line-clamp-3 text-sm text-muted-foreground">{note.content}</p>
-              )}
-              {note.file_name && (
-                <p className="mt-3 flex items-center gap-1.5 truncate text-xs text-muted-foreground">
-                  <Paperclip className="size-3 shrink-0" />
-                  {note.file_name}
+
+                <p className="mt-1 text-xs text-muted-foreground font-medium">
+                  {[note.unit_code, note.course, note.unit].filter(Boolean).join(" · ") || "General"}
                 </p>
-              )}
-              <div className="mt-auto flex items-center gap-1 border-t border-border pt-3">
-                <Button variant="ghost" size="sm" onClick={() => setViewNoteId(note.id)}>
-                  <Eye className="size-4" />
-                  View
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => toggleLike.mutate(note.id)}
-                  aria-label={likesQuery.data?.has(note.id) ? "Unlike note" : "Like note"}
-                  aria-pressed={likesQuery.data?.has(note.id) ?? false}
-                >
-                  <Heart
-                    className={
-                      likesQuery.data?.has(note.id) ? "size-4 fill-primary text-primary" : "size-4"
-                    }
-                  />
-                  {note.like_count}
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  onClick={() => toggleBookmark.mutate(note.id)}
-                  aria-label={
-                    bookmarksQuery.data?.has(note.id) ? "Remove bookmark" : "Bookmark note"
-                  }
-                  aria-pressed={bookmarksQuery.data?.has(note.id) ?? false}
-                >
-                  <Bookmark
-                    className={
-                      bookmarksQuery.data?.has(note.id)
-                        ? "size-4 fill-primary text-primary"
-                        : "size-4"
-                    }
-                  />
-                </Button>
-                {note.file_url && (
+
+                {note.content && (
+                  <p className="mt-3 line-clamp-3 text-xs text-muted-foreground leading-relaxed">
+                    {note.content}
+                  </p>
+                )}
+
+                {note.file_name && (
+                  <div className="mt-3 flex items-center gap-1.5 rounded-lg bg-secondary/60 px-2.5 py-1 text-xs text-muted-foreground">
+                    <Paperclip className="size-3.5 shrink-0 text-primary" />
+                    <span className="truncate font-medium">{note.file_name}</span>
+                  </div>
+                )}
+
+                <div className="mt-auto flex items-center gap-1 border-t border-border/70 pt-3 mt-4">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 rounded-lg text-xs font-semibold hover:bg-primary/10 hover:text-primary"
+                    onClick={() => setViewNoteId(note.id)}
+                  >
+                    <Eye className="mr-1 size-3.5" />
+                    View
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 rounded-lg text-xs gap-1 hover:bg-primary/10"
+                    onClick={() => toggleLike.mutate(note.id)}
+                    aria-label={likesQuery.data?.has(note.id) ? "Unlike note" : "Like note"}
+                    aria-pressed={likesQuery.data?.has(note.id) ?? false}
+                  >
+                    <Heart
+                      className={
+                        likesQuery.data?.has(note.id)
+                          ? "size-3.5 fill-rose-500 text-rose-500"
+                          : "size-3.5 text-muted-foreground"
+                      }
+                    />
+                    <span className="font-medium text-xs">{note.like_count}</span>
+                  </Button>
                   <Button
                     variant="ghost"
                     size="icon-sm"
-                    className="ml-auto"
-                    onClick={() => download(note.file_url!, note.file_name ?? "note", note.id)}
-                    aria-label="Download attachment"
+                    className="size-8 rounded-lg hover:bg-primary/10"
+                    onClick={() => toggleBookmark.mutate(note.id)}
+                    aria-label={
+                      bookmarksQuery.data?.has(note.id) ? "Remove bookmark" : "Bookmark note"
+                    }
+                    aria-pressed={bookmarksQuery.data?.has(note.id) ?? false}
                   >
-                    <Download className="size-4" />
+                    <Bookmark
+                      className={
+                        bookmarksQuery.data?.has(note.id)
+                          ? "size-3.5 fill-primary text-primary"
+                          : "size-3.5 text-muted-foreground"
+                      }
+                    />
                   </Button>
-                )}
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  className={note.file_url ? "" : "ml-auto"}
-                  onClick={() => {
-                    setReportReason("");
-                    setReportNoteId(note.id);
-                  }}
-                  aria-label="Report note"
-                >
-                  <Flag className="size-4" />
-                </Button>
-              </div>
-            </article>
-          ))}
+                  {note.file_url && (
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      className="ml-auto size-8 rounded-lg hover:bg-primary/10 hover:text-primary"
+                      onClick={() => download(note.file_url!, note.file_name ?? "note", note.id)}
+                      aria-label="Download attachment"
+                    >
+                      <Download className="size-3.5" />
+                    </Button>
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    className={note.file_url ? "size-8 rounded-lg text-muted-foreground/60 hover:text-destructive" : "ml-auto size-8 rounded-lg text-muted-foreground/60 hover:text-destructive"}
+                    onClick={() => {
+                      setReportReason("");
+                      setReportNoteId(note.id);
+                    }}
+                    aria-label="Report note"
+                  >
+                    <Flag className="size-3.5" />
+                  </Button>
+                </div>
+              </article>
+            );
+          })}
         </div>
       )}
 

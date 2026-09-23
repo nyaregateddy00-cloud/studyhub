@@ -74,23 +74,34 @@ function AppLayout() {
     <SidebarProvider>
       <div className="flex min-h-dvh w-full bg-background">
         <AppSidebar />
-        <SidebarInset className="min-w-0 bg-transparent">
-          <header className="sticky top-0 z-30 border-b border-border bg-surface/80 backdrop-blur-xl">
+        <SidebarInset className="min-w-0 bg-transparent flex flex-col">
+          <div className="h-[2px] w-full bg-gradient-to-r from-primary via-indigo-500 to-emerald-400 shrink-0" />
+          <header className="sticky top-0 z-30 border-b border-border/60 bg-background/80 backdrop-blur-xl shadow-2xs transition-colors">
             <div className="flex h-16 items-center gap-2 px-3 sm:px-5">
-              <SidebarTrigger className="shrink-0" />
+              <SidebarTrigger className="shrink-0 rounded-xl" />
               <div className="min-w-0 flex-1 sm:max-w-sm">
                 <GlobalSearch />
               </div>
-              <div className="ml-auto flex shrink-0 items-center gap-1">
+              <div className="ml-auto flex shrink-0 items-center gap-2">
                 <NotificationBell />
-                <Button variant="ghost" size="icon" onClick={toggle} aria-label="Toggle dark mode">
-                  {theme === "dark" ? <Sun className="size-4" /> : <Moon className="size-4" />}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={toggle}
+                  aria-label="Toggle dark mode"
+                  className="size-9 rounded-xl border border-border/50 hover:bg-secondary/80 transition-all active:scale-95 shadow-2xs"
+                >
+                  {theme === "dark" ? (
+                    <Sun className="size-4 text-warning transition-transform rotate-0 scale-100" />
+                  ) : (
+                    <Moon className="size-4 text-muted-foreground transition-transform rotate-0 scale-100" />
+                  )}
                 </Button>
               </div>
             </div>
           </header>
 
-          <main className="mx-auto w-full max-w-7xl px-4 py-6 pb-28 sm:px-6 sm:py-8 md:pb-10">
+          <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 pb-28 sm:px-6 sm:py-8 md:pb-10">
             <Outlet />
           </main>
         </SidebarInset>
@@ -98,21 +109,32 @@ function AppLayout() {
 
       <nav
         aria-label="Primary"
-        className="fixed inset-x-0 bottom-0 z-40 flex border-t border-border bg-surface/95 backdrop-blur md:hidden"
+        className="fixed inset-x-0 bottom-0 z-40 flex border-t border-border/70 bg-background/90 backdrop-blur-xl shadow-lg md:hidden"
       >
-        {mobileNav.map((item) => (
-          <Link
-            key={item.to}
-            to={item.to}
-            className={cn(
-              "flex min-h-14 flex-1 flex-col items-center justify-center gap-1 text-[11px] text-muted-foreground transition-colors",
-              pathname === item.to && "text-primary",
-            )}
-          >
-            <item.icon className="size-[18px]" />
-            {item.label}
-          </Link>
-        ))}
+        {mobileNav.map((item) => {
+          const isActive = pathname === item.to;
+          return (
+            <Link
+              key={item.to}
+              to={item.to}
+              className={cn(
+                "group relative flex min-h-14 flex-1 flex-col items-center justify-center gap-1 text-[11px] font-medium transition-all",
+                isActive ? "text-primary font-semibold" : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              {isActive && (
+                <span className="absolute top-0 h-0.5 w-8 rounded-full bg-gradient-to-r from-primary to-indigo-500 shadow-sm shadow-primary/50" />
+              )}
+              <item.icon
+                className={cn(
+                  "size-[18px] transition-transform duration-200 group-hover:scale-110",
+                  isActive && "scale-110 text-primary",
+                )}
+              />
+              <span>{item.label}</span>
+            </Link>
+          );
+        })}
       </nav>
     </SidebarProvider>
   );

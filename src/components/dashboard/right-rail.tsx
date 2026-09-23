@@ -29,16 +29,16 @@ export function DashboardRightRail({ deadlines }: { deadlines: Deadline[] }) {
 
       <DashboardCard delay={60}>
         <SectionHeader title="Announcements" icon={Megaphone} />
-        <ul className="mt-4 space-y-3">
+        <ul className="mt-4 space-y-2.5">
           {announcements.map((item) => (
-            <li key={item.id} className="rounded-xl bg-secondary/50 p-3">
+            <li key={item.id} className="rounded-2xl border border-border/60 bg-gradient-to-br from-secondary/50 to-secondary/20 p-3.5 shadow-2xs transition-all hover:border-primary/30">
               <div className="flex items-center gap-2">
-                <Badge variant="secondary" className="text-[10px]">
+                <Badge variant="secondary" className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-primary/10 text-primary border-primary/20">
                   {item.tag}
                 </Badge>
-                <p className="min-w-0 truncate text-sm font-medium">{item.title}</p>
+                <p className="min-w-0 truncate text-sm font-semibold text-foreground">{item.title}</p>
               </div>
-              <p className="mt-1 text-xs text-muted-foreground">{item.body}</p>
+              <p className="mt-1.5 text-xs text-muted-foreground leading-relaxed">{item.body}</p>
             </li>
           ))}
         </ul>
@@ -46,19 +46,21 @@ export function DashboardRightRail({ deadlines }: { deadlines: Deadline[] }) {
 
       <DashboardCard delay={120}>
         <SectionHeader title="Trending notes" icon={Flame} />
-        <ul className="mt-3 divide-y divide-border">
+        <ul className="mt-3 divide-y divide-border/60">
           {trendingNotes.map((note) => (
-            <li key={note.id} className="flex items-center justify-between gap-3 py-2.5">
+            <li key={note.id} className="group flex items-center justify-between gap-3 py-2.5 transition-colors hover:bg-secondary/30 rounded-xl px-2">
               <div className="min-w-0">
-                <p className="truncate text-sm font-medium">{note.title}</p>
+                <p className="truncate text-sm font-semibold text-foreground group-hover:text-primary transition-colors">{note.title}</p>
                 <p className="text-xs text-muted-foreground">{note.course}</p>
               </div>
-              <span className="shrink-0 text-xs text-muted-foreground">♥ {note.likes}</span>
+              <span className="shrink-0 text-xs font-semibold text-rose-500 bg-rose-500/10 border border-rose-500/20 px-2 py-0.5 rounded-full">
+                ♥ {note.likes}
+              </span>
             </li>
           ))}
         </ul>
-        <Link to="/notes" className="story-link mt-3 inline-block text-xs font-medium text-primary">
-          Browse all notes
+        <Link to="/notes" className="story-link mt-3.5 inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline">
+          Browse all notes →
         </Link>
       </DashboardCard>
 

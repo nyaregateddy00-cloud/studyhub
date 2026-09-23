@@ -14,7 +14,7 @@ export function DashboardCard({
 }) {
   return (
     <section
-      className={cn("surface-card animate-fade-in p-5 sm:p-6", className)}
+      className={cn("surface-card animate-fade-in p-5 sm:p-6 transition-all duration-200", className)}
       style={{ animationDelay: `${delay}ms`, animationFillMode: "backwards" }}
     >
       {children}
@@ -26,16 +26,23 @@ export function SectionHeader({
   title,
   icon: Icon,
   action,
+  badge,
 }: {
   title: string;
   icon?: LucideIcon;
   action?: ReactNode;
+  badge?: ReactNode;
 }) {
   return (
     <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
-      <div className="flex min-w-0 items-center gap-2">
-        {Icon && <Icon className="size-4 shrink-0 text-muted-foreground" />}
-        <h2 className="truncate text-base font-semibold">{title}</h2>
+      <div className="flex min-w-0 items-center gap-2.5">
+        {Icon && (
+          <span className="grid size-7 place-items-center rounded-lg bg-secondary/80 text-muted-foreground">
+            <Icon className="size-4 shrink-0" />
+          </span>
+        )}
+        <h2 className="truncate text-base font-semibold tracking-tight">{title}</h2>
+        {badge}
       </div>
       {action}
     </header>
@@ -59,17 +66,30 @@ export function StatTile({
 }) {
   return (
     <div
-      className="surface-card lift animate-fade-in p-5"
+      className="group relative rounded-2xl border border-border/80 bg-gradient-to-b from-card to-card/60 p-5 shadow-xs transition-all duration-200 hover:-translate-y-1 hover:border-primary/40 hover:shadow-md animate-fade-in"
       style={{ animationDelay: `${delay}ms`, animationFillMode: "backwards" }}
     >
       <div className="flex items-center justify-between gap-2">
-        <span className={cn("grid size-9 shrink-0 place-items-center rounded-xl", tone)}>
-          <Icon className="size-4" />
+        <span
+          className={cn(
+            "grid size-11 shrink-0 place-items-center rounded-2xl border border-border/40 shadow-xs transition-transform duration-200 group-hover:scale-110",
+            tone,
+          )}
+        >
+          <Icon className="size-5" />
         </span>
       </div>
-      <p className="mt-3 text-2xl font-bold tabular-nums sm:text-3xl">{value}</p>
-      <p className="text-sm text-muted-foreground">{label}</p>
-      {hint && <p className="mt-1 text-xs font-medium text-accent">{hint}</p>}
+      <p className="mt-4 text-2xl font-extrabold tracking-tight tabular-nums sm:text-3xl text-foreground font-display">
+        {value}
+      </p>
+      <p className="mt-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider">{label}</p>
+      {hint && (
+        <div className="mt-3 flex items-center gap-1.5">
+          <span className="inline-flex items-center rounded-full bg-secondary/80 px-2.5 py-0.5 text-[10px] font-semibold text-muted-foreground">
+            {hint}
+          </span>
+        </div>
+      )}
     </div>
   );
 }
@@ -86,13 +106,13 @@ export function EmptyState({
   action?: ReactNode;
 }) {
   return (
-    <div className="flex flex-col items-center gap-2 rounded-xl border border-dashed border-border px-4 py-8 text-center">
-      <span className="grid size-10 place-items-center rounded-full bg-secondary text-muted-foreground">
-        <Icon className="size-4" />
+    <div className="flex flex-col items-center gap-2.5 rounded-2xl border border-dashed border-border/80 bg-secondary/20 px-6 py-10 text-center">
+      <span className="grid size-12 place-items-center rounded-2xl bg-secondary text-muted-foreground shadow-xs">
+        <Icon className="size-5" />
       </span>
-      <p className="text-sm font-medium">{title}</p>
-      <p className="max-w-xs text-xs text-muted-foreground">{description}</p>
-      {action}
+      <p className="text-sm font-semibold tracking-tight">{title}</p>
+      <p className="max-w-xs text-xs text-muted-foreground leading-relaxed">{description}</p>
+      {action && <div className="mt-2">{action}</div>}
     </div>
   );
 }

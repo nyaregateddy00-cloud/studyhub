@@ -1,17 +1,15 @@
+import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
+
 import { CHAT_MODEL, createLovableAiGatewayProvider } from "@/lib/ai-gateway.server";
 
 /**
  * Every AI call in the app (chat, quiz/flashcard/plan generation) should get
  * its model from getActiveProvider() rather than constructing a gateway
- * directly. Today only "lovable-gateway" is wired up (it's what the app
- * already used, routed to Gemini). Adding OpenAI or Anthropic later means:
- *   1. `npm install @ai-sdk/openai` (or `@ai-sdk/anthropic`)
- *   2. Uncomment + fill in the provider below
- *   3. Set AI_PROVIDER=openai (or anthropic) in the environment
- * No call site (study-ai.functions.ts, routes/api/chat.ts) needs to change.
+ * directly. The app is configured for NVIDIA by default using the OpenAI-compatible
+ * endpoint, while Lovable remains available as a fallback.
  */
 
-export type AIProviderId = "lovable-gateway" | "openai" | "anthropic";
+export type AIProviderId = "lovable-gateway" | "nvidia" | "openai" | "anthropic";
 
 type Gateway = ReturnType<typeof createLovableAiGatewayProvider>;
 type ChatModel = ReturnType<Gateway>;
@@ -33,6 +31,16 @@ const lovableGatewayProvider: AIModelProvider = {
   chatModel: () => createLovableAiGatewayProvider(requireEnv("LOVABLE_API_KEY"))(CHAT_MODEL),
 };
 
+const nvidiaProvider: AIModelProvider = {
+  id: "nvidia",
+  chatModel: () =>
+    createOpenAICompatible({
+      name: "nvidia",
+      apiKey: requireEnv("NVIDIA_API_KEY"),
+      baseURL: "https://integrate.api.nvidia.com/v1",
+    })(process.env.NVIDIA_MODEL || "meta/llama-3.2-11b-vision-instruct"),
+};
+
 // --- Extension points (not active — packages not installed, no API key set) ---
 //
 // import { createOpenAI } from "@ai-sdk/openai";
@@ -50,6 +58,7 @@ const lovableGatewayProvider: AIModelProvider = {
 
 const PROVIDERS: Partial<Record<AIProviderId, AIModelProvider>> = {
   "lovable-gateway": lovableGatewayProvider,
+  nvidia: nvidiaProvider,
   // openai: openaiProvider,
   // anthropic: anthropicProvider,
 };

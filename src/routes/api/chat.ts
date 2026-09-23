@@ -28,9 +28,12 @@ export const Route = createFileRoute("/api/chat")({
           auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
           global: { headers: { apikey: supabaseKey, Authorization: `Bearer ${token}` } },
         });
-        const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token);
-        if (claimsError || !claimsData?.claims?.sub) {
-          return new Response("Unauthorized", { status: 401 });
+        const { data: userData, error: userError } = await supabase.auth.getUser(token);
+        if (userError || !userData?.user?.id) {
+          const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token);
+          if (claimsError || !claimsData?.claims?.sub) {
+            return new Response("Unauthorized", { status: 401 });
+          }
         }
 
         const { messages } = (await request.json()) as { messages?: unknown };

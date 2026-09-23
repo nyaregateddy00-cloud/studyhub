@@ -1,7 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Insert, Row } from "@/services/types";
 
-const QUIZ_COLUMNS = "id,title,topic,questions,created_at";
+const QUIZ_COLUMNS = "id,title,topic,difficulty,questions,created_at";
 
 export type QuizRow = Row<"quizzes">;
 export type NewQuizInput = Pick<

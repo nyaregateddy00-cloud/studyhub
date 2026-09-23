@@ -247,32 +247,46 @@ function Dashboard() {
     <div className="space-y-6">
       <SubscriptionBanner />
       <UsageMeter />
-      <DashboardCard className="mesh-bg">
+      <DashboardCard className="aurora-bg rounded-3xl border border-primary/25 p-6 shadow-sm">
         <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 sm:flex sm:flex-wrap sm:justify-between">
-          <div className="flex min-w-0 items-center gap-3">
-            <Avatar className="size-12 shrink-0 border border-border">
-              <AvatarImage src={data.profile?.avatar_url ?? undefined} alt={name} />
-              <AvatarFallback>{initials}</AvatarFallback>
-            </Avatar>
+          <div className="flex min-w-0 items-center gap-4">
+            <div className="relative">
+              <Avatar className="size-14 shrink-0 ring-3 ring-primary/30 ring-offset-2 ring-offset-background shadow-md">
+                <AvatarImage src={data.profile?.avatar_url ?? undefined} alt={name} />
+                <AvatarFallback className="bg-gradient-to-br from-primary/20 to-indigo-500/20 text-primary font-bold text-base">
+                  {initials}
+                </AvatarFallback>
+              </Avatar>
+              <span className="absolute -bottom-1 -right-1 flex size-5 items-center justify-center rounded-full bg-gradient-to-r from-primary to-indigo-500 text-[10px] font-bold text-primary-foreground ring-2 ring-background">
+                {level}
+              </span>
+            </div>
             <div className="min-w-0">
-              <h1 className="truncate text-xl font-bold sm:text-2xl">
-                Welcome back, {name.split(" ")[0]} 👋
-              </h1>
-              <p className="truncate text-sm text-muted-foreground">
-                {data.profile?.course ?? "Ready for a focused session?"}
+              <div className="flex items-center gap-2">
+                <h1 className="truncate font-display text-xl font-bold tracking-tight sm:text-3xl text-foreground">
+                  {(() => {
+                    const hour = new Date().getHours();
+                    if (hour < 12) return "Good morning";
+                    if (hour < 17) return "Good afternoon";
+                    return "Good evening";
+                  })()}, {name.split(" ")[0]} 👋
+                </h1>
+              </div>
+              <p className="truncate text-sm text-muted-foreground font-medium mt-0.5">
+                {data.profile?.course ? `${data.profile.course} · ` : ""}Ready for your next breakthrough?
               </p>
             </div>
           </div>
-          <div className="flex shrink-0 items-center gap-2">
-            <Badge variant="secondary" className="gap-1">
-              <Zap className="size-3 text-warning" /> Level {level}
+          <div className="flex shrink-0 items-center gap-2.5">
+            <Badge variant="secondary" className="gap-1.5 px-3.5 py-1.5 bg-warning/10 text-warning border-warning/20 font-bold shadow-xs text-xs rounded-xl">
+              <Zap className="size-3.5 fill-warning text-warning" /> Level {level}
             </Badge>
             <Sheet>
               <SheetTrigger asChild>
                 <Button
                   variant="outline"
                   size="icon-sm"
-                  className="xl:hidden"
+                  className="xl:hidden rounded-xl border-border/80 bg-background/60 backdrop-blur-md"
                   aria-label="Open highlights"
                 >
                   <PanelRightOpen className="size-4" />
@@ -287,13 +301,17 @@ function Dashboard() {
             </Sheet>
           </div>
         </div>
-        <div className="mt-4 flex items-start gap-2 rounded-xl bg-secondary/60 p-3">
-          <Quote className="mt-0.5 size-4 shrink-0 text-primary" />
+        <div className="mt-5 flex items-start gap-3.5 rounded-2xl border border-border/70 bg-card/60 backdrop-blur-md p-4 shadow-2xs">
+          <span className="grid size-8 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary shadow-2xs">
+            <Quote className="size-4" />
+          </span>
           <div className="min-w-0">
-            <p className="text-sm italic text-muted-foreground">
-              “{quote.text}” — {quote.author}
+            <p className="text-sm font-medium italic text-foreground/90 leading-relaxed">
+              “{quote.text}”
             </p>
-            <p className="mt-1 text-xs text-muted-foreground/80">Quote for {quote.dateLabel}</p>
+            <p className="mt-1 text-xs text-muted-foreground font-medium">
+              — {quote.author} <span className="mx-1 opacity-50">·</span> Quote for {quote.dateLabel}
+            </p>
           </div>
         </div>
       </DashboardCard>
@@ -304,7 +322,7 @@ function Dashboard() {
           value={data.profile?.streak_days ?? 0}
           hint="Keep it alive today"
           icon={Flame}
-          tone="success-tint text-warning"
+          tone="warning-tint text-amber-500"
           delay={0}
         />
         <StatTile
@@ -318,16 +336,17 @@ function Dashboard() {
         <StatTile
           label="Studied this fortnight"
           value={`${Math.round((derived.weekMinutes / 60) * 10) / 10} h`}
+          hint="Logged in planner"
           icon={LineChart}
-          tone="success-tint text-success"
+          tone="success-tint text-emerald-500"
           delay={120}
         />
         <StatTile
           label="Cards due now"
           value={derived.dueCards}
-          hint={`${data.deckCount} decks`}
+          hint={`${data.deckCount} decks active`}
           icon={Layers}
-          tone="brand-tint text-chart-5"
+          tone="brand-tint text-violet-500"
           delay={180}
         />
       </div>

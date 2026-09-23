@@ -11,7 +11,6 @@ import {
   ListChecks,
   LogOut,
   Settings as SettingsIcon,
-  Shield,
   Sparkles,
   Trophy,
   User,
@@ -76,7 +75,6 @@ const sections: { label: string; items: NavItem[] }[] = [
       { to: "/profile", label: "Profile", icon: User },
       { to: "/premium", label: "Premium", icon: Crown },
       { to: "/settings", label: "Settings", icon: SettingsIcon },
-      { to: "/admin", label: "Admin", icon: Shield },
     ],
   },
 ];
@@ -95,86 +93,139 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
-      <SidebarHeader className="gap-3">
+      <SidebarHeader className="gap-3 p-3">
         <Link
           to="/dashboard"
           onClick={() => setOpenMobile(false)}
-          className="flex items-center gap-2 px-1 py-1"
+          className="group flex items-center gap-2.5 px-1 py-1 rounded-xl transition-all"
         >
-          <BrandMark className="size-7 shrink-0" />
+          <div className="relative">
+            <BrandMark className="size-8 shrink-0 transition-transform duration-200 group-hover:scale-105" />
+            <div className="absolute -inset-1 rounded-full bg-primary/20 blur-xs -z-10 opacity-0 group-hover:opacity-100 transition-opacity" />
+          </div>
           {!collapsed && (
-            <span className="font-display text-base font-bold tracking-tight">StudyHub</span>
+            <div className="min-w-0">
+              <span className="font-display text-base font-bold tracking-tight bg-gradient-to-r from-foreground via-foreground to-primary bg-clip-text text-transparent">
+                StudyHub
+              </span>
+              <span className="block text-[10px] font-medium tracking-wide text-muted-foreground uppercase">
+                AI Workspace
+              </span>
+            </div>
           )}
         </Link>
 
         {!collapsed && (
-          <div className="rounded-2xl border border-sidebar-border bg-sidebar-accent/60 p-3">
-            <div className="flex min-w-0 items-center gap-2.5">
-              <Avatar className="size-9 shrink-0">
-                <AvatarImage src={profile?.avatar_url ?? undefined} alt="" />
-                <AvatarFallback>{initialsOf(profile?.display_name)}</AvatarFallback>
-              </Avatar>
-              <div className="min-w-0">
-                <p className="truncate text-sm font-semibold">
+          <div className="rounded-2xl border border-border/80 bg-gradient-to-b from-card to-card/50 p-3 shadow-xs transition-all hover:border-primary/30">
+            <div className="flex min-w-0 items-center gap-3">
+              <div className="relative">
+                <Avatar className="size-10 shrink-0 ring-2 ring-primary/30 shadow-xs">
+                  <AvatarImage src={profile?.avatar_url ?? undefined} alt="" />
+                  <AvatarFallback className="bg-gradient-to-br from-primary/20 to-indigo-500/20 text-primary text-xs font-bold">
+                    {initialsOf(profile?.display_name)}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="absolute -bottom-1 -right-1 flex size-4 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-primary-foreground ring-2 ring-background">
+                  {profile?.level ?? 1}
+                </span>
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-semibold tracking-tight text-foreground">
                   {profile?.display_name ?? "Student"}
                 </p>
-                <p className="flex items-center gap-2 text-[11px] text-muted-foreground">
-                  <span>Level {profile?.level ?? 1}</span>
-                  <span className="inline-flex items-center gap-0.5">
-                    <Flame className="size-3 text-warning" />
-                    {profile?.streak_days ?? 0}d
+                <div className="mt-0.5 flex items-center gap-1.5 text-[11px]">
+                  <span className="inline-flex items-center gap-1 rounded-md bg-warning/10 px-1.5 py-0.2 border border-warning/20 font-semibold text-warning text-[10px]">
+                    <Flame className="size-3 fill-warning" />
+                    {profile?.streak_days ?? 0}d streak
                   </span>
-                </p>
+                  <span className="text-muted-foreground text-[10px]">
+                    Lvl {profile?.level ?? 1}
+                  </span>
+                </div>
               </div>
             </div>
-            <Progress value={progress.percent} className="mt-2.5 h-1.5" />
-            <p className="mt-1.5 text-[11px] text-muted-foreground">
-              {progress.into}/{progress.span} XP to level {(profile?.level ?? 1) + 1}
-            </p>
+            <div className="mt-3">
+              <div className="flex justify-between text-[10px] text-muted-foreground mb-1 font-medium">
+                <span>XP Progress</span>
+                <span className="text-foreground/80 font-semibold">{progress.percent}%</span>
+              </div>
+              <div className="h-1.5 w-full overflow-hidden rounded-full bg-secondary/80">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-primary to-indigo-500 transition-all duration-300"
+                  style={{ width: `${progress.percent}%` }}
+                />
+              </div>
+              <p className="mt-1 text-right text-[10px] text-muted-foreground">
+                {progress.into}/{progress.span} XP to Lvl {(profile?.level ?? 1) + 1}
+              </p>
+            </div>
           </div>
         )}
       </SidebarHeader>
 
-      <SidebarContent>
+      <SidebarContent className="custom-scrollbar px-1">
         {sections.map((section) => (
-          <SidebarGroup key={section.label}>
-            <SidebarGroupLabel>{section.label}</SidebarGroupLabel>
+          <SidebarGroup key={section.label} className="py-1">
+            <SidebarGroupLabel className="text-[10px] font-bold tracking-widest text-muted-foreground/60 uppercase px-3">
+              {section.label}
+            </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                {section.items.map((item) => (
-                  <SidebarMenuItem key={`${section.label}-${item.to}-${item.label}`}>
-                    <SidebarMenuButton asChild isActive={pathname === item.to} tooltip={item.label}>
-                      <Link to={item.to} onClick={() => setOpenMobile(false)}>
-                        <item.icon className="size-4 shrink-0" />
-                        <span className="min-w-0 truncate">{item.label}</span>
-                        {item.to === "/dashboard" && unread > 0 && (
-                          <span className="ml-auto rounded-full bg-primary px-1.5 text-[10px] font-semibold text-primary-foreground">
-                            {unread > 9 ? "9+" : unread}
-                          </span>
+                {section.items.map((item) => {
+                  const isActive = pathname === item.to;
+                  return (
+                    <SidebarMenuItem key={`${section.label}-${item.to}-${item.label}`}>
+                      <SidebarMenuButton
+                        asChild
+                        isActive={isActive}
+                        tooltip={item.label}
+                        className={cn(
+                          "transition-all duration-150 rounded-xl px-3 py-2 my-0.5 text-sm font-medium",
+                          isActive
+                            ? "bg-gradient-to-r from-primary/15 via-primary/10 to-transparent text-primary font-semibold border-l-2 border-primary shadow-2xs"
+                            : "text-muted-foreground hover:text-foreground hover:bg-secondary/60 hover:translate-x-0.5",
                         )}
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
+                      >
+                        <Link to={item.to} onClick={() => setOpenMobile(false)}>
+                          <item.icon
+                            className={cn(
+                              "size-4 shrink-0 transition-transform duration-150",
+                              isActive ? "text-primary scale-110" : "text-muted-foreground group-hover:text-foreground",
+                            )}
+                          />
+                          <span className="min-w-0 truncate">{item.label}</span>
+                          {item.to === "/dashboard" && unread > 0 && (
+                            <span className="ml-auto rounded-full bg-gradient-to-r from-primary to-indigo-500 px-1.5 py-0.5 text-[10px] font-bold text-primary-foreground shadow-xs">
+                              {unread > 9 ? "9+" : unread}
+                            </span>
+                          )}
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
         ))}
 
         {!collapsed && !subscriptionStatus.isPremium && (
-          <div className="mx-2 mb-2 rounded-2xl border border-primary/25 bg-primary/5 p-3">
-            <p className="flex items-center gap-1.5 text-sm font-semibold">
-              <Crown className="size-4 text-warning" /> StudyHub Pro
-            </p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Unlimited AI tutoring, downloads and quizzes for KSh 49 / 7 days.
+          <div className="mx-2 my-3 rounded-2xl border border-primary/25 bg-gradient-to-br from-primary/10 via-indigo-500/5 to-transparent p-3.5 shadow-xs">
+            <div className="flex items-center gap-2">
+              <span className="grid size-6 place-items-center rounded-lg bg-warning/15 text-warning shadow-2xs">
+                <Crown className="size-3.5" />
+              </span>
+              <span className="text-xs font-bold tracking-tight">StudyHub Pro</span>
+            </div>
+            <p className="mt-1.5 text-[11px] leading-relaxed text-muted-foreground">
+              Unlimited AI tutoring, document uploads, and smart exam quiz generators.
             </p>
             <Link
               to="/premium"
               onClick={() => setOpenMobile(false)}
-              className="mt-2.5 inline-flex h-8 w-full items-center justify-center gap-1.5 rounded-lg bg-primary text-xs font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+              className="mt-3 inline-flex h-8 w-full items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-primary to-indigo-600 text-xs font-semibold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:opacity-95 active:scale-[0.98]"
             >
-              <Sparkles className="size-3.5" /> Upgrade
+              <Sparkles className="size-3.5" /> Upgrade now
             </Link>
           </div>
         )}

@@ -9,46 +9,42 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
-import { Route as ResetPasswordRouteImport } from './routes/reset-password'
-import { Route as RegisterRouteImport } from './routes/register'
-import { Route as AuthRouteImport } from './routes/auth'
-import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as FeaturesQuizGeneratorFromPdfRouteImport } from './routes/features/quiz-generator-from-pdf'
-import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
-import { Route as ApiChatRouteImport } from './routes/api/chat'
-import { Route as AppWelcomeRouteImport } from './routes/_app.welcome'
-import { Route as AppSettingsRouteImport } from './routes/_app.settings'
-import { Route as AppQuizzesRouteImport } from './routes/_app.quizzes'
-import { Route as AppProfileRouteImport } from './routes/_app.profile'
-import { Route as AppPremiumRouteImport } from './routes/_app.premium'
-import { Route as AppPlannerRouteImport } from './routes/_app.planner'
-import { Route as AppNotesRouteImport } from './routes/_app.notes'
-import { Route as AppLeaderboardRouteImport } from './routes/_app.leaderboard'
-import { Route as AppGroupsRouteImport } from './routes/_app.groups'
-import { Route as AppFlashcardsRouteImport } from './routes/_app.flashcards'
-import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
-import { Route as AppCommunityRouteImport } from './routes/_app.community'
-import { Route as AppAssistantRouteImport } from './routes/_app.assistant'
-import { Route as AppAnalyticsRouteImport } from './routes/_app.analytics'
+import { Route as AppRouteImport } from './routes/_app'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as RegisterRouteImport } from './routes/register'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as AppAdminRouteImport } from './routes/_app.admin'
-import { Route as AppUUserIdRouteImport } from './routes/_app.u.$userId'
+import { Route as AppAnalyticsRouteImport } from './routes/_app.analytics'
+import { Route as AppAssistantRouteImport } from './routes/_app.assistant'
+import { Route as AppCommunityRouteImport } from './routes/_app.community'
+import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
+import { Route as AppFlashcardsRouteImport } from './routes/_app.flashcards'
+import { Route as AppGroupsRouteImport } from './routes/_app.groups'
+import { Route as AppLeaderboardRouteImport } from './routes/_app.leaderboard'
+import { Route as AppNotesRouteImport } from './routes/_app.notes'
+import { Route as AppPlannerRouteImport } from './routes/_app.planner'
+import { Route as AppPremiumRouteImport } from './routes/_app.premium'
+import { Route as AppProfileRouteImport } from './routes/_app.profile'
+import { Route as AppQuizzesRouteImport } from './routes/_app.quizzes'
+import { Route as AppSettingsRouteImport } from './routes/_app.settings'
+import { Route as AppWelcomeRouteImport } from './routes/_app.welcome'
+import { Route as ApiChatRouteImport } from './routes/api/chat'
+import { Route as ApiFlashcardsRouteImport } from './routes/api/flashcards'
+import { Route as ApiQuizRouteImport } from './routes/api/quiz'
+import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
+import { Route as FeaturesQuizGeneratorFromPdfRouteImport } from './routes/features/quiz-generator-from-pdf'
 import { Route as AppAdminPaymentsRouteImport } from './routes/_app.admin_.payments'
+import { Route as AppUUserIdRouteImport } from './routes/_app.u.$userId'
 
-const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
-  id: '/sitemap.xml',
-  path: '/sitemap.xml',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ResetPasswordRoute = ResetPasswordRouteImport.update({
-  id: '/reset-password',
-  path: '/reset-password',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RegisterRoute = RegisterRouteImport.update({
-  id: '/register',
-  path: '/register',
+const AppRoute = AppRouteImport.update({
+  id: '/_app',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -56,94 +52,24 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AppRoute = AppRouteImport.update({
-  id: '/_app',
+const RegisterRoute = RegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
-const FeaturesQuizGeneratorFromPdfRoute =
-  FeaturesQuizGeneratorFromPdfRouteImport.update({
-    id: '/features/quiz-generator-from-pdf',
-    path: '/features/quiz-generator-from-pdf',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const AuthCallbackRoute = AuthCallbackRouteImport.update({
-  id: '/callback',
-  path: '/callback',
-  getParentRoute: () => AuthRoute,
-} as any)
-const ApiChatRoute = ApiChatRouteImport.update({
-  id: '/api/chat',
-  path: '/api/chat',
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AppWelcomeRoute = AppWelcomeRouteImport.update({
-  id: '/welcome',
-  path: '/welcome',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppSettingsRoute = AppSettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppQuizzesRoute = AppQuizzesRouteImport.update({
-  id: '/quizzes',
-  path: '/quizzes',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppProfileRoute = AppProfileRouteImport.update({
-  id: '/profile',
-  path: '/profile',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppPremiumRoute = AppPremiumRouteImport.update({
-  id: '/premium',
-  path: '/premium',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppPlannerRoute = AppPlannerRouteImport.update({
-  id: '/planner',
-  path: '/planner',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppNotesRoute = AppNotesRouteImport.update({
-  id: '/notes',
-  path: '/notes',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppLeaderboardRoute = AppLeaderboardRouteImport.update({
-  id: '/leaderboard',
-  path: '/leaderboard',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppGroupsRoute = AppGroupsRouteImport.update({
-  id: '/groups',
-  path: '/groups',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppFlashcardsRoute = AppFlashcardsRouteImport.update({
-  id: '/flashcards',
-  path: '/flashcards',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppDashboardRoute = AppDashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppCommunityRoute = AppCommunityRouteImport.update({
-  id: '/community',
-  path: '/community',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppAssistantRoute = AppAssistantRouteImport.update({
-  id: '/assistant',
-  path: '/assistant',
+const AppAdminRoute = AppAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => AppRoute,
 } as any)
 const AppAnalyticsRoute = AppAnalyticsRouteImport.update({
@@ -151,19 +77,105 @@ const AppAnalyticsRoute = AppAnalyticsRouteImport.update({
   path: '/analytics',
   getParentRoute: () => AppRoute,
 } as any)
-const AppAdminRoute = AppAdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
+const AppAssistantRoute = AppAssistantRouteImport.update({
+  id: '/assistant',
+  path: '/assistant',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCommunityRoute = AppCommunityRouteImport.update({
+  id: '/community',
+  path: '/community',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDashboardRoute = AppDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppFlashcardsRoute = AppFlashcardsRouteImport.update({
+  id: '/flashcards',
+  path: '/flashcards',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppGroupsRoute = AppGroupsRouteImport.update({
+  id: '/groups',
+  path: '/groups',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppLeaderboardRoute = AppLeaderboardRouteImport.update({
+  id: '/leaderboard',
+  path: '/leaderboard',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppNotesRoute = AppNotesRouteImport.update({
+  id: '/notes',
+  path: '/notes',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPlannerRoute = AppPlannerRouteImport.update({
+  id: '/planner',
+  path: '/planner',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPremiumRoute = AppPremiumRouteImport.update({
+  id: '/premium',
+  path: '/premium',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppProfileRoute = AppProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppQuizzesRoute = AppQuizzesRouteImport.update({
+  id: '/quizzes',
+  path: '/quizzes',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSettingsRoute = AppSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppWelcomeRoute = AppWelcomeRouteImport.update({
+  id: '/welcome',
+  path: '/welcome',
+  getParentRoute: () => AppRoute,
+} as any)
+const ApiChatRoute = ApiChatRouteImport.update({
+  id: '/api/chat',
+  path: '/api/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiFlashcardsRoute = ApiFlashcardsRouteImport.update({
+  id: '/api/flashcards',
+  path: '/api/flashcards',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiQuizRoute = ApiQuizRouteImport.update({
+  id: '/api/quiz',
+  path: '/api/quiz',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthCallbackRoute = AuthCallbackRouteImport.update({
+  id: '/callback',
+  path: '/callback',
+  getParentRoute: () => AuthRoute,
+} as any)
+const FeaturesQuizGeneratorFromPdfRoute =
+  FeaturesQuizGeneratorFromPdfRouteImport.update({
+    id: '/features/quiz-generator-from-pdf',
+    path: '/features/quiz-generator-from-pdf',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const AppAdminPaymentsRoute = AppAdminPaymentsRouteImport.update({
+  id: '/admin_/payments',
+  path: '/admin/payments',
   getParentRoute: () => AppRoute,
 } as any)
 const AppUUserIdRoute = AppUUserIdRouteImport.update({
   id: '/u/$userId',
   path: '/u/$userId',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppAdminPaymentsRoute = AppAdminPaymentsRouteImport.update({
-  id: '/admin_/payments',
-  path: '/admin/payments',
   getParentRoute: () => AppRoute,
 } as any)
 
@@ -189,6 +201,8 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AppSettingsRoute
   '/welcome': typeof AppWelcomeRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/flashcards': typeof ApiFlashcardsRoute
+  '/api/quiz': typeof ApiQuizRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/features/quiz-generator-from-pdf': typeof FeaturesQuizGeneratorFromPdfRoute
   '/admin/payments': typeof AppAdminPaymentsRoute
@@ -216,6 +230,8 @@ export interface FileRoutesByTo {
   '/settings': typeof AppSettingsRoute
   '/welcome': typeof AppWelcomeRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/flashcards': typeof ApiFlashcardsRoute
+  '/api/quiz': typeof ApiQuizRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/features/quiz-generator-from-pdf': typeof FeaturesQuizGeneratorFromPdfRoute
   '/admin/payments': typeof AppAdminPaymentsRoute
@@ -245,6 +261,8 @@ export interface FileRoutesById {
   '/_app/settings': typeof AppSettingsRoute
   '/_app/welcome': typeof AppWelcomeRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/flashcards': typeof ApiFlashcardsRoute
+  '/api/quiz': typeof ApiQuizRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/features/quiz-generator-from-pdf': typeof FeaturesQuizGeneratorFromPdfRoute
   '/_app/admin_/payments': typeof AppAdminPaymentsRoute
@@ -274,6 +292,8 @@ export interface FileRouteTypes {
     | '/settings'
     | '/welcome'
     | '/api/chat'
+    | '/api/flashcards'
+    | '/api/quiz'
     | '/auth/callback'
     | '/features/quiz-generator-from-pdf'
     | '/admin/payments'
@@ -301,6 +321,8 @@ export interface FileRouteTypes {
     | '/settings'
     | '/welcome'
     | '/api/chat'
+    | '/api/flashcards'
+    | '/api/quiz'
     | '/auth/callback'
     | '/features/quiz-generator-from-pdf'
     | '/admin/payments'
@@ -329,6 +351,8 @@ export interface FileRouteTypes {
     | '/_app/settings'
     | '/_app/welcome'
     | '/api/chat'
+    | '/api/flashcards'
+    | '/api/quiz'
     | '/auth/callback'
     | '/features/quiz-generator-from-pdf'
     | '/_app/admin_/payments'
@@ -343,37 +367,18 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   ApiChatRoute: typeof ApiChatRoute
+  ApiFlashcardsRoute: typeof ApiFlashcardsRoute
+  ApiQuizRoute: typeof ApiQuizRoute
   FeaturesQuizGeneratorFromPdfRoute: typeof FeaturesQuizGeneratorFromPdfRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/sitemap.xml': {
-      id: '/sitemap.xml'
-      path: '/sitemap.xml'
-      fullPath: '/sitemap.xml'
-      preLoaderRoute: typeof SitemapDotxmlRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/reset-password': {
-      id: '/reset-password'
-      path: '/reset-password'
-      fullPath: '/reset-password'
-      preLoaderRoute: typeof ResetPasswordRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/register': {
-      id: '/register'
-      path: '/register'
-      fullPath: '/register'
-      preLoaderRoute: typeof RegisterRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_app': {
@@ -383,123 +388,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/features/quiz-generator-from-pdf': {
-      id: '/features/quiz-generator-from-pdf'
-      path: '/features/quiz-generator-from-pdf'
-      fullPath: '/features/quiz-generator-from-pdf'
-      preLoaderRoute: typeof FeaturesQuizGeneratorFromPdfRouteImport
+    '/register': {
+      id: '/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof RegisterRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/auth/callback': {
-      id: '/auth/callback'
-      path: '/callback'
-      fullPath: '/auth/callback'
-      preLoaderRoute: typeof AuthCallbackRouteImport
-      parentRoute: typeof AuthRoute
-    }
-    '/api/chat': {
-      id: '/api/chat'
-      path: '/api/chat'
-      fullPath: '/api/chat'
-      preLoaderRoute: typeof ApiChatRouteImport
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_app/welcome': {
-      id: '/_app/welcome'
-      path: '/welcome'
-      fullPath: '/welcome'
-      preLoaderRoute: typeof AppWelcomeRouteImport
-      parentRoute: typeof AppRoute
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_app/settings': {
-      id: '/_app/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof AppSettingsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/quizzes': {
-      id: '/_app/quizzes'
-      path: '/quizzes'
-      fullPath: '/quizzes'
-      preLoaderRoute: typeof AppQuizzesRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/profile': {
-      id: '/_app/profile'
-      path: '/profile'
-      fullPath: '/profile'
-      preLoaderRoute: typeof AppProfileRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/premium': {
-      id: '/_app/premium'
-      path: '/premium'
-      fullPath: '/premium'
-      preLoaderRoute: typeof AppPremiumRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/planner': {
-      id: '/_app/planner'
-      path: '/planner'
-      fullPath: '/planner'
-      preLoaderRoute: typeof AppPlannerRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/notes': {
-      id: '/_app/notes'
-      path: '/notes'
-      fullPath: '/notes'
-      preLoaderRoute: typeof AppNotesRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/leaderboard': {
-      id: '/_app/leaderboard'
-      path: '/leaderboard'
-      fullPath: '/leaderboard'
-      preLoaderRoute: typeof AppLeaderboardRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/groups': {
-      id: '/_app/groups'
-      path: '/groups'
-      fullPath: '/groups'
-      preLoaderRoute: typeof AppGroupsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/flashcards': {
-      id: '/_app/flashcards'
-      path: '/flashcards'
-      fullPath: '/flashcards'
-      preLoaderRoute: typeof AppFlashcardsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/dashboard': {
-      id: '/_app/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof AppDashboardRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/community': {
-      id: '/_app/community'
-      path: '/community'
-      fullPath: '/community'
-      preLoaderRoute: typeof AppCommunityRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/assistant': {
-      id: '/_app/assistant'
-      path: '/assistant'
-      fullPath: '/assistant'
-      preLoaderRoute: typeof AppAssistantRouteImport
+    '/_app/admin': {
+      id: '/_app/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AppAdminRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/analytics': {
@@ -509,11 +430,137 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAnalyticsRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/admin': {
-      id: '/_app/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AppAdminRouteImport
+    '/_app/assistant': {
+      id: '/_app/assistant'
+      path: '/assistant'
+      fullPath: '/assistant'
+      preLoaderRoute: typeof AppAssistantRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/community': {
+      id: '/_app/community'
+      path: '/community'
+      fullPath: '/community'
+      preLoaderRoute: typeof AppCommunityRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/dashboard': {
+      id: '/_app/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AppDashboardRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/flashcards': {
+      id: '/_app/flashcards'
+      path: '/flashcards'
+      fullPath: '/flashcards'
+      preLoaderRoute: typeof AppFlashcardsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/groups': {
+      id: '/_app/groups'
+      path: '/groups'
+      fullPath: '/groups'
+      preLoaderRoute: typeof AppGroupsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/leaderboard': {
+      id: '/_app/leaderboard'
+      path: '/leaderboard'
+      fullPath: '/leaderboard'
+      preLoaderRoute: typeof AppLeaderboardRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/notes': {
+      id: '/_app/notes'
+      path: '/notes'
+      fullPath: '/notes'
+      preLoaderRoute: typeof AppNotesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/planner': {
+      id: '/_app/planner'
+      path: '/planner'
+      fullPath: '/planner'
+      preLoaderRoute: typeof AppPlannerRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/premium': {
+      id: '/_app/premium'
+      path: '/premium'
+      fullPath: '/premium'
+      preLoaderRoute: typeof AppPremiumRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/profile': {
+      id: '/_app/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof AppProfileRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/quizzes': {
+      id: '/_app/quizzes'
+      path: '/quizzes'
+      fullPath: '/quizzes'
+      preLoaderRoute: typeof AppQuizzesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/settings': {
+      id: '/_app/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AppSettingsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/welcome': {
+      id: '/_app/welcome'
+      path: '/welcome'
+      fullPath: '/welcome'
+      preLoaderRoute: typeof AppWelcomeRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/api/chat': {
+      id: '/api/chat'
+      path: '/api/chat'
+      fullPath: '/api/chat'
+      preLoaderRoute: typeof ApiChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/flashcards': {
+      id: '/api/flashcards'
+      path: '/api/flashcards'
+      fullPath: '/api/flashcards'
+      preLoaderRoute: typeof ApiFlashcardsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/quiz': {
+      id: '/api/quiz'
+      path: '/api/quiz'
+      fullPath: '/api/quiz'
+      preLoaderRoute: typeof ApiQuizRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/callback': {
+      id: '/auth/callback'
+      path: '/callback'
+      fullPath: '/auth/callback'
+      preLoaderRoute: typeof AuthCallbackRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/features/quiz-generator-from-pdf': {
+      id: '/features/quiz-generator-from-pdf'
+      path: '/features/quiz-generator-from-pdf'
+      fullPath: '/features/quiz-generator-from-pdf'
+      preLoaderRoute: typeof FeaturesQuizGeneratorFromPdfRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_app/admin_/payments': {
+      id: '/_app/admin_/payments'
+      path: '/admin/payments'
+      fullPath: '/admin/payments'
+      preLoaderRoute: typeof AppAdminPaymentsRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/u/$userId': {
@@ -521,13 +568,6 @@ declare module '@tanstack/react-router' {
       path: '/u/$userId'
       fullPath: '/u/$userId'
       preLoaderRoute: typeof AppUUserIdRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/admin_/payments': {
-      id: '/_app/admin_/payments'
-      path: '/admin/payments'
-      fullPath: '/admin/payments'
-      preLoaderRoute: typeof AppAdminPaymentsRouteImport
       parentRoute: typeof AppRoute
     }
   }
@@ -593,6 +633,8 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   ApiChatRoute: ApiChatRoute,
+  ApiFlashcardsRoute: ApiFlashcardsRoute,
+  ApiQuizRoute: ApiQuizRoute,
   FeaturesQuizGeneratorFromPdfRoute: FeaturesQuizGeneratorFromPdfRoute,
 }
 export const routeTree = rootRouteImport
