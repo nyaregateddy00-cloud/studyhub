@@ -132,9 +132,9 @@ function Assistant() {
       api: "/api/chat",
       // The endpoint requires a signed-in user, so attach the current token.
       headers: () =>
-        tokenRef.current
-          ? ({ Authorization: `Bearer ${tokenRef.current}` } as Record<string, string>)
-          : ({} as Record<string, string>),
+        (session?.access_token
+          ? ({ Authorization: `Bearer ${session.access_token}` } as Record<string, string>)
+          : ({} as Record<string, string>)),
     }),
     onError: () => toast.error("The tutor couldn't respond. Please try again."),
   });

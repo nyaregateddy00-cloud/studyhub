@@ -27,7 +27,7 @@ function Column({
   children,
 }: {
   title: string;
-  count?: number;
+  count?: number | string;
   hint?: string;
   children: React.ReactNode;
 }) {
@@ -35,7 +35,7 @@ function Column({
     <section className="space-y-3 rounded-xl border border-border bg-card/40 p-4">
       <div className="flex items-center justify-between">
         <Label className="text-sm font-semibold">{title}</Label>
-        {typeof count === "number" ? (
+        {count !== undefined && count !== null ? (
           <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
             {count}
           </span>
@@ -54,6 +54,12 @@ export function AcademicManager() {
   const [facultyId, setFacultyId] = useState<string | null>(null);
   const [programmeId, setProgrammeId] = useState<string | null>(null);
   const [uniSearch, setUniSearch] = useState("");
+  const [facSearch, setFacSearch] = useState("");
+  const [progSearch, setProgSearch] = useState("");
+  const [progLevelFilter, setProgLevelFilter] = useState("all");
+  const [unitSearch, setUnitSearch] = useState("");
+  const [unitYearFilter, setUnitYearFilter] = useState("all");
+  const [unitSemesterFilter, setUnitSemesterFilter] = useState("all");
   const [edit, setEdit] = useState<EditState>(null);
 
   const [uniName, setUniName] = useState("");
@@ -98,6 +104,48 @@ export function AcademicManager() {
         (row.county ?? "").toLowerCase().includes(term),
     );
   }, [universities.data, uniSearch]);
+
+  const filteredFaculties = useMemo(() => {
+    const term = facSearch.trim().toLowerCase();
+    const rows = faculties.data ?? [];
+    if (!term) return rows;
+    return rows.filter(
+      (row) =>
+        row.name.toLowerCase().includes(term) ||
+        (row.short_name ?? "").toLowerCase().includes(term),
+    );
+  }, [faculties.data, facSearch]);
+
+  const filteredProgrammes = useMemo(() => {
+    const term = progSearch.trim().toLowerCase();
+    let rows = programmes.data ?? [];
+    if (progLevelFilter !== "all") {
+      rows = rows.filter((row) => row.level === progLevelFilter);
+    }
+    if (!term) return rows;
+    return rows.filter(
+      (row) =>
+        row.name.toLowerCase().includes(term) ||
+        (row.code ?? "").toLowerCase().includes(term),
+    );
+  }, [programmes.data, progSearch, progLevelFilter]);
+
+  const filteredUnits = useMemo(() => {
+    const term = unitSearch.trim().toLowerCase();
+    let rows = units.data ?? [];
+    if (unitYearFilter !== "all") {
+      rows = rows.filter((row) => String(row.year_of_study) === unitYearFilter);
+    }
+    if (unitSemesterFilter !== "all") {
+      rows = rows.filter((row) => String(row.semester) === unitSemesterFilter);
+    }
+    if (!term) return rows;
+    return rows.filter(
+      (row) =>
+        row.name.toLowerCase().includes(term) ||
+        row.code.toLowerCase().includes(term),
+    );
+  }, [units.data, unitSearch, unitYearFilter, unitSemesterFilter]);
 
   function refresh(keys: string[]) {
     keys.forEach((key) => queryClient.invalidateQueries({ queryKey: [key] }));
@@ -284,7 +332,14 @@ export function AcademicManager() {
 
   return (
     <div className="grid gap-4 lg:grid-cols-2">
-      <Column title="Universities" count={filteredUniversities.length}>
+      <Column
+        title="Universities"
+        count={
+          universities.data && filteredUniversities.length !== universities.data.length
+            ? `${filteredUniversities.length}/${universities.data.length}`
+            : filteredUniversities.length
+        }
+      >
         <div className="relative">
           <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -326,32 +381,56 @@ export function AcademicManager() {
           </Button>
         </div>
         <ul className="max-h-72 divide-y divide-border overflow-y-auto rounded-lg border border-border">
-          {filteredUniversities.map((row) =>
-            renderRow({
-              table: "universities",
-              id: row.id,
-              label: row.name,
-              meta: [row.short_name, row.county].filter(Boolean).join(" · "),
-              primary: row.name,
-              secondary: row.short_name ?? "",
-              active: universityId === row.id,
-              onSelect: () => {
-                setUniversityId(row.id);
-                setFacultyId(null);
-                setProgrammeId(null);
-              },
-            }),
+          {filteredUniversities.length === 0 ? (
+            <li className="p-4 text-center text-xs text-muted-foreground">
+              {universities.isLoading ? "Loading universities..." : "No universities found."}
+            </li>
+          ) : (
+            filteredUniversities.map((row) =>
+              renderRow({
+                table: "universities",
+                id: row.id,
+                label: row.name,
+                meta: [row.short_name, row.county].filter(Boolean).join(" · "),
+                primary: row.name,
+                secondary: row.short_name ?? "",
+                active: universityId === row.id,
+                onSelect: () => {
+                  setUniversityId(row.id);
+                  setFacultyId(null);
+                  setProgrammeId(null);
+                  setFacSearch("");
+                  setProgSearch("");
+                  setUnitSearch("");
+                },
+              }),
+            )
           )}
         </ul>
       </Column>
 
       <Column
         title="Schools / Faculties"
-        count={universityId ? (faculties.data?.length ?? 0) : undefined}
+        count={
+          universityId && faculties.data
+            ? filteredFaculties.length !== faculties.data.length
+              ? `${filteredFaculties.length}/${faculties.data.length}`
+              : filteredFaculties.length
+            : undefined
+        }
         hint={universityId ? undefined : "Pick a university first."}
       >
         {universityId ? (
           <>
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={facSearch}
+                placeholder="Search schools..."
+                className="pl-9"
+                onChange={(event) => setFacSearch(event.target.value)}
+              />
+            </div>
             <div className="flex gap-2">
               <Input
                 value={facName}
@@ -369,19 +448,27 @@ export function AcademicManager() {
               </Button>
             </div>
             <ul className="max-h-72 divide-y divide-border overflow-y-auto rounded-lg border border-border">
-              {(faculties.data ?? []).map((row) =>
-                renderRow({
-                  table: "faculties",
-                  id: row.id,
-                  label: row.name,
-                  primary: row.name,
-                  secondary: row.short_name ?? "",
-                  active: facultyId === row.id,
-                  onSelect: () => {
-                    setFacultyId(row.id);
-                    setProgrammeId(null);
-                  },
-                }),
+              {filteredFaculties.length === 0 ? (
+                <li className="p-4 text-center text-xs text-muted-foreground">
+                  {faculties.isLoading ? "Loading schools..." : "No schools found."}
+                </li>
+              ) : (
+                filteredFaculties.map((row) =>
+                  renderRow({
+                    table: "faculties",
+                    id: row.id,
+                    label: row.name,
+                    primary: row.name,
+                    secondary: row.short_name ?? "",
+                    active: facultyId === row.id,
+                    onSelect: () => {
+                      setFacultyId(row.id);
+                      setProgrammeId(null);
+                      setProgSearch("");
+                      setUnitSearch("");
+                    },
+                  }),
+                )
               )}
             </ul>
           </>
@@ -390,11 +477,41 @@ export function AcademicManager() {
 
       <Column
         title="Programmes"
-        count={facultyId ? (programmes.data?.length ?? 0) : undefined}
+        count={
+          facultyId && programmes.data
+            ? filteredProgrammes.length !== programmes.data.length
+              ? `${filteredProgrammes.length}/${programmes.data.length}`
+              : filteredProgrammes.length
+            : undefined
+        }
         hint={facultyId ? undefined : "Pick a school first."}
       >
         {facultyId ? (
           <>
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  value={progSearch}
+                  placeholder="Search programmes..."
+                  className="pl-9"
+                  onChange={(event) => setProgSearch(event.target.value)}
+                />
+              </div>
+              <Select value={progLevelFilter} onValueChange={setProgLevelFilter}>
+                <SelectTrigger className="w-32">
+                  <SelectValue placeholder="All levels" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All levels</SelectItem>
+                  {PROGRAMME_LEVELS.map((level) => (
+                    <SelectItem key={level.value} value={level.value}>
+                      {level.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div className="flex gap-2">
               <Input
                 value={progName}
@@ -424,17 +541,26 @@ export function AcademicManager() {
               </Button>
             </div>
             <ul className="max-h-72 divide-y divide-border overflow-y-auto rounded-lg border border-border">
-              {(programmes.data ?? []).map((row) =>
-                renderRow({
-                  table: "programmes",
-                  id: row.id,
-                  label: row.name,
-                  meta: row.level,
-                  primary: row.name,
-                  secondary: row.code ?? "",
-                  active: programmeId === row.id,
-                  onSelect: () => setProgrammeId(row.id),
-                }),
+              {filteredProgrammes.length === 0 ? (
+                <li className="p-4 text-center text-xs text-muted-foreground">
+                  {programmes.isLoading ? "Loading programmes..." : "No programmes found."}
+                </li>
+              ) : (
+                filteredProgrammes.map((row) =>
+                  renderRow({
+                    table: "programmes",
+                    id: row.id,
+                    label: row.name,
+                    meta: row.level,
+                    primary: row.name,
+                    secondary: row.code ?? "",
+                    active: programmeId === row.id,
+                    onSelect: () => {
+                      setProgrammeId(row.id);
+                      setUnitSearch("");
+                    },
+                  }),
+                )
               )}
             </ul>
           </>
@@ -443,11 +569,54 @@ export function AcademicManager() {
 
       <Column
         title="Units"
-        count={programmeId ? (units.data?.length ?? 0) : undefined}
+        count={
+          programmeId && units.data
+            ? filteredUnits.length !== units.data.length
+              ? `${filteredUnits.length}/${units.data.length}`
+              : filteredUnits.length
+            : undefined
+        }
         hint={programmeId ? undefined : "Pick a programme first."}
       >
         {programmeId ? (
           <>
+            <div className="flex flex-wrap gap-2">
+              <div className="relative min-w-36 flex-1">
+                <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  value={unitSearch}
+                  placeholder="Search units (code / name)..."
+                  className="pl-9"
+                  onChange={(event) => setUnitSearch(event.target.value)}
+                />
+              </div>
+              <Select value={unitYearFilter} onValueChange={setUnitYearFilter}>
+                <SelectTrigger className="w-24">
+                  <SelectValue placeholder="All Y" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Y</SelectItem>
+                  {[1, 2, 3, 4, 5, 6].map((year) => (
+                    <SelectItem key={year} value={String(year)}>
+                      Year {year}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={unitSemesterFilter} onValueChange={setUnitSemesterFilter}>
+                <SelectTrigger className="w-24">
+                  <SelectValue placeholder="All S" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All S</SelectItem>
+                  {[1, 2, 3].map((sem) => (
+                    <SelectItem key={sem} value={String(sem)}>
+                      Sem {sem}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div className="flex flex-wrap gap-2">
               <Input
                 value={unitCode}
@@ -497,20 +666,26 @@ export function AcademicManager() {
               </Button>
             </div>
             <ul className="max-h-72 divide-y divide-border overflow-y-auto rounded-lg border border-border">
-              {(units.data ?? []).map((row) =>
-                renderRow({
-                  table: "units",
-                  id: row.id,
-                  label: `${row.code} — ${row.name}`,
-                  meta: [
-                    row.year_of_study ? `Y${row.year_of_study}` : null,
-                    row.semester ? `S${row.semester}` : null,
-                  ]
-                    .filter(Boolean)
-                    .join(" "),
-                  primary: row.name,
-                  secondary: row.code,
-                }),
+              {filteredUnits.length === 0 ? (
+                <li className="p-4 text-center text-xs text-muted-foreground">
+                  {units.isLoading ? "Loading units..." : "No units found."}
+                </li>
+              ) : (
+                filteredUnits.map((row) =>
+                  renderRow({
+                    table: "units",
+                    id: row.id,
+                    label: `${row.code} — ${row.name}`,
+                    meta: [
+                      row.year_of_study ? `Y${row.year_of_study}` : null,
+                      row.semester ? `S${row.semester}` : null,
+                    ]
+                      .filter(Boolean)
+                      .join(" "),
+                    primary: row.name,
+                    secondary: row.code,
+                  }),
+                )
               )}
             </ul>
           </>
