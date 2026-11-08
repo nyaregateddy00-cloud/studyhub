@@ -116,7 +116,7 @@ export function AppSidebar() {
               <div className="relative">
                 <Avatar className="size-10 shrink-0 ring-2 ring-primary/30 shadow-xs">
                   <AvatarImage src={profile?.avatar_url ?? undefined} alt="" />
-                  <AvatarFallback className="bg-gradient-to-br from-primary/20 to-indigo-500/20 text-primary text-xs font-bold">
+                  <AvatarFallback className="bg-gradient-to-br from-primary/20 to-blue-400/20 text-primary text-xs font-bold">
                     {initialsOf(profile?.display_name)}
                   </AvatarFallback>
                 </Avatar>

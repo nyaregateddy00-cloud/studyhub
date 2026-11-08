@@ -319,7 +319,7 @@ function Dashboard() {
           value={data.profile?.streak_days ?? 0}
           hint="Keep it alive today"
           icon={Flame}
-          tone="warning-tint text-amber-500"
+          tone="bg-amber-500/10 text-amber-500 border-amber-500/20"
           delay={0}
         />
         <StatTile
@@ -327,7 +327,7 @@ function Dashboard() {
           value={xp}
           hint={`${xpInLevel} / 500 to level ${level + 1}`}
           icon={Trophy}
-          tone="brand-tint text-primary"
+          tone="bg-primary/10 text-primary border-primary/20"
           delay={60}
         />
         <StatTile
@@ -335,7 +335,7 @@ function Dashboard() {
           value={`${Math.round((derived.weekMinutes / 60) * 10) / 10} h`}
           hint="Logged in planner"
           icon={LineChart}
-          tone="success-tint text-emerald-500"
+          tone="bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
           delay={120}
         />
         <StatTile
@@ -343,7 +343,7 @@ function Dashboard() {
           value={derived.dueCards}
           hint={`${data.deckCount} decks active`}
           icon={Layers}
-          tone="brand-tint text-violet-500"
+          tone="bg-blue-400/10 text-blue-400 border-blue-400/20"
           delay={180}
         />
       </div>
@@ -527,8 +527,8 @@ function Dashboard() {
                 title="Recent notes"
                 icon={BookOpen}
                 action={
-                  <Button asChild variant="ghost" size="sm">
-                    <Link to="/notes">All</Link>
+                  <Button asChild variant="ghost" size="sm" className="h-8 text-xs font-semibold">
+                    <Link to="/notes">View all</Link>
                   </Button>
                 }
               />
@@ -543,11 +543,23 @@ function Dashboard() {
               ) : (
                 <ul className="mt-3 space-y-2">
                   {data.notes.map((note) => (
-                    <li key={note.id} className="rounded-lg p-2 hover:bg-secondary/60">
-                      <p className="truncate text-sm font-medium">{note.title}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {note.course ?? "General"} · {relativeDate(note.created_at)}
-                      </p>
+                    <li key={note.id}>
+                      <Link
+                        to="/notes"
+                        className="group flex items-center justify-between gap-2 rounded-xl border border-border/60 bg-secondary/30 p-2.5 transition-all hover:bg-secondary hover:border-primary/30"
+                      >
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-xs font-bold text-foreground group-hover:text-primary transition-colors">
+                            {note.title}
+                          </p>
+                          <p className="text-[11px] text-muted-foreground mt-0.5">
+                            {note.course ?? "General"} · {relativeDate(note.created_at)}
+                          </p>
+                        </div>
+                        <span className="text-[10px] font-semibold text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+                          Open →
+                        </span>
+                      </Link>
                     </li>
                   ))}
                 </ul>
@@ -559,8 +571,8 @@ function Dashboard() {
                 title="Recent quizzes"
                 icon={ListChecks}
                 action={
-                  <Button asChild variant="ghost" size="sm">
-                    <Link to="/quizzes">All</Link>
+                  <Button asChild variant="ghost" size="sm" className="h-8 text-xs font-semibold">
+                    <Link to="/quizzes">View all</Link>
                   </Button>
                 }
               />
@@ -575,11 +587,23 @@ function Dashboard() {
               ) : (
                 <ul className="mt-3 space-y-2">
                   {data.quizzes.map((quiz) => (
-                    <li key={quiz.id} className="rounded-lg p-2 hover:bg-secondary/60">
-                      <p className="truncate text-sm font-medium">{quiz.title}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {quiz.topic ?? quiz.difficulty} · {relativeDate(quiz.created_at)}
-                      </p>
+                    <li key={quiz.id}>
+                      <Link
+                        to="/quizzes"
+                        className="group flex items-center justify-between gap-2 rounded-xl border border-border/60 bg-secondary/30 p-2.5 transition-all hover:bg-secondary hover:border-primary/30"
+                      >
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-xs font-bold text-foreground group-hover:text-primary transition-colors">
+                            {quiz.title}
+                          </p>
+                          <p className="text-[11px] text-muted-foreground mt-0.5">
+                            {quiz.topic ?? quiz.difficulty} · {relativeDate(quiz.created_at)}
+                          </p>
+                        </div>
+                        <span className="text-[10px] font-semibold text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+                          Take →
+                        </span>
+                      </Link>
                     </li>
                   ))}
                 </ul>
@@ -591,8 +615,8 @@ function Dashboard() {
                 title="Recent flashcards"
                 icon={Layers}
                 action={
-                  <Button asChild variant="ghost" size="sm">
-                    <Link to="/flashcards">All</Link>
+                  <Button asChild variant="ghost" size="sm" className="h-8 text-xs font-semibold">
+                    <Link to="/flashcards">View all</Link>
                   </Button>
                 }
               />
@@ -607,12 +631,24 @@ function Dashboard() {
               ) : (
                 <ul className="mt-3 space-y-2">
                   {data.decks.map((deck) => (
-                    <li key={deck.id} className="rounded-lg p-2 hover:bg-secondary/60">
-                      <p className="truncate text-sm font-medium">{deck.title}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {deck.subject ?? "General"} ·{" "}
-                        {data.cards.filter((card) => card.deck_id === deck.id).length} cards
-                      </p>
+                    <li key={deck.id}>
+                      <Link
+                        to="/flashcards"
+                        className="group flex items-center justify-between gap-2 rounded-xl border border-border/60 bg-secondary/30 p-2.5 transition-all hover:bg-secondary hover:border-primary/30"
+                      >
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-xs font-bold text-foreground group-hover:text-primary transition-colors">
+                            {deck.title}
+                          </p>
+                          <p className="text-[11px] text-muted-foreground mt-0.5">
+                            {deck.subject ?? "General"} ·{" "}
+                            {data.cards.filter((card) => card.deck_id === deck.id).length} cards
+                          </p>
+                        </div>
+                        <span className="text-[10px] font-semibold text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+                          Study →
+                        </span>
+                      </Link>
                     </li>
                   ))}
                 </ul>

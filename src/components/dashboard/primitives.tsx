@@ -14,7 +14,10 @@ export function DashboardCard({
 }) {
   return (
     <section
-      className={cn("surface-card animate-fade-in p-5 sm:p-6 transition-all duration-200", className)}
+      className={cn(
+        "rounded-3xl border border-border/80 bg-gradient-to-b from-card to-card/70 p-5 sm:p-6 shadow-xs backdrop-blur-md transition-all duration-300 animate-fade-in hover:border-primary/25",
+        className,
+      )}
       style={{ animationDelay: `${delay}ms`, animationFillMode: "backwards" }}
     >
       {children}
@@ -24,27 +27,38 @@ export function DashboardCard({
 
 export function SectionHeader({
   title,
+  subtitle,
   icon: Icon,
   action,
   badge,
 }: {
   title: string;
+  subtitle?: string;
   icon?: LucideIcon;
   action?: ReactNode;
   badge?: ReactNode;
 }) {
   return (
-    <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
+    <header className="flex flex-wrap items-center justify-between gap-3">
       <div className="flex min-w-0 items-center gap-2.5">
         {Icon && (
-          <span className="grid size-7 place-items-center rounded-lg bg-secondary/80 text-muted-foreground">
-            <Icon className="size-4 shrink-0" />
+          <span className="grid size-8 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary border border-primary/20 shadow-2xs">
+            <Icon className="size-4" />
           </span>
         )}
-        <h2 className="truncate text-base font-semibold tracking-tight">{title}</h2>
-        {badge}
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <h2 className="truncate text-base font-bold tracking-tight text-foreground font-display">
+              {title}
+            </h2>
+            {badge}
+          </div>
+          {subtitle && (
+            <p className="truncate text-xs text-muted-foreground mt-0.5">{subtitle}</p>
+          )}
+        </div>
       </div>
-      {action}
+      {action && <div className="shrink-0">{action}</div>}
     </header>
   );
 }
@@ -66,7 +80,7 @@ export function StatTile({
 }) {
   return (
     <div
-      className="group relative rounded-2xl border border-border/80 bg-gradient-to-b from-card to-card/60 p-5 shadow-xs transition-all duration-200 hover:-translate-y-1 hover:border-primary/40 hover:shadow-md animate-fade-in"
+      className="group relative rounded-3xl border border-border/80 bg-gradient-to-b from-card to-card/60 p-5 shadow-xs transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-lg animate-fade-in overflow-hidden"
       style={{ animationDelay: `${delay}ms`, animationFillMode: "backwards" }}
     >
       <div className="flex items-center justify-between gap-2">
@@ -82,10 +96,12 @@ export function StatTile({
       <p className="mt-4 text-2xl font-extrabold tracking-tight tabular-nums sm:text-3xl text-foreground font-display">
         {value}
       </p>
-      <p className="mt-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider">{label}</p>
+      <p className="mt-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+        {label}
+      </p>
       {hint && (
         <div className="mt-3 flex items-center gap-1.5">
-          <span className="inline-flex items-center rounded-full bg-secondary/80 px-2.5 py-0.5 text-[10px] font-semibold text-muted-foreground">
+          <span className="inline-flex items-center rounded-full bg-secondary px-2.5 py-0.5 text-[10px] font-semibold text-muted-foreground border border-border/50">
             {hint}
           </span>
         </div>
@@ -106,11 +122,11 @@ export function EmptyState({
   action?: ReactNode;
 }) {
   return (
-    <div className="flex flex-col items-center gap-2.5 rounded-2xl border border-dashed border-border/80 bg-secondary/20 px-6 py-10 text-center">
-      <span className="grid size-12 place-items-center rounded-2xl bg-secondary text-muted-foreground shadow-xs">
+    <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-border/80 bg-secondary/15 px-6 py-10 text-center">
+      <span className="grid size-12 place-items-center rounded-2xl bg-secondary text-primary/80 border border-border/60 shadow-xs">
         <Icon className="size-5" />
       </span>
-      <p className="text-sm font-semibold tracking-tight">{title}</p>
+      <p className="text-sm font-bold tracking-tight text-foreground">{title}</p>
       <p className="max-w-xs text-xs text-muted-foreground leading-relaxed">{description}</p>
       {action && <div className="mt-2">{action}</div>}
     </div>
