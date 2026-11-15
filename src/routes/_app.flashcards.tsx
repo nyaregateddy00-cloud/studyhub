@@ -330,7 +330,7 @@ function FlashcardsPage() {
 
         <Button
           type="submit"
-          className="rounded-2xl shadow-md bg-gradient-to-r from-primary to-indigo-600 hover:from-primary/95 hover:to-indigo-600/95 text-primary-foreground h-11 px-6 font-semibold active:scale-[0.98] transition-all"
+          className="rounded-2xl shadow-md bg-gradient-to-r from-primary to-blue-600 hover:from-primary/95 hover:to-blue-600/95 text-primary-foreground h-11 px-6 font-semibold active:scale-[0.98] transition-all"
           disabled={generate.isPending}
         >
           {generate.isPending ? (

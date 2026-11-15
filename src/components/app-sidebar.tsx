@@ -79,16 +79,16 @@ export function AppSidebar() {
   const { state, isMobile, setOpenMobile } = useSidebar();
   const collapsed = state === "collapsed" && !isMobile;
   const pathname = useRouterState({ select: (router) => router.location.pathname });
-  const { data: profile } = useProfileSummary();
+  const { data: profile } = useProfileSummary();rofile?.level ?? 1);
+
+  return (
+    <Sidebar collapsible="icon" className="border-r border-sidebar-border">
+      <SidebarHeader className="gap-3 p-3"
   const { data: notifications } = useNotifications();
   const signOut = useSignOut();
 
   const unread = (notifications ?? []).filter((item) => !item.is_read).length;
-  const progress = levelProgress(profile?.xp ?? 0, profile?.level ?? 1);
-
-  return (
-    <Sidebar collapsible="icon" className="border-r border-sidebar-border">
-      <SidebarHeader className="gap-3 p-3">
+  const progress = levelProgress(profile?.xp ?? 0, p>
         <Link
           to="/dashboard"
           onClick={() => setOpenMobile(false)}

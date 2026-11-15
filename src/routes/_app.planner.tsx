@@ -236,7 +236,7 @@ function Planner() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold">Study planner</h1>
+        <h1 className="font-display text-3xl font-bold tracking-tight">Study planner</h1>
         <p className="mt-1 text-muted-foreground">
           Daily, weekly and monthly views, exams, assignments and your study streak — saved on this
           device, plus cloud sessions, goals and AI-built revision plans.
@@ -278,7 +278,7 @@ function Planner() {
             </TabsContent>
 
             <TabsContent value="schedule" className="mt-6 space-y-6">
-              <div className="surface-card grid gap-3 p-5 md:grid-cols-5">
+              <div className="surface-card rounded-3xl border-primary/20 bg-gradient-to-b from-card to-card/60 grid gap-3 p-5 shadow-sm md:grid-cols-5">
                 <div className="md:col-span-2">
                   <Label htmlFor="task-title">Session</Label>
                   <Input
@@ -360,7 +360,7 @@ function Planner() {
                       </div>
                       <ul className="mt-3 space-y-2">
                         {tasks.map((task) => (
-                          <li key={task.id} className="surface-card flex items-center gap-3 p-4">
+                          <li key={task.id} className="surface-card rounded-2xl border-border/80 flex items-center gap-3 p-4 shadow-xs transition-all hover:shadow-sm">
                             <Checkbox
                               checked={task.completed}
                               onCheckedChange={() => toggleTask.mutate(task)}
@@ -374,8 +374,8 @@ function Planner() {
                             </div>
                             <Badge
                               className={cn(
-                                task.priority === "high" && "bg-destructive/10 text-destructive",
-                                task.priority === "medium" && "bg-warning/10 text-warning",
+                                task.priority === "high" && "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20 font-semibold",
+                                task.priority === "medium" && "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20 font-semibold",
                               )}
                               variant="secondary"
                             >
@@ -406,7 +406,7 @@ function Planner() {
                     {done.slice(0, 12).map((task) => (
                       <li
                         key={task.id}
-                        className="surface-card flex items-center gap-3 p-3 opacity-70"
+                        className="surface-card rounded-2xl border-border/60 flex items-center gap-3 p-3 opacity-60"
                       >
                         <Checkbox checked onCheckedChange={() => toggleTask.mutate(task)} />
                         <span className="flex-1 truncate text-sm line-through">{task.title}</span>
@@ -421,7 +421,7 @@ function Planner() {
             </TabsContent>
 
             <TabsContent value="goals" className="mt-6 space-y-6">
-              <div className="surface-card grid gap-3 p-5 md:grid-cols-4">
+              <div className="surface-card rounded-3xl border-primary/20 bg-gradient-to-b from-card to-card/60 grid gap-3 p-5 shadow-sm md:grid-cols-4">
                 <div className="md:col-span-2">
                   <Label htmlFor="goal-title">Goal</Label>
                   <Input
@@ -462,7 +462,7 @@ function Planner() {
                       Math.round((goal.progress_minutes / Math.max(goal.target_minutes, 1)) * 100),
                     );
                     return (
-                      <div key={goal.id} className="surface-card p-5">
+                      <div key={goal.id} className="surface-card rounded-2xl border-border/80 p-5 shadow-xs">
                         <div className="flex items-start justify-between gap-3">
                           <h3 className="font-semibold">{goal.title}</h3>
                           <Button
@@ -486,7 +486,7 @@ function Planner() {
             </TabsContent>
 
             <TabsContent value="ai" className="mt-6">
-              <div className="surface-card space-y-4 p-6">
+              <div className="surface-card rounded-3xl border-primary/20 bg-gradient-to-b from-card to-card/60 space-y-4 p-6 shadow-sm">
                 <div className="flex items-center gap-2">
                   <Sparkles className="size-5 text-primary" />
                   <h2 className="text-lg font-semibold">Build an AI revision plan</h2>
@@ -535,7 +535,7 @@ function Planner() {
                     placeholder="Struggling with hypothesis testing"
                   />
                 </div>
-                <Button onClick={createAiPlan} disabled={planning}>
+                <Button onClick={createAiPlan} disabled={planning} className="rounded-xl bg-gradient-to-r from-primary to-blue-600 text-primary-foreground shadow-sm hover:from-primary/90 hover:to-blue-600/90 transition-all">
                   {planning ? (
                     <Loader2 className="mr-1 size-4 animate-spin" />
                   ) : (

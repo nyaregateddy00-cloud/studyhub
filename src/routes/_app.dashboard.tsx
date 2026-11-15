@@ -250,11 +250,11 @@ function Dashboard() {
             <div className="relative">
               <Avatar className="size-14 shrink-0 ring-3 ring-primary/30 ring-offset-2 ring-offset-background shadow-md">
                 <AvatarImage src={data.profile?.avatar_url ?? undefined} alt={name} />
-                <AvatarFallback className="bg-gradient-to-br from-primary/20 to-indigo-500/20 text-primary font-bold text-base">
+                <AvatarFallback className="bg-gradient-to-br from-primary/20 to-blue-500/20 text-primary font-bold text-base">
                   {initials}
                 </AvatarFallback>
               </Avatar>
-              <span className="absolute -bottom-1 -right-1 flex size-5 items-center justify-center rounded-full bg-gradient-to-r from-primary to-indigo-500 text-[10px] font-bold text-primary-foreground ring-2 ring-background">
+              <span className="absolute -bottom-1 -right-1 flex size-5 items-center justify-center rounded-full bg-gradient-to-r from-primary to-blue-500 text-[10px] font-bold text-primary-foreground ring-2 ring-background">
                 {level}
               </span>
             </div>

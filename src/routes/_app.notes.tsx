@@ -284,11 +284,11 @@ function NotesPage() {
     <div className="space-y-6">
       <PageHeader
         title="Notes"
-        description="Your library plus notes shared by other students."
+        description="Your library of notes and study materials, plus resources shared by other students."
         actions={
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Button className="gap-2 rounded-2xl shadow-sm bg-gradient-to-r from-primary to-indigo-600 hover:from-primary/95 hover:to-indigo-600/95 text-primary-foreground font-semibold active:scale-[0.98] transition-all">
+              <Button className="gap-2 rounded-2xl shadow-sm bg-gradient-to-r from-primary to-blue-600 hover:from-primary/95 hover:to-blue-600/95 text-primary-foreground font-semibold active:scale-[0.98] transition-all">
                 <Upload className="size-4" />
                 <span>Upload note</span>
               </Button>
@@ -471,7 +471,7 @@ function NotesPage() {
                     </div>
                   )}
                 </div>
-                <div className="flex items-center justify-between rounded-lg border border-border p-3">
+                <div className="flex items-center justify-between rounded-xl border border-border/80 bg-secondary/30 p-3">
                   <div>
                     <p className="text-sm font-medium">Share with the community</p>
                     <p className="text-xs text-muted-foreground">
@@ -483,7 +483,7 @@ function NotesPage() {
                     onCheckedChange={(checked) => setForm({ ...form, isPublic: checked })}
                   />
                 </div>
-                <Button type="submit" className="w-full" disabled={createNote.isPending}>
+                <Button type="submit" className="w-full rounded-xl bg-gradient-to-r from-primary to-blue-600 text-primary-foreground shadow-sm hover:from-primary/90 hover:to-blue-600/90 transition-all" disabled={createNote.isPending}>
                   {createNote.isPending ? "Saving..." : "Save note"}
                 </Button>
               </form>
@@ -496,7 +496,7 @@ function NotesPage() {
         <div className="relative flex-1">
           <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            className="pl-9"
+            className="pl-9 rounded-xl"
             placeholder="Search by title, unit code or lecturer"
             value={query}
             onChange={(event) => setQuery(event.target.value)}

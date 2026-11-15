@@ -214,7 +214,7 @@ function Community() {
     <div className="space-y-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Community Q&amp;A</h1>
+          <h1 className="font-display text-3xl font-bold tracking-tight">Community Q&amp;A</h1>
           <p className="mt-1 text-muted-foreground">
             Ask, answer and upvote — study together instead of alone.
           </p>
@@ -252,7 +252,7 @@ function Community() {
       />
 
       {asking && (
-        <div className="surface-card space-y-4 p-5 border-border/80 shadow-xs">
+        <div className="surface-card rounded-3xl border-primary/20 bg-gradient-to-b from-card to-card/60 space-y-4 p-6 shadow-sm">
           <div>
             <Label htmlFor="q-title">Question</Label>
             <Input
@@ -344,7 +344,7 @@ function Community() {
             <Button
               disabled={title.trim().length < 8 || body.trim().length < 8 || ask.isPending}
               onClick={() => ask.mutate()}
-              className="rounded-xl shadow-xs"
+              className="rounded-xl bg-gradient-to-r from-primary to-blue-600 text-primary-foreground shadow-sm hover:from-primary/90 hover:to-blue-600/90 transition-all"
             >
               Post question
             </Button>
@@ -419,7 +419,7 @@ function Community() {
       ) : (
         <ul className="space-y-3">
           {data.questions.map((question) => (
-            <li key={question.id} className="surface-card p-5">
+            <li key={question.id} className="surface-card rounded-2xl border-border/80 p-5 shadow-xs transition-shadow hover:shadow-md">
               <div className="flex gap-4">
                 <div className="flex flex-col items-center">
                   <Button
@@ -575,7 +575,7 @@ function AnswerThread({
         <Skeleton className="h-16" />
       ) : (
         (data ?? []).map((answer) => (
-          <div key={answer.id} className="rounded-lg bg-secondary/50 p-3">
+          <div key={answer.id} className="rounded-xl border border-border/60 bg-secondary/30 p-3.5">
             <p className="whitespace-pre-wrap text-sm">{answer.body}</p>
             <div className="mt-2 flex items-center gap-2">
               <Button

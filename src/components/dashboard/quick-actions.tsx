@@ -14,7 +14,7 @@ const actions = [
     label: "Generate Quiz",
     desc: "AI timed practice",
     icon: ListChecks,
-    color: "bg-violet-500/10 text-violet-600 dark:text-violet-400 group-hover:bg-violet-500/20",
+    color: "bg-blue-500/10 text-blue-600 dark:text-blue-400 group-hover:bg-blue-500/20",
   },
   {
     to: "/assistant",

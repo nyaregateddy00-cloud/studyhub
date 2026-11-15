@@ -123,7 +123,7 @@ function AppLayout() {
               )}
             >
               {isActive && (
-                <span className="absolute top-0 h-0.5 w-8 rounded-full bg-gradient-to-r from-primary to-indigo-500 shadow-sm shadow-primary/50" />
+                <span className="absolute top-0 h-0.5 w-8 rounded-full bg-gradient-to-r from-primary to-blue-500 shadow-sm shadow-primary/50" />
               )}
               <item.icon
                 className={cn(
