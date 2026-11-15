@@ -1,4 +1,4 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+﻿import { Link, useRouterState } from "@tanstack/react-router";
 import {
   BarChart3,
   BookOpen,
@@ -79,16 +79,16 @@ export function AppSidebar() {
   const { state, isMobile, setOpenMobile } = useSidebar();
   const collapsed = state === "collapsed" && !isMobile;
   const pathname = useRouterState({ select: (router) => router.location.pathname });
-  const { data: profile } = useProfileSummary();rofile?.level ?? 1);
-
-  return (
-    <Sidebar collapsible="icon" className="border-r border-sidebar-border">
-      <SidebarHeader className="gap-3 p-3"
+  const { data: profile } = useProfileSummary();
   const { data: notifications } = useNotifications();
   const signOut = useSignOut();
 
   const unread = (notifications ?? []).filter((item) => !item.is_read).length;
-  const progress = levelProgress(profile?.xp ?? 0, p>
+  const progress = levelProgress(profile?.xp ?? 0, profile?.level ?? 1);
+
+  return (
+    <Sidebar collapsible="icon" className="border-r border-sidebar-border">
+      <SidebarHeader className="gap-3 p-3">
         <Link
           to="/dashboard"
           onClick={() => setOpenMobile(false)}
@@ -146,7 +146,7 @@ export function AppSidebar() {
               </div>
               <div className="h-1.5 w-full overflow-hidden rounded-full bg-secondary/80">
                 <div
-                  className="h-full rounded-full bg-gradient-to-r from-primary to-indigo-500 transition-all duration-300"
+                  className="h-full rounded-full bg-gradient-to-r from-primary to-blue-500 transition-all duration-300"
                   style={{ width: `${progress.percent}%` }}
                 />
               </div>
@@ -190,7 +190,7 @@ export function AppSidebar() {
                           />
                           <span className="min-w-0 truncate">{item.label}</span>
                           {item.to === "/dashboard" && unread > 0 && (
-                            <span className="ml-auto rounded-full bg-gradient-to-r from-primary to-indigo-500 px-1.5 py-0.5 text-[10px] font-bold text-primary-foreground shadow-xs">
+                            <span className="ml-auto rounded-full bg-gradient-to-r from-primary to-blue-500 px-1.5 py-0.5 text-[10px] font-bold text-primary-foreground shadow-xs">
                               {unread > 9 ? "9+" : unread}
                             </span>
                           )}

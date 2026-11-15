@@ -99,7 +99,7 @@ function FreeAccessPage() {
             Every account on StudyHub comes with unlimited access to the AI tutor, comprehensive course notes, past exams, quiz generators, and study tools at zero cost.
           </p>
           <div className="pt-2 flex flex-wrap gap-3">
-            <Button asChild size="lg" className="rounded-xl shadow-xs">
+            <Button asChild size="lg" className="rounded-xl bg-gradient-to-r from-primary to-blue-600 text-primary-foreground shadow-md shadow-primary/20 hover:from-primary/90 hover:to-blue-600/90 transition-all">
               <Link to="/dashboard">
                 Go to Dashboard <ArrowRight className="size-4 ml-1.5" />
               </Link>
@@ -123,7 +123,7 @@ function FreeAccessPage() {
           {features.map((feature) => (
             <div
               key={feature.title}
-              className="group rounded-2xl border border-border/80 bg-card p-5 shadow-xs transition-all hover:border-primary/40 hover:shadow-md flex flex-col justify-between"
+              className="group rounded-3xl border border-border/80 bg-gradient-to-b from-card to-card/60 p-5 shadow-xs transition-all hover:-translate-y-1 hover:border-primary/40 hover:shadow-md flex flex-col justify-between"
             >
               <div>
                 <div className="size-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary mb-3.5 group-hover:scale-105 transition-transform">

@@ -56,7 +56,7 @@ function Stars({ rating, className }: { rating: number; className?: string }) {
 function ReviewCard({ review, index }: { review: ReviewRow; index: number }) {
   return (
     <article
-      className="surface-card lift animate-in fade-in slide-in-from-bottom-2 flex flex-col gap-3 p-5 duration-500"
+      className="surface-card lift animate-in fade-in slide-in-from-bottom-2 flex flex-col gap-3 rounded-3xl border-border/80 p-5 shadow-sm duration-500 hover:border-primary/20 hover:shadow-md transition-shadow"
       style={{ animationDelay: `${Math.min(index, 8) * 60}ms`, animationFillMode: "backwards" }}
     >
       <Quote className="size-5 text-primary/60" />
@@ -158,6 +158,7 @@ function Welcome() {
         <div className="mt-6 flex flex-wrap gap-2">
           <Button
             size="lg"
+            className="rounded-xl bg-gradient-to-r from-primary to-blue-600 text-primary-foreground shadow-md shadow-primary/20 hover:from-primary/90 hover:to-blue-600/90 transition-all gap-2"
             onClick={() => continueToDashboard.mutate()}
             disabled={continueToDashboard.isPending}
           >
@@ -170,7 +171,7 @@ function Welcome() {
       </section>
 
       <section className="space-y-4">
-        <h2 className="font-display text-xl font-semibold">What students say</h2>
+        <h2 className="font-display text-xl font-semibold tracking-tight">What students say</h2>
         {reviewsQuery.isLoading ? (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {[0, 1, 2, 3, 4, 5].map((key) => (
@@ -186,7 +187,7 @@ function Welcome() {
         )}
       </section>
 
-      <section id="share-your-story" className="surface-card space-y-4 p-6">
+      <section id="share-your-story" className="surface-card rounded-3xl border-primary/20 bg-gradient-to-b from-card to-card/60 space-y-4 p-6 shadow-sm">
         <div>
           <h2 className="font-display text-xl font-semibold">Share your story</h2>
           <p className="text-sm text-muted-foreground">

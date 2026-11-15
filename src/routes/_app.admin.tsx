@@ -164,7 +164,7 @@ function Admin() {
 
   if (!isStaff) {
     return (
-      <div className="surface-card flex flex-col items-center gap-3 p-12 text-center">
+      <div className="surface-card rounded-3xl border-border/80 flex flex-col items-center gap-3 p-12 text-center">
         <ShieldAlert className="size-8 text-muted-foreground" />
         <h1 className="text-xl font-semibold">Staff only</h1>
         <p className="text-sm text-muted-foreground">
@@ -178,7 +178,7 @@ function Admin() {
     <div className="space-y-8">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold">Moderation</h1>
+          <h1 className="font-display text-3xl font-bold tracking-tight">Moderation</h1>
           <p className="mt-1 text-muted-foreground">
             Signed in as {role?.isAdmin ? "admin" : "moderator"}.
           </p>
@@ -206,7 +206,7 @@ function Admin() {
         <Skeleton className="h-64" />
       ) : (
         <Tabs defaultValue="overview">
-          <TabsList>
+          <TabsList className="rounded-xl">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="reports">Reported notes</TabsTrigger>
             <TabsTrigger value="reviews">
@@ -222,24 +222,24 @@ function Admin() {
             <TabsTrigger value="audit">Audit log</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="overview" className="surface-card mt-6 p-6">
-            <h2 className="text-lg font-semibold">Platform overview</h2>
+          <TabsContent value="overview" className="surface-card rounded-3xl border-border/80 mt-6 p-6">
+            <h2 className="font-display text-lg font-semibold tracking-tight">Platform overview</h2>
             <p className="mt-1 mb-5 text-sm text-muted-foreground">
               Live counts from the database, filterable by university and programme.
             </p>
             <OverviewStats />
           </TabsContent>
 
-          <TabsContent value="academic" className="surface-card mt-6 p-6">
-            <h2 className="text-lg font-semibold">Academic structure</h2>
+          <TabsContent value="academic" className="surface-card rounded-3xl border-border/80 mt-6 p-6">
+            <h2 className="font-display text-lg font-semibold tracking-tight">Academic structure</h2>
             <p className="mt-1 mb-5 text-sm text-muted-foreground">
               Universities, schools, programmes and units used to categorise the library.
             </p>
             <AcademicManager />
           </TabsContent>
 
-          <TabsContent value="reports" className="surface-card mt-6 p-6">
-            <h2 className="text-lg font-semibold">Reported notes</h2>
+          <TabsContent value="reports" className="surface-card rounded-3xl border-border/80 mt-6 p-6">
+            <h2 className="font-display text-lg font-semibold tracking-tight">Reported notes</h2>
             {data.reports.length === 0 ? (
               <p className="mt-3 text-sm text-muted-foreground">Queue is clear.</p>
             ) : (
@@ -266,8 +266,8 @@ function Admin() {
             )}
           </TabsContent>
 
-          <TabsContent value="reviews" className="surface-card mt-6 p-6">
-            <h2 className="text-lg font-semibold">Reviews awaiting approval</h2>
+          <TabsContent value="reviews" className="surface-card rounded-3xl border-border/80 mt-6 p-6">
+            <h2 className="font-display text-lg font-semibold tracking-tight">Reviews awaiting approval</h2>
             <p className="mt-1 text-sm text-muted-foreground">
               New student reviews stay hidden from the public wall until approved here.
             </p>
