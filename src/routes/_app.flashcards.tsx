@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { extractText } from "unpdf";
+import { extractContentFromFile, DOCUMENT_ACCEPT_TYPES, extractFilesFromClipboard } from "@/lib/document-parser";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -73,36 +73,31 @@ function FlashcardsPage() {
   });
 
   async function handleFileUpload(file: File) {
-    const isPdf =
-      file.name.toLowerCase().endsWith(".pdf") || file.type === "application/pdf";
     setExtracting(true);
-    const toastId = toast.loading(`Reading ${file.name}...`);
+    const toastId = toast.loading(`Processing ${file.name}...`);
     try {
-      let content = "";
-      if (isPdf) {
-        const arrayBuffer = await file.arrayBuffer();
-        const extracted = await extractText(arrayBuffer);
-        const pages = Array.isArray(extracted.text)
-          ? extracted.text.join("\n\n")
-          : String(extracted.text ?? "");
-        content = pages.trim();
-        if (!content) {
-          throw new Error(
-            "Could not extract readable text from this PDF. It may contain scanned images rather than text."
-          );
-        }
-        toast.success(
-          `Extracted flashcard material from ${file.name} (${extracted.totalPages} pages)`,
-          { id: toastId }
-        );
-      } else {
-        content = await file.text();
-        toast.success(`Loaded ${file.name}`, { id: toastId });
-      }
+      const extracted = await extractContentFromFile(file, (msg) => {
+        toast.loading(msg, { id: toastId });
+      });
 
-      const trimmed = content.slice(0, 20000);
+      const trimmed = extracted.text.slice(0, 20000);
       setSource(trimmed);
       setLoadedFileName(file.name);
+
+      const friendlyType =
+        extracted.fileType === "image"
+          ? "screenshot / image"
+          : extracted.fileType === "docx"
+            ? "Word doc"
+            : extracted.fileType === "pdf"
+              ? "PDF"
+              : "file";
+
+      toast.success(
+        `Loaded ${file.name} (${friendlyType}${extracted.totalPages ? `, ${extracted.totalPages} pages` : ""})`,
+        { id: toastId }
+      );
+
       if (!subject.trim()) {
         const autoSubject = file.name
           .replace(/\.[^/.]+$/, "")
@@ -118,6 +113,18 @@ function FlashcardsPage() {
       setExtracting(false);
     }
   }
+
+  useEffect(() => {
+    function handlePaste(e: ClipboardEvent) {
+      const files = extractFilesFromClipboard(e);
+      if (files.length > 0) {
+        e.preventDefault();
+        handleFileUpload(files[0]);
+      }
+    }
+    window.addEventListener("paste", handlePaste);
+    return () => window.removeEventListener("paste", handlePaste);
+  }, []);
 
   const decksQuery = useQuery({
     queryKey: ["decks", user?.id],
@@ -191,7 +198,7 @@ function FlashcardsPage() {
             ) : (
               <Upload className="size-4" />
             )}
-            <span>Upload material</span>
+            <span>Upload / Screenshot</span>
           </Button>
         }
       />
@@ -211,7 +218,7 @@ function FlashcardsPage() {
           ref={fileInputRef}
           type="file"
           className="sr-only"
-          accept=".pdf,.txt,.md,.markdown,.text,.json,.rtf"
+          accept={DOCUMENT_ACCEPT_TYPES}
           onChange={(e) => {
             const file = e.target.files?.[0];
             if (file) handleFileUpload(file);
@@ -262,7 +269,7 @@ function FlashcardsPage() {
                 ) : (
                   <Upload className="size-3.5 text-primary" />
                 )}
-                Upload file (PDF, TXT, MD)
+                Upload doc, PDF or screenshot
               </Button>
             </div>
           </div>
@@ -322,7 +329,7 @@ function FlashcardsPage() {
                 className="mt-2 flex items-center justify-center gap-2 rounded-xl border border-dashed border-border/80 p-3 text-xs text-muted-foreground hover:border-primary/40 hover:bg-muted/30 cursor-pointer transition-colors"
               >
                 <Upload className="size-3.5 text-primary" />
-                <span>Drop a PDF or notes file here, or click to upload</span>
+                <span>Drop PDF, Word doc, screenshot or paste image (Ctrl+V)</span>
               </div>
             )}
           </div>

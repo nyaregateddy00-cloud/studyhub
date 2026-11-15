@@ -48,6 +48,8 @@ import {
   type AcademicSelection,
 } from "@/components/academic/academic-picker";
 import { EmptyState } from "@/components/dashboard/primitives";
+import { DocumentDropzone } from "@/components/shared/document-dropzone";
+import { extractContentFromFile } from "@/lib/document-parser";
 import { RESOURCE_TYPE_CLASSES } from "@/lib/design-tokens";
 import { useAuth } from "@/lib/auth";
 import { NotesService } from "@/services/notes.service";
@@ -105,7 +107,7 @@ function NotesPage() {
   const [viewNoteId, setViewNoteId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  function handleFileSelect(selectedFile: File) {
+  async function handleFileSelect(selectedFile: File) {
     setFile(selectedFile);
     if (!form.title.trim()) {
       const cleanName = selectedFile.name
@@ -113,6 +115,22 @@ function NotesPage() {
         .replace(/[-_]/g, " ")
         .trim();
       setForm((prev) => ({ ...prev, title: cleanName.slice(0, 140) }));
+    }
+
+    // Auto-extract content preview into note body if it's currently empty
+    if (!form.content.trim()) {
+      try {
+        const extracted = await extractContentFromFile(selectedFile);
+        if (extracted.text) {
+          setForm((prev) => ({
+            ...prev,
+            content: prev.content.trim() ? prev.content : extracted.text.slice(0, 10000),
+          }));
+          toast.success(`Extracted text preview from ${selectedFile.name}`);
+        }
+      } catch {
+        // Best effort: don't block file selection if OCR/text extraction fails
+      }
     }
   }
 
@@ -419,57 +437,15 @@ function NotesPage() {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label>Attach file (PDF, DOCX, PPTX, slides, images)</Label>
-                  {file ? (
-                    <div className="flex items-center justify-between rounded-xl border border-primary/20 bg-primary/5 p-3">
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                          <Paperclip className="size-4" />
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-sm font-medium truncate">{file.name}</p>
-                          <p className="text-xs text-muted-foreground">{(file.size / (1024 * 1024)).toFixed(2)} MB</p>
-                        </div>
-                      </div>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 text-xs text-destructive hover:bg-destructive/10"
-                        onClick={() => setFile(null)}
-                      >
-                        <X className="size-3.5 mr-1" />
-                        Remove
-                      </Button>
-                    </div>
-                  ) : (
-                    <div
-                      className="relative flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-border/80 p-5 text-center hover:border-primary/50 hover:bg-muted/40 transition-colors cursor-pointer group"
-                      onClick={() => fileInputRef.current?.click()}
-                      onDragOver={(e) => e.preventDefault()}
-                      onDrop={(e) => {
-                        e.preventDefault();
-                        const dropped = e.dataTransfer.files?.[0];
-                        if (dropped) handleFileSelect(dropped);
-                      }}
-                    >
-                      <div className="size-9 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-1.5 group-hover:scale-105 transition-transform">
-                        <Upload className="size-4" />
-                      </div>
-                      <p className="text-xs font-medium">Click to browse or drag & drop</p>
-                      <p className="text-[11px] text-muted-foreground mt-0.5">PDF, DOCX, PPTX, TXT, MD or images</p>
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        className="sr-only"
-                        accept=".pdf,.doc,.docx,.ppt,.pptx,.txt,.md,image/*"
-                        onChange={(event) => {
-                          const selected = event.target.files?.[0];
-                          if (selected) handleFileSelect(selected);
-                        }}
-                      />
-                    </div>
-                  )}
+                  <Label>Attach Document, PDF, or Screenshot</Label>
+                  <DocumentDropzone
+                    onFileSelect={handleFileSelect}
+                    selectedFile={file}
+                    onClear={() => setFile(null)}
+                    label="Attach file or screenshot"
+                    sublabel="Drop PDF, DOCX, presentation, image or paste screenshot (Ctrl+V)"
+                    compact
+                  />
                 </div>
                 <div className="flex items-center justify-between rounded-xl border border-border/80 bg-secondary/30 p-3">
                   <div>

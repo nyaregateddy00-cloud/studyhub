@@ -17,7 +17,8 @@ import {
 import { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
-import { extractText } from "unpdf";
+import { extractContentFromFile, DOCUMENT_ACCEPT_TYPES, extractFilesFromClipboard } from "@/lib/document-parser";
+import { Image as ImageIcon } from "lucide-react";
 
 import {
   Dialog,
@@ -146,39 +147,44 @@ function Assistant() {
   }, [busy]);
 
   async function handleFileUpload(file: File) {
-    const isPdf =
-      file.name.toLowerCase().endsWith(".pdf") || file.type === "application/pdf";
     setExtracting(true);
-    const toastId = toast.loading(`Reading ${file.name}...`);
+    const toastId = toast.loading(`Processing ${file.name}...`);
     try {
-      let content = "";
-      let totalPages: number | undefined = undefined;
-      if (isPdf) {
-        const arrayBuffer = await file.arrayBuffer();
-        const extracted = await extractText(arrayBuffer);
-        const pages = Array.isArray(extracted.text)
-          ? extracted.text.join("\n\n")
-          : String(extracted.text ?? "");
-        content = pages.trim();
-        totalPages = extracted.totalPages;
-        if (!content) {
-          throw new Error(
-            "Could not extract readable text from this PDF. It may contain scanned images rather than text."
+      const extracted = await extractContentFromFile(file, (msg) => {
+        toast.loading(msg, { id: toastId });
+      });
+
+      const trimmed = extracted.text.slice(0, 15000);
+      setAttachedDoc({
+        name: file.name,
+        content: trimmed,
+        pages: extracted.totalPages,
+      });
+
+      const friendlyType =
+        extracted.fileType === "image"
+          ? "screenshot / image"
+          : extracted.fileType === "docx"
+            ? "Word document"
+            : extracted.fileType === "pdf"
+              ? "PDF document"
+              : "file";
+
+      toast.success(
+        `Attached ${file.name} (${friendlyType}${extracted.totalPages ? `, ${extracted.totalPages} pages` : ""})`,
+        { id: toastId }
+      );
+
+      if (!input.trim()) {
+        if (extracted.fileType === "image") {
+          setInput(
+            `Please inspect this screenshot / image ("${file.name}"), solve or explain the content shown, and provide key takeaways.`
+          );
+        } else {
+          setInput(
+            `Please explain the core concepts from "${file.name}" and summarize what I need to know.`
           );
         }
-        toast.success(
-          `Attached ${file.name} (${extracted.totalPages} pages)`,
-          { id: toastId }
-        );
-      } else {
-        content = await file.text();
-        toast.success(`Attached ${file.name}`, { id: toastId });
-      }
-
-      const trimmed = content.slice(0, 12000);
-      setAttachedDoc({ name: file.name, content: trimmed, pages: totalPages });
-      if (!input.trim()) {
-        setInput(`Please explain the core concepts from "${file.name}" and summarize what I need to know.`);
       }
     } catch (err: unknown) {
       const message =
@@ -188,6 +194,19 @@ function Assistant() {
       setExtracting(false);
     }
   }
+
+  // Global paste handler (Ctrl+V) for screenshots and documents
+  useEffect(() => {
+    function handlePaste(e: ClipboardEvent) {
+      const files = extractFilesFromClipboard(e);
+      if (files.length > 0) {
+        e.preventDefault();
+        handleFileUpload(files[0]);
+      }
+    }
+    window.addEventListener("paste", handlePaste);
+    return () => window.removeEventListener("paste", handlePaste);
+  }, []);
 
   async function send(text: string) {
     if (!text.trim() || busy) return;
@@ -206,7 +225,7 @@ function Assistant() {
         ref={fileInputRef}
         type="file"
         className="sr-only"
-        accept=".pdf,.txt,.md,.markdown,.text,.json,.rtf"
+        accept={DOCUMENT_ACCEPT_TYPES}
         onChange={(e) => {
           const file = e.target.files?.[0];
           if (file) handleFileUpload(file);
@@ -237,7 +256,7 @@ function Assistant() {
               ) : (
                 <Upload className="size-3.5 text-primary" />
               )}
-              <span>Upload notes</span>
+              <span>Upload / Screenshot</span>
             </Button>
             {messages.length > 0 && (
               <Button variant="outline" size="sm" className="rounded-xl shadow-xs" onClick={() => setMessages([])}>
@@ -349,7 +368,7 @@ function Assistant() {
           ref={textareaRef}
           value={input}
           autoFocus
-          placeholder={attachedDoc ? `Ask a question about ${attachedDoc.name}...` : "Ask about any topic, paste notes, or attach a document..."}
+          placeholder={attachedDoc ? `Ask a question about ${attachedDoc.name}...` : "Ask about any topic, paste notes, drop files, or paste screenshot (Ctrl+V)..."}
           onChange={(event) => setInput(event.target.value)}
         />
         <PromptInputFooter className="justify-between items-center gap-2">
@@ -367,7 +386,7 @@ function Assistant() {
               ) : (
                 <Upload className="size-3.5 text-primary" />
               )}
-              <span>Upload file</span>
+              <span>Upload file / Screenshot</span>
             </Button>
             {(notesQuery.data ?? []).filter((n) => Boolean(n.content)).length > 0 && (
               <Button

@@ -12,9 +12,9 @@ import {
   Upload,
   X,
 } from "lucide-react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { extractText } from "unpdf";
+import { extractContentFromFile, DOCUMENT_ACCEPT_TYPES, extractFilesFromClipboard } from "@/lib/document-parser";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -84,34 +84,31 @@ function Community() {
   });
 
   async function handleFileUpload(file: File) {
-    const isPdf =
-      file.name.toLowerCase().endsWith(".pdf") || file.type === "application/pdf";
     setExtracting(true);
     const toastId = toast.loading(`Reading ${file.name}...`);
     try {
-      let content = "";
-      if (isPdf) {
-        const arrayBuffer = await file.arrayBuffer();
-        const extracted = await extractText(arrayBuffer);
-        const pages = Array.isArray(extracted.text)
-          ? extracted.text.join("\n\n")
-          : String(extracted.text ?? "");
-        content = pages.trim();
-        if (!content) {
-          throw new Error("Could not extract readable text from this PDF.");
-        }
-        toast.success(
-          `Extracted question details from ${file.name} (${extracted.totalPages} pages)`,
-          { id: toastId }
-        );
-      } else {
-        content = await file.text();
-        toast.success(`Loaded ${file.name}`, { id: toastId });
-      }
+      const extracted = await extractContentFromFile(file, (msg) => {
+        toast.loading(msg, { id: toastId });
+      });
 
       setAsking(true);
-      setBody(content.slice(0, 4000));
+      setBody(extracted.text.slice(0, 4000));
       setAttachedFileName(file.name);
+
+      const friendlyType =
+        extracted.fileType === "image"
+          ? "screenshot / image"
+          : extracted.fileType === "docx"
+            ? "Word doc"
+            : extracted.fileType === "pdf"
+              ? "PDF"
+              : "file";
+
+      toast.success(
+        `Loaded ${file.name} (${friendlyType}${extracted.totalPages ? `, ${extracted.totalPages} pages` : ""})`,
+        { id: toastId }
+      );
+
       if (!title.trim()) {
         const cleanTitle = file.name
           .replace(/\.[^/.]+$/, "")
@@ -133,6 +130,18 @@ function Community() {
       setExtracting(false);
     }
   }
+
+  useEffect(() => {
+    function handlePaste(e: ClipboardEvent) {
+      const files = extractFilesFromClipboard(e);
+      if (files.length > 0) {
+        e.preventDefault();
+        handleFileUpload(files[0]);
+      }
+    }
+    window.addEventListener("paste", handlePaste);
+    return () => window.removeEventListener("paste", handlePaste);
+  }, []);
 
   const { data, isLoading } = useQuery({
     queryKey: ["community", search],
@@ -231,7 +240,7 @@ function Community() {
             ) : (
               <Upload className="size-4 text-primary" />
             )}
-            <span>Upload question / notes</span>
+            <span>Upload / Screenshot</span>
           </Button>
           <Button onClick={() => setAsking((value) => !value)}>
             <Plus className="mr-1 size-4" /> Ask a question
@@ -243,7 +252,7 @@ function Community() {
         ref={fileInputRef}
         type="file"
         className="sr-only"
-        accept=".pdf,.txt,.md,.markdown,.text,.json,.rtf"
+        accept={DOCUMENT_ACCEPT_TYPES}
         onChange={(e) => {
           const file = e.target.files?.[0];
           if (file) handleFileUpload(file);
